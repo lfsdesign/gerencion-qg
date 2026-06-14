@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F59E0B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GERENCION QG">
+<title>GERENCION QG - Norte Fluminense</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#060E1E;--s1:#0A1628;--s2:#0F1F35;
+  --b:rgba(255,255,255,0.08);--b2:rgba(255,255,255,0.15);
+  --am:#F59E0B;--am2:rgba(245,158,11,0.12);--am3:rgba(245,158,11,0.25);
+  --bl:#3B82F6;--bl2:rgba(59,130,246,0.12);
+  --rd:#EF4444;--rd2:rgba(239,68,68,0.12);
+  --gn:#10B981;--gn2:rgba(16,185,129,0.12);
+  --t:#F0F6FF;--t2:#94A3B8;--t3:#475569;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);font-size:14px;min-height:100vh;}
+#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+.login-logo{font-size:28px;font-weight:800;letter-spacing:6px;color:var(--am);margin-bottom:4px;}
+.login-sub{font-size:11px;letter-spacing:3px;color:var(--t3);text-transform:uppercase;margin-bottom:8px;}
+.login-regional{font-size:13px;color:var(--t2);margin-bottom:40px;}
+.login-card{background:var(--s1);border:1px solid var(--b);border-radius:16px;padding:28px 24px;width:100%;max-width:380px;}
+.login-title{font-size:16px;font-weight:700;color:var(--t);margin-bottom:6px;}
+.login-desc{font-size:12px;color:var(--t2);margin-bottom:24px;}
+.login-label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--t2);margin-bottom:6px;display:block;}
+.login-input{width:100%;padding:12px 14px;background:var(--s2);border:1px solid var(--b);border-radius:10px;color:var(--t);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .15s;margin-bottom:16px;}
+.login-input:focus{border-color:var(--am);}
+.login-input::placeholder{color:var(--t3);}
+.login-btn{width:100%;padding:13px;background:var(--am);border:none;border-radius:10px;color:#0A0A0A;font-family:'Inter',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:opacity .15s;margin-top:4px;}
+.login-btn:hover{opacity:.9;}
+.login-error{background:var(--rd2);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--rd);margin-bottom:16px;display:none;}
+.login-footer{font-size:11px;color:var(--t3);text-align:center;margin-top:20px;}
+#app{display:none;}
+#topbar{background:var(--s1);border-bottom:1px solid var(--b);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.top-logo{font-size:15px;font-weight:800;letter-spacing:4px;color:var(--am);}
+.top-user-name{font-size:12px;font-weight:600;color:var(--t);text-align:right;}
+.top-user-code{font-size:10px;color:var(--t3);text-align:right;}
+.top-logout{padding:6px 12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;color:var(--rd);font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;margin-left:10px;}
+#menuBar{background:var(--s1);border-bottom:1px solid var(--b);padding:0 8px;display:flex;overflow-x:auto;gap:2px;-webkit-overflow-scrolling:touch;}
+#menuBar::-webkit-scrollbar{display:none;}
+.mb{padding:14px 14px;border:none;background:none;color:var(--t2);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .15s;}
+.mb:hover{color:var(--t);}
+.mb.on{color:var(--am);border-bottom-color:var(--am);font-weight:700;}
+#main{padding:20px 16px;max-width:760px;margin:0 auto;}
+.pg{display:none;}
+.pg.on{display:block;}
+.ph{margin-bottom:24px;}
+.pt{font-size:22px;font-weight:700;color:var(--t);}
+.ps{font-size:12px;color:var(--t2);margin-top:4px;}
+.card{background:var(--s1);border:1px solid var(--b);border-radius:14px;padding:18px;margin-bottom:14px;}
+.ct{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:14px;}
+.fg{margin-bottom:14px;}
+.fl{font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--t2);margin-bottom:5px;display:block;}
+.inp{width:100%;padding:10px 12px;background:var(--s2);border:1px solid var(--b);border-radius:8px;color:var(--t);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .15s;}
+.inp:focus{border-color:var(--am);}
+.inp::placeholder{color:var(--t3);}
+textarea.inp{resize:vertical;min-height:80px;}
+select.inp{cursor:pointer;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.btn{padding:10px 18px;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:opacity .15s;}
+.btn:hover{opacity:.85;}
+.bp{background:var(--am);color:#0A0A0A;}
+.bs{background:transparent;color:var(--t2);border:1px solid var(--b2);}
+#toast{position:fixed;bottom:20px;right:16px;left:16px;max-width:400px;margin:0 auto;background:var(--s1);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:10px 16px;font-size:12px;color:var(--am);z-index:9999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;text-align:center;}
+#toast.on{opacity:1;transform:translateY(0);}
+.welcome-card{background:linear-gradient(135deg,rgba(245,158,11,0.15),var(--s1));border:1px solid rgba(245,158,11,0.3);border-radius:16px;padding:24px;margin-bottom:20px;}
+.welcome-name{font-size:20px;font-weight:700;color:var(--am);margin-bottom:4px;}
+.welcome-sub{font-size:13px;color:var(--t2);}
+.module-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.module-card{background:var(--s1);border:1px solid var(--b);border-radius:14px;padding:20px 16px;cursor:pointer;transition:all .2s;text-align:center;}
+.module-card:hover{border-color:var(--am);background:var(--am2);}
+.module-icon{font-size:32px;margin-bottom:10px;}
+.module-name{font-size:13px;font-weight:700;color:var(--t);margin-bottom:4px;}
+.module-desc{font-size:11px;color:var(--t2);}
+.tipo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.tipo-card{border-radius:14px;padding:20px 16px;cursor:pointer;transition:all .2s;text-align:center;border:2px solid transparent;}
+.tipo-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3);}
+.tipo-icon{font-size:36px;margin-bottom:10px;}
+.tipo-name{font-size:14px;font-weight:700;margin-bottom:4px;}
+.tipo-count{font-size:11px;opacity:.8;}
+.tc-rest{background:linear-gradient(135deg,rgba(239,68,68,0.15),var(--s1));border-color:rgba(239,68,68,0.3);color:#FCA5A5;}
+.tc-kilo{background:linear-gradient(135deg,rgba(245,158,11,0.15),var(--s1));border-color:rgba(245,158,11,0.3);color:#FCD34D;}
+.tc-pizza{background:linear-gradient(135deg,rgba(168,85,247,0.15),var(--s1));border-color:rgba(168,85,247,0.3);color:#C4B5FD;}
+.tc-pada{background:linear-gradient(135deg,rgba(16,185,129,0.15),var(--s1));border-color:rgba(16,185,129,0.3);color:#6EE7B7;}
+.tc-hotel{background:linear-gradient(135deg,rgba(59,130,246,0.15),var(--s1));border-color:rgba(59,130,246,0.3);color:#93C5FD;}
+.tc-lanch{background:linear-gradient(135deg,rgba(236,72,153,0.15),var(--s1));border-color:rgba(236,72,153,0.3);color:#F9A8D4;}
+#listaBox{display:none;}
+.lista-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.lista-back{padding:8px 14px;background:var(--s2);border:1px solid var(--b);border-radius:8px;color:var(--t2);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+.lista-title{font-size:20px;font-weight:700;color:var(--t);}
+.lista-subtitle{font-size:11px;color:var(--t2);margin-top:2px;}
+.produtos-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.produto-item{padding:11px 14px;border-bottom:1px solid var(--b);font-size:14px;color:var(--t);display:flex;align-items:center;gap:8px;}
+.produto-item:nth-child(odd){border-right:1px solid var(--b);}
+.produto-dot{width:7px;height:7px;border-radius:50%;background:var(--am);flex-shrink:0;}
+.neg-vendedor{background:var(--am2);border:1px solid var(--am3);border-radius:10px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.neg-vend-label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--am);margin-bottom:2px;}
+.neg-vend-nome{font-size:15px;font-weight:700;color:var(--t);}
+.prod-box{background:var(--s2);border:1px solid var(--b);border-radius:10px;padding:16px;margin-bottom:10px;}
+.prod-title{font-weight:700;font-size:14px;color:var(--am);margin-bottom:12px;}
+.prod-result{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--t2);margin-top:10px;display:none;}
+.neg-resultado{background:var(--s2);border:1px solid var(--b);border-radius:12px;padding:18px;margin-top:14px;display:none;}
+.contato-card{background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:16px;margin-bottom:10px;}
+.contato-empresa{font-size:13px;font-weight:700;color:var(--am);margin-bottom:4px;}
+.contato-nome{font-size:14px;color:var(--t);margin-bottom:10px;}
+.contato-links{display:flex;gap:8px;flex-wrap:wrap;}
+.contato-btn{padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:4px;}
+.cb-wpp{background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);}
+.cb-email{background:rgba(59,130,246,0.12);color:#3B82F6;border:1px solid rgba(59,130,246,0.3);}
+.doc-card{background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;}
+.doc-icon{font-size:28px;width:48px;height:48px;background:var(--s2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.doc-info{flex:1;}
+.doc-nome{font-size:14px;font-weight:700;color:var(--t);margin-bottom:3px;}
+.doc-desc{font-size:11px;color:var(--t2);}
+.doc-btn{padding:8px 14px;background:#3B82F6;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
+.catalogo-card{background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;}
+.catalogo-icon{font-size:28px;width:48px;height:48px;background:var(--s2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.catalogo-info{flex:1;}
+.catalogo-nome{font-size:14px;font-weight:700;color:var(--t);margin-bottom:3px;}
+.catalogo-desc{font-size:11px;color:var(--t2);}
+.campanha-card{background:var(--s1);border:1px solid var(--b);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+.campanha-body{padding:18px;}
+.campanha-tag{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--am);margin-bottom:6px;}
+.campanha-title{font-size:17px;font-weight:700;color:var(--t);margin-bottom:8px;}
+.campanha-text{font-size:13px;color:var(--t2);line-height:1.7;}
+.campanha-mecanica{background:var(--am2);border:1px solid var(--am3);border-radius:8px;padding:12px 14px;margin-top:12px;font-size:13px;color:var(--t2);}
+.campanha-mecanica strong{color:var(--am);}
+.empty{text-align:center;padding:40px 20px;color:var(--t2);font-size:13px;}
+.empty-icon{font-size:40px;margin-bottom:12px;}
+@media(max-width:480px){
+  .g2,.tipo-grid,.module-grid{grid-template-columns:1fr;}
+  .produtos-grid{grid-template-columns:1fr;}
+  .produto-item:nth-child(odd){border-right:none;}
+  .g3{grid-template-columns:1fr 1fr;}
+}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+
+<div id="loginScreen">
+  <div class="login-logo">GERENCION QG</div>
+  <div class="login-sub">Norte Fluminense</div>
+  <div class="login-regional">Coordenador: Leandro Felipe &middot; Arcofoods</div>
+  <div class="login-card">
+    <div class="login-title">Acesso ao Sistema</div>
+    <div class="login-desc">Use suas credenciais fornecidas pelo coordenador.</div>
+    <div class="login-error" id="loginError">Credenciais invalidas. Verifique e tente novamente.</div>
+    <label class="login-label">Identificacao (ex: RCA 017)</label>
+    <input class="login-input" id="loginCode" placeholder="RCA 017" autocomplete="off" autocapitalize="characters">
+    <label class="login-label">Senha</label>
+    <input class="login-input" type="password" id="loginPass" placeholder="********">
+    <button class="login-btn" onclick="fazerLogin()">Entrar</button>
+    <div class="login-footer">GERENCION QG &middot; Arcofoods &middot; Norte Fluminense</div>
+  </div>
+</div>
+
+<div id="app">
+  <div id="topbar">
+    <div class="top-logo">QG</div>
+    <div style="display:flex;align-items:center">
+      <div>
+        <div class="top-user-name" id="topNome">-</div>
+        <div class="top-user-code" id="topCodigo">-</div>
+      </div>
+      <button class="top-logout" onclick="sair()">Sair</button>
+    </div>
+  </div>
+  <div id="menuBar">
+    <button class="mb on" onclick="ir('home',this)">&#127968; Inicio</button>
+    <button class="mb" onclick="ir('negociacao',this)">&#129309; Negociacao</button>
+    <button class="mb" onclick="ir('tipologia',this)">&#128203; Mix por Segmento</button>
+    <button class="mb" onclick="ir('catalogos',this)">&#128218; Catalogos</button>
+    <button class="mb" onclick="ir('documentos',this)">&#128196; Documentacao</button>
+    <button class="mb" onclick="ir('contatos',this)">&#128222; Contatos</button>
+    <button class="mb" onclick="ir('campanhas',this)">&#127919; Campanhas</button>
+  </div>
+  <div id="main">
+
+    <div id="home" class="pg on">
+      <div class="welcome-card">
+        <div class="welcome-name" id="welcomeNome">Ola! &#128075;</div>
+        <div class="welcome-sub" id="welcomeSub">Bem-vindo ao GERENCION QG &middot; Norte Fluminense</div>
+      </div>
+      <div class="module-grid">
+        <div class="module-card" onclick="irModulo('negociacao')"><div class="module-icon">&#129309;</div><div class="module-name">Negociacao</div><div class="module-desc">Solicitar aprovacao de preco</div></div>
+        <div class="module-card" onclick="irModulo('tipologia')"><div class="module-icon">&#128203;</div><div class="module-name">Mix por Segmento</div><div class="module-desc">Lista de produtos por tipo de cliente</div></div>
+        <div class="module-card" onclick="irModulo('catalogos')"><div class="module-icon">&#128218;</div><div class="module-name">Catalogos</div><div class="module-desc">Arcofoods e fornecedores</div></div>
+        <div class="module-card" onclick="irModulo('documentos')"><div class="module-icon">&#128196;</div><div class="module-name">Documentacao</div><div class="module-desc">Chaves PIX e documentos</div></div>
+        <div class="module-card" onclick="irModulo('contatos')"><div class="module-icon">&#128222;</div><div class="module-name">Contatos</div><div class="module-desc">Arcofoods e fornecedores</div></div>
+        <div class="module-card" onclick="irModulo('campanhas')"><div class="module-icon">&#127919;</div><div class="module-name">Campanhas</div><div class="module-desc">Promocoes e mecanicas ativas</div></div>
+      </div>
+    </div>
+
+    <div id="negociacao" class="pg">
+      <div class="ph"><div class="pt">Negociacao Comercial</div><div class="ps">Solicite aprovacao de condicao especial ao coordenador</div></div>
+      <div class="neg-vendedor"><span style="font-size:24px">&#128100;</span><div><div class="neg-vend-label">Vendedor</div><div class="neg-vend-nome" id="negVendedor">-</div></div></div>
+      <div class="card">
+        <div class="ct">Dados da Negociacao</div>
+        <div class="fg"><label class="fl">Cliente (Codigo + Nome)</label><input id="negCli" class="inp" placeholder="ex: 98728 - Roots Gastrobar Ltda"></div>
+        <div class="g2">
+          <div class="fg"><label class="fl">Concorrente</label><input id="negConc" class="inp" placeholder="ex: Nutimax"></div>
+          <div class="fg"><label class="fl">Total de SKUs</label><input id="negSkus" class="inp" placeholder="ex: 12 SKUs"></div>
+        </div>
+        <div class="fg"><label class="fl">Contexto da Negociacao</label><textarea id="negCtx" class="inp" placeholder="Explique o motivo da solicitacao..."></textarea></div>
+      </div>
+      <div class="card">
+        <div class="ct">Produtos em Negociacao</div>
+        <div id="negProdutos"><div class="empty"><div class="empty-icon">&#128230;</div>Clique em "+ Produto" para adicionar itens.</div></div>
+        <button class="btn bs" style="margin-top:10px;width:100%" onclick="addProduto()">+ Adicionar Produto</button>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+        <button class="btn bp" onclick="gerarNegociacao()" style="flex:1">&#10024; Gerar Proposta</button>
+        <button class="btn bs" onclick="limparNeg()">&#128465; Limpar</button>
+      </div>
+      <div id="negResultado"></div>
+    </div>
+
+    <div id="tipologia" class="pg">
+      <div id="tipoListagem">
+        <div class="ph"><div class="pt">Mix por Segmento</div><div class="ps">Selecione o tipo de estabelecimento para ver a lista de produtos</div></div>
+        <div class="tipo-grid">
+          <div class="tipo-card tc-rest" onclick="abrirTipo('rest')"><div class="tipo-icon">&#127869;</div><div class="tipo-name">Restaurante Tradicional</div><div class="tipo-count">43 produtos</div></div>
+          <div class="tipo-card tc-kilo" onclick="abrirTipo('kilo')"><div class="tipo-icon">&#9878;</div><div class="tipo-name">Restaurante por Kilo</div><div class="tipo-count">46 produtos</div></div>
+          <div class="tipo-card tc-pizza" onclick="abrirTipo('pizza')"><div class="tipo-icon">&#127829;</div><div class="tipo-name">Pizzarias</div><div class="tipo-count">41 produtos</div></div>
+          <div class="tipo-card tc-pada" onclick="abrirTipo('pada')"><div class="tipo-icon">&#129360;</div><div class="tipo-name">Padarias</div><div class="tipo-count">42 produtos</div></div>
+          <div class="tipo-card tc-hotel" onclick="abrirTipo('hotel')"><div class="tipo-icon">&#127970;</div><div class="tipo-name">Hoteleria</div><div class="tipo-count">47 produtos</div></div>
+          <div class="tipo-card tc-lanch" onclick="abrirTipo('lanch')"><div class="tipo-icon">&#129394;</div><div class="tipo-name">Lanchonetes</div><div class="tipo-count">36 produtos</div></div>
+        </div>
+      </div>
+      <div id="listaBox">
+        <div class="lista-header">
+          <button class="lista-back" onclick="voltarTipo()">&#8592; Voltar</button>
+          <div><div class="lista-title" id="listaTitulo">-</div><div class="lista-subtitle">Lista Basica de Produtos &middot; Arcofoods</div></div>
+        </div>
+        <div class="card">
+          <div class="produtos-grid" id="produtosGrid"></div>
+        </div>
+        <button class="btn bp" onclick="compartilharLista()" style="width:100%">&#128228; Compartilhar via WhatsApp</button>
+      </div>
+    </div>
+
+    <div id="catalogos" class="pg">
+      <div class="ph"><div class="pt">Catalogos</div><div class="ps">Arcofoods e parceiros fornecedores</div></div>
+      <div class="empty"><div class="empty-icon">&#128218;</div>Catalogos serao adicionados pelo coordenador em breve.</div>
+    </div>
+
+    <div id="documentos" class="pg">
+      <div class="ph"><div class="pt">Documentacao</div><div class="ps">Documentos e informacoes importantes</div></div>
+      <div class="doc-card">
+        <div class="doc-icon">&#128176;</div>
+        <div class="doc-info"><div class="doc-nome">Chaves PIX Arcofoods</div><div class="doc-desc">Dados para pagamento via PIX</div></div>
+        <button class="doc-btn" onclick="verPix()">Ver</button>
+      </div>
+      <div id="pixBox" style="display:none" class="card">
+        <div class="ct">Chaves PIX - Arcofoods</div>
+        <div style="font-size:14px;color:var(--t2);line-height:2.2">
+          <div style="padding:10px 0;border-bottom:1px solid var(--b)">Banco: <strong style="color:var(--t)">A ser preenchido pelo coordenador</strong></div>
+          <div style="padding:10px 0;border-bottom:1px solid var(--b)">CNPJ: <strong style="color:var(--t)">A ser preenchido</strong></div>
+          <div style="padding:10px 0;border-bottom:1px solid var(--b)">Chave PIX: <strong style="color:var(--am)">A ser preenchido</strong></div>
+          <div style="padding:10px 0">Favorecido: <strong style="color:var(--t)">Arcofoods</strong></div>
+        </div>
+        <button class="btn bs" style="margin-top:10px;width:100%" onclick="copiarPix()">&#128203; Copiar dados PIX</button>
+      </div>
+    </div>
+
+    <div id="contatos" class="pg">
+      <div class="ph"><div class="pt">Contatos</div><div class="ps">Arcofoods e fornecedores parceiros</div></div>
+      <div class="contato-card">
+        <div class="contato-empresa">Arcofoods - Coordenador Regional</div>
+        <div class="contato-nome">Leandro Felipe &middot; COOD 40</div>
+        <div class="contato-links">
+          <a href="https://wa.me/5521971922229" target="_blank" class="contato-btn cb-wpp">&#128172; WhatsApp</a>
+          <a href="mailto:leandro.felipe@arcofoods.com.br" class="contato-btn cb-email">&#9993; E-mail</a>
+        </div>
+      </div>
+      <div class="empty" style="padding:20px"><div class="empty-icon">&#128222;</div>Mais contatos serao adicionados pelo coordenador.</div>
+    </div>
+
+    <div id="campanhas" class="pg">
+      <div class="ph"><div class="pt">Campanhas</div><div class="ps">Promocoes e mecanicas ativas</div></div>
+      <div class="empty"><div class="empty-icon">&#127919;</div>Nenhuma campanha ativa no momento.<br>O coordenador atualizara em breve.</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var USUARIOS=[
+  {codigo:'COOD 40',nome:'Leandro Felipe',senha:'COOD40LEANDROFELIPE',tipo:'coordenador'},
+  {codigo:'RCA 017',nome:'Edimar Barbosa',senha:'RCA017EDIMARBARBOSA',tipo:'vendedor'},
+  {codigo:'RCA 081',nome:'Adson Bruno',senha:'RCA081ADSONBRUNO',tipo:'vendedor'},
+  {codigo:'RCA 118',nome:'Eduardo Rezende',senha:'RCA118EDUARDOREZENDE',tipo:'vendedor'},
+  {codigo:'RCA 122',nome:'Matheus Paiotti',senha:'RCA122MATHEUSPAIOTTI',tipo:'vendedor'},
+  {codigo:'RCA 167',nome:'Eduardo Britto',senha:'RCA167EDUARDOBRITTO',tipo:'vendedor'},
+  {codigo:'RCA 249',nome:'Vinicius Barao',senha:'RCA249VINICIUSBARAO',tipo:'vendedor'},
+  {codigo:'RCA 295',nome:'Cristian Vianna',senha:'RCA295CRISTIANVIANNA',tipo:'vendedor'},
+  {codigo:'CLT 429',nome:'Victor Hugo',senha:'CLT429VICTORHUGO',tipo:'vendedor'},
+  {codigo:'RCA 459',nome:'Carlos Bordignon',senha:'RCA459CARLOSBORDIGNON',tipo:'vendedor'}
+];
+
+var TIPOLOGIAS={
+  rest:{nome:'Restaurante Tradicional',icon:'Restaurante Tradicional',produtos:['Acucar Cristal/Mascavo','Adocante','Agua Mineral com/sem Gas','Alcool','Arroz Branco/Negro','Arroz Integral/Vermelho','Arroz Parborizado','Atomatado/Extrato/Molho','Azeite','Azeitona em Conserva','Bacalhau','Cafe em Po/Graos','Caldos/Temperos','Chas','Chocolate/Cobertura','Cerveja','Creme de Leite','Desengordurante','Desinfetante','Destilados','Detergente','Embalagens Delivery','Farinha Crua/de Rosca/de Trigo','Feijao Preto/Branco','Feijao Vermelho/Fradinho','Filme PVC','Guardanapo','Leite Integral/Desnatado','Leite Semidesnatado','Leite Condensado','Leite de Coco','Luva/Touca/Mascara','Maionese/Maionese Vegana','Margarina/Manteiga','Massas Semola/Com Ovos','Oleo de Algodao/Soja/Girassol','Queijo/Requeijao/Cream Cheese','Palmito em Conserva','Sabao em Po/Pastoso','Saco de Lixo','Toalha de Papel/Para Mesa','Vinho','Xarope']},
+  kilo:{nome:'Restaurante por Kilo',icon:'Restaurante por Kilo',produtos:['Acucar Cristal/Mascavo','Adocante','Agua Mineral com/sem Gas','Alcool','Arroz Branco/Negro','Arroz Integral/Vermelho','Arroz Parborizado','Atomatado/Extrato/Molho','Azeite','Azeitona em Conserva','Bacalhau','Batata Palha','Cafe em Po/Graos','Caldos/Temperos','Cerveja','Chas','Chocolate/Snacks','Cloro/Agua Sanitaria','Creme de Leite','Desengordurante','Desinfetante','Destilados','Detergente','Embalagens Delivery','Farinha Crua/de Rosca/de Trigo','Feijao Preto/Branco','Feijao Vermelho/Fradinho','Filme PVC','Guardanapo','Leite Integral/Desnatado','Leite Semidesnatado','Leite Condensado','Leite de Coco','Luva/Touca/Mascara','Maionese/Maionese Vegana','Margarina/Manteiga','Massas Semola/Com Ovos','Milho/Ervilha','Molho para Salada','Oleo de Algodao/Soja/Girassol','Queijo/Requeijao/Cream Cheese','Palmito em Conserva','Po para Refresco','Sabao em Po/Pastoso','Saco de Lixo','Toalha de Papel/Para Mesa']},
+  pizza:{nome:'Pizzarias',icon:'Pizzarias',produtos:['Agua Mineral com/sem Gas','Alcool','Alho Frito','Atomatado/Extrato/Molho','Atum em Conserva','Azeite','Azeitona em Conserva','Bacalhau','Carne Seca','Cerveja','Champignon','Chas','Chocolate/Cobertura','Coco Ralado','Confeitos','Creme de Leite','Desinfetante','Detergente','Doce de Leite','Embalagens Delivery','Farinha de Trigo','Fermento Biologico','Filme PVC','Guardanapo','Katchup/Mostarda/Maionese','Leite Integral/Desnatado','Leite Semidesnatado','Luva/Touca/Mascara','Margarina/Manteiga','Massas Semola/Com Ovos','Oleo de Algodao/Soja/Girassol','Oregano','Palmito em Conserva','Queijo Ralado','Queijo/Requeijao/Cream Cheese','Sabao em Po/Pastoso','Saches','Saco de Lixo','Toalha de Papel/Para Mesa','Tomate Pelado/Seco','Vinho']},
+  pada:{nome:'Padarias',icon:'Padarias',produtos:['Acucar Cristal/Mascavo','Adocante','Agua Mineral com/sem Gas','Alcool','Atomatado/Extrato/Molho','Azeite','Azeitona em Conserva','Cafe em Po/Graos','Caldos/Temperos','Cerveja','Chocolate/Cobertura','Coco Ralado','Creme de Leite','Destilados','Detergente','Desinfetante','Desengordurante','Doce de Leite','Embalagens Delivery','Farinha Crua/de Trigo','Fermento Biologico/Quimico','Filme PVC','Fruta Cristalizada/Seca','Guardanapo','Leite Integral/Desnatado','Leite Semidesnatado','Leite Condensado','Leite de Coco','Luva/Touca/Mascara','Maionese/Maionese Vegana','Margarina/Manteiga','Oleaginosas','Oleo de Algodao/Soja/Girassol','Palmito em Conserva','Polvilho','Queijo/Requeijao/Cream Cheese','Sabao em Po/Pastoso','Saches','Saco de Lixo','Suco/Refresco','Toalha de Papel/Para Mesa','Vinho']},
+  hotel:{nome:'Hoteleria',icon:'Hoteleria',produtos:['Achocolatado','Acucar Cristal/Mascavo','Adocante','Agua Mineral com/sem Gas','Agua de Coco','Alcool','Amaciante','Arroz Branco/Negro','Arroz Integral/Vermelho','Arroz Parborizado','Atomatado/Extrato/Molho','Azeite','Azeitona em Conserva','Batata Palha','Biscoito','Cafe em Po/Graos','Cerveja','Chas','Chocolate/Snacks','Creme de Leite','Desinfetante','Desengordurante','Destilados','Detergente','Espumante','Farinha Crua/de Rosca/de Trigo','Feijao Preto/Branco','Feijao Vermelho/Fradinho','Geleia','Leite Integral/Desnatado','Leite Semidesnatado','Leite Condensado','Leite de Coco','Luva/Touca/Mascara','Maionese/Maionese Vegana','Margarina/Manteiga','Mel','Oleo de Algodao/Soja/Girassol','Pao de Forma Tradicional/Integral','Queijo/Requeijao/Cream Cheese','Sabao em Po/Pastoso','Saches','Saco de Lixo','Suco','Suco de Tomate','Vinho','Xarope']},
+  lanch:{nome:'Lanchonetes',icon:'Lanchonetes',produtos:['Acucar Cristal/Mascavo','Achocolatado','Adocante','Agua Mineral com/sem Gas','Alcool','Arroz Branco/Negro','Arroz Parborizado','Batata Palha','Cafe em Po/Graos','Caldos/Temperos','Chocolate/Snacks','Desengordurante','Desinfetante','Detergente','Embalagens Delivery','Farinha de Trigo','Filme PVC','Feijao Preto/Branco','Feijao Vermelho/Fradinho','Gordura','Guardanapo','Katchup/Mostarda/Maionese','Leite Integral/Desnatado','Leite Semidesnatado','Luva/Touca/Mascara','Maionese/Maionese Vegana','Margarina/Manteiga','Oleo de Algodao/Soja/Girassol','Pao de Forma Tradicional/Integral','Requeijao/Queijo/Cream Cheese','Sabao em Po/Pastoso','Saches','Saco de Lixo','Suco/Refresco','Tapioca','Trigo para Kibe']}
+};
+
+var usuarioAtual=null;
+var negProdutosData=[];
+var UNIDADES=['kg','fardo','cx','bombona','bag','pct','unid','balde','lata','saco','galao','caixa'];
+var tipoAtual=null;
+
+function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');setTimeout(function(){el.classList.remove('on');},2800);}
+function n(v){return parseFloat((v||'0').toString().replace(',','.'))||0;}
+
+function fazerLogin(){
+  var codigo=document.getElementById('loginCode').value.trim().toUpperCase().replace(/\s+/g,'');
+  var senha=document.getElementById('loginPass').value.trim().toUpperCase().replace(/\s+/g,'');
+  var erro=document.getElementById('loginError');
+  erro.style.display='none';
+  var user=USUARIOS.find(function(u){
+    return u.codigo.replace(/\s+/g,'').toUpperCase()===codigo &&
+           u.senha.replace(/\s+/g,'').toUpperCase()===senha;
+  });
+  if(!user){erro.style.display='block';return;}
+  usuarioAtual=user;
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('topNome').textContent=user.nome;
+  document.getElementById('topCodigo').textContent=user.codigo;
+  document.getElementById('welcomeNome').textContent='Ola, '+user.nome.split(' ')[0]+'!';
+  document.getElementById('welcomeSub').textContent=user.codigo+' - Arcofoods - Norte Fluminense';
+  document.getElementById('negVendedor').textContent=user.codigo+' - '+user.nome;
+}
+
+document.getElementById('loginPass').addEventListener('keypress',function(e){if(e.key==='Enter')fazerLogin();});
+document.getElementById('loginCode').addEventListener('keypress',function(e){if(e.key==='Enter')document.getElementById('loginPass').focus();});
+
+function sair(){if(confirm('Deseja sair do sistema?')){usuarioAtual=null;document.getElementById('app').style.display='none';document.getElementById('loginScreen').style.display='flex';document.getElementById('loginCode').value='';document.getElementById('loginPass').value='';}}
+
+function ir(id,btn){
+  document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+  var pg=document.getElementById(id);if(pg)pg.classList.add('on');
+  document.querySelectorAll('.mb').forEach(function(b){b.classList.remove('on');});
+  if(btn)btn.classList.add('on');
+  window.scrollTo(0,0);
+}
+
+function irModulo(id){
+  var btn=Array.from(document.querySelectorAll('.mb')).find(function(b){return b.getAttribute('onclick')&&b.getAttribute('onclick').indexOf("'"+id+"'")>=0;});
+  ir(id,btn);
+}
+
+function abrirTipo(tipo){
+  tipoAtual=tipo;
+  var t=TIPOLOGIAS[tipo];if(!t)return;
+  document.getElementById('tipoListagem').style.display='none';
+  document.getElementById('listaBox').style.display='block';
+  document.getElementById('listaTitulo').textContent=t.nome;
+  var grid=document.getElementById('produtosGrid');
+  var prods=t.produtos.slice().sort();
+  grid.innerHTML=prods.map(function(p){return'<div class="produto-item"><div class="produto-dot"></div>'+p+'</div>';}).join('');
+}
+
+function voltarTipo(){tipoAtual=null;document.getElementById('tipoListagem').style.display='block';document.getElementById('listaBox').style.display='none';}
+
+function compartilharLista(){
+  if(!tipoAtual)return;
+  var t=TIPOLOGIAS[tipoAtual];
+  var prods=t.produtos.slice().sort();
+  var texto=t.nome+' - Lista Basica de Produtos - Arcofoods\n\n';
+  prods.forEach(function(p,i){texto+=(i+1)+'. '+p+'\n';});
+  texto+='\nGERENCION QG - Norte Fluminense';
+  window.open('https://wa.me/?text='+encodeURIComponent(texto),'_blank');
+}
+
+function addProduto(){
+  var idx=negProdutosData.length;
+  negProdutosData.push({nome:'',qtd:'',unid:'kg',tab:0,tabUnid:'kg',vend:0,ideal:0});
+  renderProdutos();
+}
+
+function renderProdutos(){
+  var el=document.getElementById('negProdutos');
+  if(!negProdutosData.length){el.innerHTML='<div class="empty"><div class="empty-icon">&#128230;</div>Clique em "+ Produto" para adicionar itens.</div>';return;}
+  var unidOpts=UNIDADES.map(function(u){return'<option value="'+u+'">'+u+'</option>';}).join('');
+  el.innerHTML=negProdutosData.map(function(p,i){
+    return'<div class="prod-box">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
+      '<div class="prod-title">Produto '+(i+1)+'</div>'+
+      '<button onclick="removerProduto('+i+')" style="background:var(--rd2);border:1px solid rgba(239,68,68,.2);color:var(--rd);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">x Remover</button>'+
+      '</div>'+
+      '<div class="fg"><label class="fl">Codigo + Nome do Produto</label>'+
+      '<input class="inp" id="np'+i+'nome" placeholder="ex: 66233 - Acucar Refinado 1kg" value="'+(p.nome||'')+'" onchange="salvarProd('+i+')"></div>'+
+      '<div class="g2" style="margin-bottom:12px">'+
+      '<div class="fg"><label class="fl">Quantidade</label><input class="inp" id="np'+i+'qtd" placeholder="ex: 10" value="'+(p.qtd||'')+'" oninput="calcProd('+i+')"></div>'+
+      '<div class="fg"><label class="fl">Unidade</label><select class="inp" id="np'+i+'unid" onchange="calcProd('+i+')">'+unidOpts+'</select></div>'+
+      '</div>'+
+      '<div class="g3">'+
+      '<div class="fg"><label class="fl">Preco Tabela R$</label><input class="inp" type="number" step="0.0001" id="np'+i+'tab" placeholder="0.0000" value="'+(p.tab||'')+'" oninput="calcProd('+i+')"></div>'+
+      '<div class="fg"><label class="fl">Preco Vendedor R$</label><input class="inp" type="number" step="0.0001" id="np'+i+'vend" placeholder="0.0000" value="'+(p.vend||'')+'" oninput="calcProd('+i+')"></div>'+
+      '<div class="fg"><label class="fl">Preco Ideal R$</label><input class="inp" type="number" step="0.0001" id="np'+i+'ideal" placeholder="0.0000" value="'+(p.ideal||'')+'" oninput="calcProd('+i+')"></div>'+
+      '</div>'+
+      '<div id="np'+i+'res" class="prod-result"></div>'+
+      '</div>';
+  }).join('');
+}
+
+function salvarProd(i){if(negProdutosData[i])negProdutosData[i].nome=document.getElementById('np'+i+'nome').value;}
+
+function calcProd(i){
+  if(!negProdutosData[i])return;
+  var qtd=parseFloat(document.getElementById('np'+i+'qtd').value)||0;
+  var tab=parseFloat(document.getElementById('np'+i+'tab').value)||0;
+  var vend=parseFloat(document.getElementById('np'+i+'vend').value)||0;
+  var ideal=parseFloat(document.getElementById('np'+i+'ideal').value)||0;
+  var unid=document.getElementById('np'+i+'unid').value;
+  var nome=document.getElementById('np'+i+'nome').value;
+  negProdutosData[i]={nome:nome,qtd:qtd,unid:unid,tab:tab,vend:vend,ideal:ideal};
+  if(!tab||!ideal||!qtd)return;
+  var dif=vend-ideal;
+  var pct=tab>0?(dif/tab)*100:0;
+  var total=dif*qtd;
+  negProdutosData[i].dif=dif;negProdutosData[i].pct=pct;negProdutosData[i].total=total;
+  var el=document.getElementById('np'+i+'res');
+  el.style.display='block';
+  el.innerHTML='Diferenca: <strong style="color:var(--rd)">R$ '+Math.abs(dif).toFixed(4)+'/'+unid+'</strong> &nbsp;|&nbsp; Investimento: <strong style="color:var(--am)">'+Math.abs(pct).toFixed(2)+'%</strong> &nbsp;|&nbsp; Total: <strong style="color:var(--rd)">R$ '+Math.abs(total).toFixed(2)+'</strong>';
+}
+
+function removerProduto(i){negProdutosData.splice(i,1);renderProdutos();}
+
+function gerarNegociacao(){
+  if(!usuarioAtual){toast('Voce precisa estar logado.');return;}
+  var cli=document.getElementById('negCli').value.trim();
+  if(!cli){toast('Informe o cliente.');return;}
+  if(!negProdutosData.length){toast('Adicione pelo menos um produto.');return;}
+  var conc=document.getElementById('negConc').value.trim();
+  var skus=document.getElementById('negSkus').value.trim();
+  var ctx=document.getElementById('negCtx').value.trim();
+  var prods=negProdutosData.map(function(p,i){
+    try{var qtd=parseFloat(document.getElementById('np'+i+'qtd').value)||p.qtd||0,tab=parseFloat(document.getElementById('np'+i+'tab').value)||p.tab||0,vend=parseFloat(document.getElementById('np'+i+'vend').value)||p.vend||0,ideal=parseFloat(document.getElementById('np'+i+'ideal').value)||p.ideal||0,unid=document.getElementById('np'+i+'unid').value||p.unid,nome=document.getElementById('np'+i+'nome').value||p.nome||'',dif=vend-ideal,pct=tab>0?(dif/tab)*100:0,total=dif*qtd;return{nome:nome,qtd:qtd,unid:unid,tab:tab,vend:vend,ideal:ideal,dif:dif,pct:pct,total:total};}catch(e){return p;}
+  });
+  var totalGeral=prods.reduce(function(s,p){return s+Math.abs(p.total||0);},0);
+  var pctMedio=prods.length>0?prods.reduce(function(s,p){return s+Math.abs(p.pct||0);},0)/prods.length:0;
+  var hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  var vendedor=usuarioAtual.codigo+' - '+usuarioAtual.nome;
+  var itens=prods.map(function(p){return p.nome;}).join(', ');
+  var just='Solicito aprovacao de condicao especial para o cliente '+cli+'.';
+  if(ctx)just+=' '+ctx.charAt(0).toUpperCase()+ctx.slice(1)+(ctx.endsWith('.')?'':'.');
+  if(conc)just+=' Concorrente: '+conc+'.';
+  if(skus)just+=' Pedido: '+skus+'.';
+  just+=' Itens: '+itens+'. Investimento medio: '+pctMedio.toFixed(2)+'% sobre tabela (R$ '+totalGeral.toFixed(2)+' total). Solicito aprovacao urgente para nao perder o pedido.';
+  var html='<div style="background:var(--s2);border:1px solid var(--b);border-radius:12px;padding:18px;display:block">';
+  html+='<div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--am);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--b)">SOLICITACAO DE NEGOCIACAO COMERCIAL</div>';
+  html+='<div style="font-size:12px;color:var(--t2);margin-bottom:12px">'+hoje+' - Arcofoods - Norte Fluminense</div>';
+  html+='<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--t2)">Vendedor</div><div style="font-size:16px;font-weight:700;color:var(--am)">'+vendedor+'</div></div>';
+  html+='<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--t2)">Cliente</div><div style="font-size:15px;font-weight:600;color:var(--t)">'+cli+'</div></div>';
+  html+='<div style="background:var(--s1);border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--t2);line-height:1.7">'+just+'</div>';
+  prods.forEach(function(p){
+    html+='<div style="border:1px solid var(--b);border-radius:8px;padding:14px;margin-bottom:10px">';
+    html+='<div style="font-weight:700;color:var(--t);margin-bottom:10px;font-size:15px">'+p.nome+'</div>';
+    html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px">';
+    html+=cN('Qtd',p.qtd+' '+p.unid,'var(--t)');
+    html+=cN('P. Tabela','R$ '+p.tab.toFixed(4),'var(--t2)');
+    html+=cN('P. Vendedor','R$ '+p.vend.toFixed(4),'var(--am)');
+    html+=cN('P. Ideal','R$ '+p.ideal.toFixed(4),'var(--gn)');
+    html+=cN('Invest. Unit.','R$ '+Math.abs(p.dif||0).toFixed(4),'var(--rd)');
+    html+=cN('Total Invest.','R$ '+Math.abs(p.total||0).toFixed(2),'var(--rd)');
+    html+='</div></div>';
+  });
+  html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;text-align:center">';
+  html+='<div style="background:var(--am2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">Produtos</div><div style="font-size:22px;font-weight:700;color:var(--am)">'+prods.length+'</div></div>';
+  html+='<div style="background:var(--am2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">% Medio</div><div style="font-size:22px;font-weight:700;color:var(--am)">'+pctMedio.toFixed(2)+'%</div></div>';
+  html+='<div style="background:var(--rd2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">Investimento</div><div style="font-size:20px;font-weight:700;color:var(--rd)">R$ '+totalGeral.toFixed(2)+'</div></div>';
+  html+='</div>';
+  var msg='NEGOCIACAO COMERCIAL - GERENCION QG\n'+hoje+'\nVendedor: '+vendedor+'\nCliente: '+cli+'\n\n'+just;
+  var wpp='https://wa.me/5521971922229?text='+encodeURIComponent(msg);
+  var email='mailto:leandro.felipe@arcofoods.com.br?subject=Negociacao - '+encodeURIComponent(cli)+'&body='+encodeURIComponent(msg);
+  html+='<div style="display:flex;gap:10px;flex-wrap:wrap">';
+  html+='<a href="'+wpp+'" target="_blank" style="flex:1;padding:12px;background:var(--am);border-radius:10px;color:#0A0A0A;font-weight:700;font-size:14px;text-decoration:none;text-align:center;display:block">&#128172; Enviar WhatsApp</a>';
+  html+='<a href="'+email+'" style="flex:1;padding:12px;background:var(--s1);border:1px solid var(--b2);border-radius:10px;color:var(--t2);font-weight:700;font-size:14px;text-decoration:none;text-align:center;display:block">&#9993; Enviar E-mail</a>';
+  html+='</div></div>';
+  document.getElementById('negResultado').innerHTML=html;
+  toast('Proposta gerada! Envie ao coordenador.');
+  window.scrollTo(0,document.getElementById('negResultado').offsetTop-20);
+}
+
+function cN(lbl,val,cor){return'<div style="background:var(--s1);border-radius:8px;padding:8px;text-align:center"><div style="color:var(--t3);font-size:10px;text-transform:uppercase;margin-bottom:3px">'+lbl+'</div><div style="font-weight:700;color:'+cor+';font-size:13px">'+val+'</div></div>';}
+
+function limparNeg(){if(confirm('Limpar todos os dados?')){negProdutosData=[];['negCli','negConc','negSkus','negCtx'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});renderProdutos();document.getElementById('negResultado').innerHTML='';toast('Negociacao limpa!');}}
+
+function verPix(){var box=document.getElementById('pixBox');box.style.display=box.style.display==='none'?'block':'none';}
+
+function copiarPix(){var texto='Dados PIX Arcofoods\nA ser preenchido pelo coordenador';navigator.clipboard&&navigator.clipboard.writeText(texto).then(function(){toast('Dados PIX copiados!');});}
+</script>
+</body>
+</html>

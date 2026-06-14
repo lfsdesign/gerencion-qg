@@ -326,16 +326,56 @@ var tipoAtual=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');setTimeout(function(){el.classList.remove('on');},2800);}
 function n(v){return parseFloat((v||'0').toString().replace(',','.'))||0;}
 
+// Gera ID unico do dispositivo e salva no localStorage
+function getDeviceId(){
+  var id=localStorage.getItem('QG_DEVICE_ID');
+  if(!id){
+    id='DEV_'+Math.random().toString(36).substr(2,12).toUpperCase()+'_'+Date.now();
+    localStorage.setItem('QG_DEVICE_ID',id);
+  }
+  return id;
+}
+
 function fazerLogin(){
   var codigo=document.getElementById('loginCode').value.trim().toUpperCase().replace(/\s+/g,'');
   var senha=document.getElementById('loginPass').value.trim().toUpperCase().replace(/\s+/g,'');
   var erro=document.getElementById('loginError');
   erro.style.display='none';
+
   var user=USUARIOS.find(function(u){
     return u.codigo.replace(/\s+/g,'').toUpperCase()===codigo &&
            u.senha.replace(/\s+/g,'').toUpperCase()===senha;
   });
+
   if(!user){erro.style.display='block';return;}
+
+  // Coordenador tem acesso livre em qualquer dispositivo
+  if(user.tipo==='coordenador'){
+    entrarSistema(user);
+    return;
+  }
+
+  // Verificar dispositivo registrado
+  var deviceId=getDeviceId();
+  var chave='QG_DEVICE_'+user.codigo.replace(/\s+/g,'');
+  var dispositivoRegistrado=localStorage.getItem(chave);
+
+  if(!dispositivoRegistrado){
+    // Primeiro acesso — registra o dispositivo automaticamente
+    localStorage.setItem(chave, deviceId);
+    entrarSistema(user);
+    toast('Dispositivo registrado com sucesso!');
+  } else if(dispositivoRegistrado===deviceId){
+    // Mesmo dispositivo — acesso permitido
+    entrarSistema(user);
+  } else {
+    // Dispositivo diferente — acesso bloqueado
+    erro.textContent='Acesso negado. Este login ja esta registrado em outro dispositivo. Fale com o coordenador.';
+    erro.style.display='block';
+  }
+}
+
+function entrarSistema(user){
   usuarioAtual=user;
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='block';
@@ -349,7 +389,22 @@ function fazerLogin(){
 document.getElementById('loginPass').addEventListener('keypress',function(e){if(e.key==='Enter')fazerLogin();});
 document.getElementById('loginCode').addEventListener('keypress',function(e){if(e.key==='Enter')document.getElementById('loginPass').focus();});
 
-function sair(){if(confirm('Deseja sair do sistema?')){usuarioAtual=null;document.getElementById('app').style.display='none';document.getElementById('loginScreen').style.display='flex';document.getElementById('loginCode').value='';document.getElementById('loginPass').value='';}}
+function sair(){
+  if(confirm('Deseja sair do sistema?')){
+    usuarioAtual=null;
+    document.getElementById('app').style.display='none';
+    document.getElementById('loginScreen').style.display='flex';
+    document.getElementById('loginCode').value='';
+    document.getElementById('loginPass').value='';
+  }
+}
+
+// Funcao exclusiva do coordenador para resetar dispositivo de um vendedor
+function resetarDispositivo(codigoVendedor){
+  var chave='QG_DEVICE_'+codigoVendedor.replace(/\s+/g,'');
+  localStorage.removeItem(chave);
+  toast('Dispositivo de '+codigoVendedor+' resetado! Ele pode logar em novo celular.');
+}}
 
 function ir(id,btn){
   document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});

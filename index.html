@@ -361,15 +361,15 @@ function fazerLogin(){
   var dispositivoRegistrado=localStorage.getItem(chave);
 
   if(!dispositivoRegistrado){
-    // Primeiro acesso — registra o dispositivo automaticamente
+    // Primeiro acesso &#8212; registra o dispositivo automaticamente
     localStorage.setItem(chave, deviceId);
     entrarSistema(user);
     toast('Dispositivo registrado com sucesso!');
   } else if(dispositivoRegistrado===deviceId){
-    // Mesmo dispositivo — acesso permitido
+    // Mesmo dispositivo &#8212; acesso permitido
     entrarSistema(user);
   } else {
-    // Dispositivo diferente — acesso bloqueado
+    // Dispositivo diferente &#8212; acesso bloqueado
     erro.textContent='Acesso negado. Este login ja esta registrado em outro dispositivo. Fale com o coordenador.';
     erro.style.display='block';
   }
@@ -404,7 +404,7 @@ function resetarDispositivo(codigoVendedor){
   var chave='QG_DEVICE_'+codigoVendedor.replace(/\s+/g,'');
   localStorage.removeItem(chave);
   toast('Dispositivo de '+codigoVendedor+' resetado! Ele pode logar em novo celular.');
-}}
+}
 
 function ir(id,btn){
   document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});

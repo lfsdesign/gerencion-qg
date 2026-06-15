@@ -572,7 +572,7 @@ function salvarContato(){
   }).catch(function(){toast('Erro ao salvar.');});
 }
 
-function abrirEmail(el){window.location.href="mailto:"+el.getAttribute("data-email");}
+function abrirEmail(el){var e=el.getAttribute("data-email");if(e)window.open("mailto:"+e);}
 function excluirContato(btn){
   var id=btn.getAttribute('data-id');
   if(!id){return;}

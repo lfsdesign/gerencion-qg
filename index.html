@@ -420,11 +420,16 @@ function irM(id){var btn=Array.from(document.querySelectorAll('.mb')).find(funct
 
 function abrirTipo(t){tipoAtual=t;var tp=TIPOS[t];if(!tp)return;document.getElementById('tipoList').style.display='none';document.getElementById('listaBox').style.display='block';document.getElementById('listaTitulo').textContent=tp.n;var g=document.getElementById('prodGrid');var ps=tp.p.slice().sort();g.innerHTML=ps.map(function(p){return'<div class="pitem"><div class="pdot"></div>'+p+'</div>';}).join('');}
 function voltarTipo(){tipoAtual=null;document.getElementById('tipoList').style.display='block';document.getElementById('listaBox').style.display='none';}
-function compartilhar(){if(!tipoAtual)return;var t=TIPOS[tipoAtual];var ps=t.p.slice().sort();var txt=t.n+' - Lista Basica de Produtos - Arcofoods
-
-';ps.forEach(function(p,i){txt+=(i+1)+'. '+p+'
-';});txt+='
-GERENCION QG - Norte Fluminense';window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');}
+function compartilhar(){
+  if(!tipoAtual)return;
+  var t=TIPOS[tipoAtual];
+  var ps=t.p.slice().sort();
+  var ls=[t.n+' - Lista Basica de Produtos - Arcofoods',''];
+  ps.forEach(function(p,i){ls.push((i+1)+'. '+p);});
+  ls.push('');
+  ls.push('GERENCION QG - Norte Fluminense');
+  window.open('https://wa.me/?text='+encodeURIComponent(ls.join('\n')),'_blank');
+}
 
 function gerarIA(){
   var cli=document.getElementById('negCli').value.trim();

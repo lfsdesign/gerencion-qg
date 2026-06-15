@@ -309,7 +309,7 @@ textarea.inp{resize:vertical;min-height:80px;}
         <div class="contnm">Leandro Felipe &middot; COOD 40</div>
         <div class="contlinks">
           <a href="https://wa.me/5521971922229?text=Ola%20Leandro!" target="_blank" class="cwpp">&#128172; WhatsApp</a>
-          <a href="mailto:leandro.felipe@arcofoods.com.br" class="cemail">&#9993; E-mail</a>
+          <a href="mailto:leandro.felipe@arcofoods.com.br" class="cemail" onclick="window.location.href='mailto:'+this.getAttribute('data-email')">&#9993; E-mail</a>
         </div>
       </div>
       <div id="listaContatos"><div class="loading">Carregando contatos...</div></div>
@@ -555,7 +555,7 @@ function carregarContatos(){
     el.innerHTML=data.map(function(c){
       var delBtn=eu&&eu.t==='coord'?'<button class="cdel" onclick="excluirContato(this)" data-id="'+c.id+'">&#128465;</button>':'';
       var wpp=c.telefone?'<a href="https://wa.me/55'+c.telefone.replace(/\D/g,'')+'" target="_blank" class="cwpp">&#128172; WhatsApp</a>':'';
-      var em=c.email?'<a href="mailto:'+c.email+'" class="cemail">&#9993; E-mail</a>':'';
+      var em=c.email?'<a href="mailto:'+c.email+'" class="cemail" onclick="window.location.href='mailto:'+this.getAttribute('data-email')">&#9993; E-mail</a>':'';
       return '<div class="contcard"><div class="contep">'+c.empresa+'</div>'+(c.nome?'<div class="contnm">'+c.nome+'</div>':'')+'<div class="contlinks">'+wpp+em+delBtn+'</div></div>';
     }).join('');
   }).catch(function(){document.getElementById('listaContatos').innerHTML='<div class="empty">Erro ao carregar contatos.</div>';});

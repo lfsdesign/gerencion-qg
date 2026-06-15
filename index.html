@@ -553,10 +553,10 @@ function carregarContatos(){
     var el=document.getElementById('listaContatos');
     if(!data.length){el.innerHTML='<div class="empty"><div class="eico">&#128222;</div>Nenhum contato cadastrado ainda.</div>';return;}
     el.innerHTML=data.map(function(c){
-      var del=eu&&eu.t==='coord'?'<button class="cdel" onclick="excluirContato(''+c.id+'')">&#128465;</button>':'';
+      var delBtn=eu&&eu.t==='coord'?'<button class="cdel" onclick="excluirContato(this)" data-id="'+c.id+'">&#128465;</button>':'';
       var wpp=c.telefone?'<a href="https://wa.me/55'+c.telefone.replace(/\D/g,'')+'" target="_blank" class="cwpp">&#128172; WhatsApp</a>':'';
       var em=c.email?'<a href="mailto:'+c.email+'" class="cemail">&#9993; E-mail</a>':'';
-      return'<div class="contcard"><div class="contep">'+c.empresa+'</div>'+(c.nome?'<div class="contnm">'+c.nome+'</div>':'')+'<div class="contlinks">'+wpp+em+del+'</div></div>';
+      return '<div class="contcard"><div class="contep">'+c.empresa+'</div>'+(c.nome?'<div class="contnm">'+c.nome+'</div>':'')+'<div class="contlinks">'+wpp+em+delBtn+'</div></div>';
     }).join('');
   }).catch(function(){document.getElementById('listaContatos').innerHTML='<div class="empty">Erro ao carregar contatos.</div>';});
 }
@@ -572,7 +572,9 @@ function salvarContato(){
   }).catch(function(){toast('Erro ao salvar.');});
 }
 
-function excluirContato(id){
+function excluirContato(btn){
+  var id=btn.getAttribute('data-id');
+  if(!id){return;}
   if(!confirm('Excluir este contato?'))return;
   supaFetch('contatos?id=eq.'+id,{method:'DELETE'}).then(function(){toast('Contato excluido!');carregarContatos();}).catch(function(){toast('Erro ao excluir.');});
 }
@@ -582,9 +584,9 @@ function carregarCampanhas(){
     var el=document.getElementById('listaCampanhas');
     if(!data.length){el.innerHTML='<div class="empty"><div class="eico">&#127919;</div>Nenhuma campanha ativa no momento.</div>';return;}
     el.innerHTML=data.map(function(c){
-      var del=eu&&eu.t==='coord'?'<button onclick="excluirCampanha(''+c.id+'')" style="margin-top:10px;padding:6px 12px;background:var(--rd2);border:1px solid rgba(239,68,68,.2);color:var(--rd);border-radius:8px;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">&#128465; Excluir</button>':'';
+      var delBtn=eu&&eu.t==='coord'?'<button onclick="excluirCampanha(this)" data-id="'+c.id+'" style="margin-top:10px;padding:6px 12px;background:var(--rd2);border:1px solid rgba(239,68,68,.2);color:var(--rd);border-radius:8px;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">&#128465; Excluir</button>':'';
       var img=c.imagem_url?'<img src="'+c.imagem_url+'" class="campimg">':'';
-      return'<div class="campcard">'+img+'<div class="campbody"><div class="camptag">CAMPANHA ATIVA</div><div class="camptitle">'+c.titulo+'</div>'+(c.descricao?'<div class="camptext">'+c.descricao+'</div>':'')+(c.mecanica?'<div class="campmec"><strong>Mecanica:</strong> '+c.mecanica+'</div>':'')+del+'</div></div>';
+      return '<div class="campcard">'+img+'<div class="campbody"><div class="camptag">CAMPANHA ATIVA</div><div class="camptitle">'+c.titulo+'</div>'+(c.descricao?'<div class="camptext">'+c.descricao+'</div>':'')+(c.mecanica?'<div class="campmec"><strong>Mecanica:</strong> '+c.mecanica+'</div>':'')+delBtn+'</div></div>';
     }).join('');
   }).catch(function(){document.getElementById('listaCampanhas').innerHTML='<div class="empty">Erro ao carregar campanhas.</div>';});
 }
@@ -615,7 +617,9 @@ function _salvarCampanhaDB(dados){
   }).catch(function(){toast('Erro ao salvar campanha.');});
 }
 
-function excluirCampanha(id){
+function excluirCampanha(btn){
+  var id=btn.getAttribute('data-id');
+  if(!id)return;
   if(!confirm('Excluir esta campanha?'))return;
   supaFetch('campanhas?id=eq.'+id,{method:'DELETE'}).then(function(){toast('Campanha excluida!');carregarCampanhas();}).catch(function(){toast('Erro ao excluir.');});
 }

@@ -264,7 +264,7 @@ select.inp{cursor:pointer;}
         <button class="cbtn" onclick="verPix()">Ver</button>
       </div>
       <div id="pixBox" style="display:none" class="card">
-        <img src="https://raw.githubusercontent.com/lfsdesign/gerencion-qg/main/Design%20sem%20nome%20(64).png" style="width:100%;border-radius:10px;margin-bottom:14px;pointer-events:none" oncontextmenu="return false">
+        <img src="https://raw.githubusercontent.com/lfsdesign/gerencion-qg/main/Design%20sem%20nome%20(64).png" style="width:100%;border-radius:10px;margin-bottom:14px;pointer-events:none">
         <div style="font-size:14px;color:var(--t2);line-height:2.2">
           <div style="padding:8px 0;border-bottom:1px solid var(--b)">Tipo de Chave: <strong style="color:var(--t)">CNPJ</strong></div>
           <div style="padding:8px 0;border-bottom:1px solid var(--b)">Chave PIX: <strong style="color:var(--am)">08.365.731/0001-42</strong></div>
@@ -272,8 +272,8 @@ select.inp{cursor:pointer;}
           <div style="padding:8px 0;border-bottom:1px solid var(--b)">Agencia: <strong style="color:var(--t)">0530</strong></div>
           <div style="padding:8px 0">C/c: <strong style="color:var(--t)">55341-1</strong></div>
         </div>
-        <div style="display:flex;gap:10px;margin-top:14px">
-          <button class="btn bp" onclick="copiarPix()" style="flex:1">Copiar Dados</button>
+        <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+          <a href="https://raw.githubusercontent.com/lfsdesign/gerencion-qg/main/Design%20sem%20nome%20(64).png" download="PIX-Arcofoods.png" class="btn bs" style="flex:1;text-decoration:none;justify-content:center">Salvar Imagem</a> <button class="btn bp" onclick="copiarPix()" style="flex:1">Copiar Dados</button>
           <a href="https://wa.me/?text=Dados%20Bancarios%20Arcofoods%0ATipo%20de%20Chave%3A%20CNPJ%0AChave%20PIX%3A%2008.365.731%2F0001-42%0ABanco%3A%20Itau%0AAgencia%3A%200530%0AC%2Fc%3A%2055341-1" target="_blank" class="btn bg" style="flex:1;text-decoration:none;justify-content:center">WhatsApp</a>
         </div>
       </div>

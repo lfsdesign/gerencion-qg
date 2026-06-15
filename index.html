@@ -205,6 +205,11 @@ select.inp{cursor:pointer;}
         <button class="btn bp" onclick="gerarNeg()" style="flex:1">Gerar Proposta</button>
         <button class="btn bs" onclick="limparNeg()">Limpar</button>
       </div>
+      <div id="iaBox" style="display:none;background:var(--s1);border:1px solid rgba(99,102,241,0.3);border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-size:10px;color:#818cf8;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">JUSTIFICATIVA GERADA PELA IA</div>
+        <div id="iaText" style="font-size:13px;color:var(--t2);line-height:1.7"></div>
+        <button onclick="usarIA()" style="margin-top:10px;width:100%;padding:8px;background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.3);border-radius:8px;color:#818cf8;font-weight:600;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">Usar esta justificativa</button>
+      </div>
       <div id="negRes"></div>
     </div>
 
@@ -538,7 +543,7 @@ function gerarNeg(){
   h+='</div>';
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
   h+='<button onclick="gerarIA()" style="width:100%;padding:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif;margin-bottom:8px">&#10024; Gerar Justificativa com IA</button>';
-  h+='<div id="iaBox" style="display:none;background:var(--s1);border:1px solid rgba(99,102,241,0.3);border-radius:10px;padding:14px;margin-bottom:8px"><div style="font-size:10px;color:#818cf8;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">JUSTIFICATIVA GERADA PELA IA</div><div id="iaText" style="font-size:13px;color:var(--t2);line-height:1.7"></div><button onclick="usarIA()" style="margin-top:10px;width:100%;padding:8px;background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.3);border-radius:8px;color:#818cf8;font-weight:600;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">Usar esta justificativa</button></div>';
+
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
   h+='<button onclick="tirarPrint()" style="flex:1;padding:12px;background:var(--am);border:none;border-radius:10px;color:#0A0A0A;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#128247; Salvar Imagem</button>';
   h+='<button onclick="envWpp()" style="flex:1;padding:12px;background:var(--gn);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">WhatsApp</button>';
@@ -630,10 +635,13 @@ function gerarIA(){
   var iaBox=document.getElementById('iaBox');
   var iaText=document.getElementById('iaText');
   if(!iaBox||!iaText)return;
-  iaText.innerHTML='<div style="color:#818cf8;text-align:center;padding:10px">Gerando justificativa... aguarde...</div>';
+  iaText.textContent='Gerando justificativa com IA... aguarde...';
   iaBox.style.display='block';
   var itens=d.ps.map(function(p){return p.n+' (invest: '+Math.abs(p.pct||0).toFixed(2)+'% - R$ '+Math.abs(p.tot||0).toFixed(2)+')';}).join(', ');
-  var prompt='Escreva uma justificativa comercial CURTA e OBJETIVA (maximo 3 linhas) para aprovacao de preco especial. Dados: Cliente: '+d.cli+'. Itens: '+itens+'. Investimento medio: '+d.med.toFixed(2)+'% (R$ '+d.tot.toFixed(2)+'). '+(d.conc?'Concorrente: '+d.conc+'. ':'')+' (d.ctx?Contexto: '+d.ctx+'. ':'')+'Seja direto, profissional e sem repeticoes. Nao use saudacoes.';
+  var extras='';
+  if(d.conc)extras+='Concorrente: '+d.conc+'. ';
+  if(d.ctx)extras+='Contexto: '+d.ctx+'. ';
+  var prompt='Escreva uma justificativa comercial CURTA e OBJETIVA (maximo 3 linhas) para aprovacao de preco especial. Cliente: '+d.cli+'. Itens: '+itens+'. Investimento medio: '+d.med.toFixed(2)+'% (R$ '+d.tot.toFixed(2)+'). '+extras+'Seja direto, profissional e sem repeticoes. Nao use saudacoes.';
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'Content-Type':'application/json'},

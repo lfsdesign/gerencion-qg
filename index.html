@@ -327,7 +327,7 @@ var TIPOLOGIAS={
   lanch:{nome:'Lanchonetes',icon:'Lanchonetes',produtos:['Acucar Cristal/Mascavo','Achocolatado','Adocante','Agua Mineral com/sem Gas','Alcool','Arroz Branco/Negro','Arroz Parborizado','Batata Palha','Cafe em Po/Graos','Caldos/Temperos','Chocolate/Snacks','Desengordurante','Desinfetante','Detergente','Embalagens Delivery','Farinha de Trigo','Filme PVC','Feijao Preto/Branco','Feijao Vermelho/Fradinho','Gordura','Guardanapo','Katchup/Mostarda/Maionese','Leite Integral/Desnatado','Leite Semidesnatado','Luva/Touca/Mascara','Maionese/Maionese Vegana','Margarina/Manteiga','Oleo de Algodao/Soja/Girassol','Pao de Forma Tradicional/Integral','Requeijao/Queijo/Cream Cheese','Sabao em Po/Pastoso','Saches','Saco de Lixo','Suco/Refresco','Tapioca','Trigo para Kibe']}
 };
 
-var usuarioAtual=null;
+var usuarioAtual=null;     localStorage.removeItem('QG_USER_LOGADO');     localStorage.removeItem('QG_USER_LOGADO');
 var negProdutosData=[];
 var UNIDADES=['kg','fardo','cx','bombona','bag','pct','unid','balde','lata','saco','galao','caixa'];
 var tipoAtual=null;
@@ -384,7 +384,7 @@ function fazerLogin(){
   }
 }
 
-function entrarSistema(user){
+function entrarSistema(user){   localStorage.setItem('QG_USER_LOGADO', JSON.stringify({codigo:user.codigo,nome:user.nome,tipo:user.tipo}));   localStorage.setItem('QG_USER_LOGADO', JSON.stringify({codigo:user.codigo,nome:user.nome,tipo:user.tipo}));
   usuarioAtual=user;
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='block';
@@ -395,12 +395,12 @@ function entrarSistema(user){
   document.getElementById('negVendedor').textContent=user.codigo+' - '+user.nome;
 }
 
-document.getElementById('loginPass').addEventListener('keypress',function(e){if(e.key==='Enter')fazerLogin();});
+document.getElementById('loginPass').addEventListener('keypress',function(e){if(e.key==='Enter')fazerLogin();}); (function(){   var salvo=localStorage.getItem('QG_USER_LOGADO');   if(salvo){     try{       var user=JSON.parse(salvo);       var found=USUARIOS.find(function(u){return u.codigo===user.codigo;});       if(found){entrarSistema(found);}     }catch(e){}   } })();
 document.getElementById('loginCode').addEventListener('keypress',function(e){if(e.key==='Enter')document.getElementById('loginPass').focus();});
 
 function sair(){
   if(confirm('Deseja sair do sistema?')){
-    usuarioAtual=null;
+    usuarioAtual=null;     localStorage.removeItem('QG_USER_LOGADO');
     document.getElementById('app').style.display='none';
     document.getElementById('loginScreen').style.display='flex';
     document.getElementById('loginCode').value='';

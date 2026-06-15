@@ -562,8 +562,8 @@ function carregarContatos(){
     el.innerHTML='<div class="cont-grid">'+data.map(function(c){
       var delBtn=eu&&eu.t==='coord'?'<button class="cdel" onclick="excluirContato(this)" data-id="'+c.id+'">&#128465;</button>':'';
       var wpp=c.telefone?'<a href="https://wa.me/55'+c.telefone.replace(/\D/g,'')+'" target="_blank" class="cwpp">&#128172; WhatsApp</a>':'';
-      var em=c.email?'<a href="mailto:'+c.email+'" class="cemail" onclick="window.location.href='mailto:'+this.getAttribute('data-email')">&#9993; E-mail</a>':'';
-      var tag=c.tipo==='fornecedor'?'<span class="ctag-for">Fornecedor</span>':'<span class="ctag-arc">Arcofoods</span>';return '<div class="contcard">'+tag+'<div class="contep">'+c.empresa+'</div>'+(c.nome?'<div class="contnm">'+c.nome+'</div>':'')+'<div class="contlinks">'+wpp+em+delBtn+'</div></div>';
+
+      var tag=c.tipo==='fornecedor'?'<span class="ctag-for">Fornecedor</span>':'<span class="ctag-arc">Arcofoods</span>';return '<div class="contcard">'+tag+'<div class="contep">'+c.empresa+'</div>'+(c.nome?'<div class="contnm">'+c.nome+'</div>':'')+'<div class="contlinks">'+wpp+delBtn+'</div></div>';
     }).join('')+'</div>';
   }).catch(function(){document.getElementById('listaContatos').innerHTML='<div class="empty">Erro ao carregar contatos.</div>';});
 }

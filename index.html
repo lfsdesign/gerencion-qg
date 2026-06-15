@@ -10,6 +10,7 @@
 <title>GERENCION QG</title>
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -247,12 +248,12 @@ select.inp{cursor:pointer;}
       <div class="ccard">
         <div class="cicon">&#127869;</div>
         <div class="cinfo"><div class="cnome">Catalogo Cargill Food Service 2025</div><div class="cdesc">Produtos para o segmento food service</div></div>
-        <a href="https://simplebooklet.com/catalogodeprodutoscrgl_food_service2025" target="_blank" class="cbtn">Abrir</a>
+        <a href="https://drive.google.com/file/d/1QQCHKAls9QFXax9FCtQyiHvmW6XpI96P/preview" target="_blank" class="cbtn">Abrir</a>
       </div>
       <div class="ccard">
         <div class="cicon">&#128172;</div>
         <div class="cinfo"><div class="cnome">Compartilhar Cargill</div><div class="cdesc">Enviar catalogo Cargill ao cliente</div></div>
-        <a href="https://wa.me/?text=Segue%20o%20Catalogo%20Cargill%20Food%20Service%202025%3A%20https%3A%2F%2Fsimplebooklet.com%2Fcatalogodeprodutoscrgl_food_service2025" target="_blank" class="cbtn cbtn-gn">WhatsApp</a>
+        <a href="https://wa.me/?text=Segue%20o%20Catalogo%20Cargill%20Food%20Service%202025%3A%20https%3A%2F%2Fdrive.google.com%2Ffile%2Fd%2F1QQCHKAls9QFXax9FCtQyiHvmW6XpI96P%2Fview" target="_blank" class="cbtn cbtn-gn">WhatsApp</a>
       </div>
     </div>
 
@@ -536,9 +537,13 @@ function gerarNeg(){
   h+='<div style="background:var(--rd2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">Investimento</div><div style="font-size:20px;font-weight:700;color:var(--rd)">R$ '+tot.toFixed(2)+'</div></div>';
   h+='</div>';
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
-  h+='<button onclick="abrirPDF()" style="flex:1;padding:12px;background:var(--am);border:none;border-radius:10px;color:#0A0A0A;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">Gerar PDF</button>';
+  h+='<button onclick="gerarIA()" style="width:100%;padding:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif;margin-bottom:8px">&#10024; Gerar Justificativa com IA</button>';
+  h+='<div id="iaBox" style="display:none;background:var(--s1);border:1px solid rgba(99,102,241,0.3);border-radius:10px;padding:14px;margin-bottom:8px"><div style="font-size:10px;color:#818cf8;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">JUSTIFICATIVA GERADA PELA IA</div><div id="iaText" style="font-size:13px;color:var(--t2);line-height:1.7"></div><button onclick="usarIA()" style="margin-top:10px;width:100%;padding:8px;background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.3);border-radius:8px;color:#818cf8;font-weight:600;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">Usar esta justificativa</button></div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  h+='<button onclick="tirarPrint()" style="flex:1;padding:12px;background:var(--am);border:none;border-radius:10px;color:#0A0A0A;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#128247; Salvar Imagem</button>';
   h+='<button onclick="envWpp()" style="flex:1;padding:12px;background:var(--gn);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">WhatsApp</button>';
   h+='<button onclick="envEmail()" style="flex:1;padding:12px;background:var(--s1);border:1px solid var(--b2);border-radius:10px;color:var(--t2);font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">E-mail</button>';
+  h+='</div>';
   h+='</div></div>';
   document.getElementById('negRes').innerHTML=h;
   toast('Proposta gerada!');
@@ -620,6 +625,56 @@ function salvarPix(){
   a.click();
   toast('Imagem salva na galeria!');
 }
+function gerarIA(){
+  var d=window._ND;if(!d){toast('Gere a proposta primeiro.');return;}
+  var iaBox=document.getElementById('iaBox');
+  var iaText=document.getElementById('iaText');
+  if(!iaBox||!iaText)return;
+  iaText.innerHTML='<div style="color:#818cf8;text-align:center;padding:10px">Gerando justificativa... aguarde...</div>';
+  iaBox.style.display='block';
+  var itens=d.ps.map(function(p){return p.n+' (invest: '+Math.abs(p.pct||0).toFixed(2)+'% - R$ '+Math.abs(p.tot||0).toFixed(2)+')';}).join(', ');
+  var prompt='Escreva uma justificativa comercial CURTA e OBJETIVA (maximo 3 linhas) para aprovacao de preco especial. Dados: Cliente: '+d.cli+'. Itens: '+itens+'. Investimento medio: '+d.med.toFixed(2)+'% (R$ '+d.tot.toFixed(2)+'). '+(d.conc?'Concorrente: '+d.conc+'. ':'')+' (d.ctx?Contexto: '+d.ctx+'. ':'')+'Seja direto, profissional e sem repeticoes. Nao use saudacoes.';
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-6',
+      max_tokens:200,
+      messages:[{role:'user',content:prompt}]
+    })
+  }).then(function(r){return r.json();}).then(function(data){
+    var txt=data.content&&data.content[0]?data.content[0].text:'Erro ao gerar justificativa.';
+    iaText.innerHTML=txt;
+  }).catch(function(){
+    iaText.innerHTML='Erro ao conectar com a IA. Verifique sua conexao.';
+  });
+}
+
+function usarIA(){
+  var iaText=document.getElementById('iaText');
+  if(!iaText)return;
+  var txt=iaText.innerText||iaText.textContent;
+  var ctx=document.getElementById('negCtx');
+  if(ctx&&txt){ctx.value=txt;toast('Justificativa aplicada! Clique em Gerar Proposta novamente.');}
+}
+
+function tirarPrint(){
+  var d=window._ND;if(!d){toast('Gere a proposta primeiro.');return;}
+  var el=document.getElementById('negRes');
+  if(!el){toast('Nada para capturar.');return;}
+  if(typeof html2canvas==='undefined'){toast('Aguarde o carregamento e tente novamente.');return;}
+  toast('Gerando imagem...');
+  html2canvas(el,{backgroundColor:'#0A1628',scale:2,useCORS:true,logging:false}).then(function(canvas){
+    var link=document.createElement('a');
+    link.download='Negociacao-'+d.cli.replace(/[^a-zA-Z0-9]/g,'-')+'.png';
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+    toast('Imagem salva! Envie pelo WhatsApp.');
+  }).catch(function(){
+    toast('Erro ao gerar imagem.');
+  });
+}
+
 function verPix(){var b=document.getElementById('pixBox');b.style.display=b.style.display==='none'?'block':'none';}
 
 function copiarPix(){

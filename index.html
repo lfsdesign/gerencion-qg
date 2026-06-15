@@ -541,10 +541,10 @@ function gerarNeg(){
   h+='<div style="background:var(--am2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">% Medio</div><div style="font-size:22px;font-weight:700;color:var(--am)">'+med.toFixed(2)+'%</div></div>';
   h+='<div style="background:var(--rd2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">Investimento</div><div style="font-size:20px;font-weight:700;color:var(--rd)">R$ '+tot.toFixed(2)+'</div></div>';
   h+='</div>';
-  h+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
-  h+='<button onclick="gerarIA()" style="width:100%;padding:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif;margin-bottom:8px">&#10024; Gerar Justificativa com IA</button>';
+  h+='<div id="negBtns" style="display:flex;gap:8px;flex-wrap:wrap">';
+  h+='<button id="iaBtnNeg" onclick="gerarIA()" style="width:100%;padding:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif;margin-bottom:8px">&#10024; Gerar Justificativa com IA (ChatGPT)</button>';
 
-  h+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  h+='<div id="negBtns" style="display:flex;gap:8px;flex-wrap:wrap">';
   h+='<button onclick="tirarPrint()" style="flex:1;padding:12px;background:var(--am);border:none;border-radius:10px;color:#0A0A0A;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#128247; Salvar Imagem</button>';
   h+='<button onclick="envWpp()" style="flex:1;padding:12px;background:var(--gn);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">WhatsApp</button>';
   h+='<button onclick="envEmail()" style="flex:1;padding:12px;background:var(--s1);border:1px solid var(--b2);border-radius:10px;color:var(--t2);font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">E-mail</button>';
@@ -632,30 +632,12 @@ function salvarPix(){
 }
 function gerarIA(){
   var d=window._ND;if(!d){toast('Gere a proposta primeiro.');return;}
-  var iaBox=document.getElementById('iaBox');
-  var iaText=document.getElementById('iaText');
-  if(!iaBox||!iaText)return;
-  iaText.textContent='Gerando justificativa com IA... aguarde...';
-  iaBox.style.display='block';
-  var itens=d.ps.map(function(p){return p.n+' (invest: '+Math.abs(p.pct||0).toFixed(2)+'% - R$ '+Math.abs(p.tot||0).toFixed(2)+')';}).join(', ');
-  var extras='';
-  if(d.conc)extras+='Concorrente: '+d.conc+'. ';
-  if(d.ctx)extras+='Contexto: '+d.ctx+'. ';
-  var prompt='Escreva uma justificativa comercial CURTA e OBJETIVA (maximo 3 linhas) para aprovacao de preco especial. Cliente: '+d.cli+'. Itens: '+itens+'. Investimento medio: '+d.med.toFixed(2)+'% (R$ '+d.tot.toFixed(2)+'). '+extras+'Seja direto, profissional e sem repeticoes. Nao use saudacoes.';
-  fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      model:'claude-sonnet-4-6',
-      max_tokens:200,
-      messages:[{role:'user',content:prompt}]
-    })
-  }).then(function(r){return r.json();}).then(function(data){
-    var txt=data.content&&data.content[0]?data.content[0].text:'Erro ao gerar justificativa.';
-    iaText.innerHTML=txt;
-  }).catch(function(){
-    iaText.innerHTML='Erro ao conectar com a IA. Verifique sua conexao.';
+  var itens=d.ps.map(function(p){return p.n+' (invest: '+Math.abs(p.pct||0).toFixed(2)+'% sobre tabela, total R$ '+Math.abs(p.tot||0).toFixed(2)+')';}).join('; ');
+  var prompt='Escreva uma justificativa comercial CURTA (maximo 2 linhas) para aprovacao de preco especial. Seja objetivo e profissional, sem saudacoes e sem repeticoes. Dados: Cliente: '+d.cli+'. Produtos: '+itens+'. Investimento medio: '+d.med.toFixed(2)+'% (R$ '+d.tot.toFixed(2)+' total).'+(d.conc?' Concorrente: '+d.conc+'.':'')+(d.ctx?' Contexto: '+d.ctx+'.':'');
+  navigator.clipboard&&navigator.clipboard.writeText(prompt).then(function(){
+    toast('Prompt copiado! Cole no ChatGPT e copie a resposta.');
   });
+  window.open('https://chatgpt.com','_blank');
 }
 
 function usarIA(){
@@ -671,16 +653,26 @@ function tirarPrint(){
   var el=document.getElementById('negRes');
   if(!el){toast('Nada para capturar.');return;}
   if(typeof html2canvas==='undefined'){toast('Aguarde o carregamento e tente novamente.');return;}
+  var btns=el.querySelector('#negBtns');
+  var iabox=document.getElementById('iaBox');
+  if(btns)btns.style.display='none';
+  var iabtn=document.getElementById('iaBtnNeg');if(iabtn)iabtn.style.display='none';
+  if(iabox)iabox.style.display='none';
   toast('Gerando imagem...');
-  html2canvas(el,{backgroundColor:'#0A1628',scale:2,useCORS:true,logging:false}).then(function(canvas){
-    var link=document.createElement('a');
-    link.download='Negociacao-'+d.cli.replace(/[^a-zA-Z0-9]/g,'-')+'.png';
-    link.href=canvas.toDataURL('image/png');
-    link.click();
-    toast('Imagem salva! Envie pelo WhatsApp.');
-  }).catch(function(){
-    toast('Erro ao gerar imagem.');
-  });
+  setTimeout(function(){
+    html2canvas(el,{backgroundColor:'#0A1628',scale:2,useCORS:true,logging:false}).then(function(canvas){
+      if(btns)btns.style.display='flex';
+      if(iabtn)iabtn.style.display='block';
+      var link=document.createElement('a');
+      link.download='Negociacao-'+d.cli.replace(/[^a-zA-Z0-9]/g,'-')+'.png';
+      link.href=canvas.toDataURL('image/png');
+      link.click();
+      toast('Imagem salva! Envie pelo WhatsApp.');
+    }).catch(function(){
+      if(btns)btns.style.display='flex';
+      toast('Erro ao gerar imagem.');
+    });
+  },300);
 }
 
 function verPix(){var b=document.getElementById('pixBox');b.style.display=b.style.display==='none'?'block':'none';}

@@ -555,8 +555,7 @@ function carregarContatos(){
     el.innerHTML=data.map(function(c){
       var delBtn=eu&&eu.t==='coord'?'<button class="cdel" onclick="excluirContato(this)" data-id="'+c.id+'">&#128465;</button>':'';
       var wpp=c.telefone?'<a href="https://wa.me/55'+c.telefone.replace(/\D/g,'')+'" target="_blank" class="cwpp">&#128172; WhatsApp</a>':'';
-      var em=c.email?'<span class="cemail" style="cursor:pointer" onclick="abrirEmail(this)" data-email="'+c.email+'">&#9993; E-mail</span>':'';
-      return '<div class="contcard"><div class="contep">'+c.empresa+'</div>'+(c.nome?'<div class="contnm">'+c.nome+'</div>':'')+'<div class="contlinks">'+wpp+em+delBtn+'</div></div>';
+      return '<div class="contcard"><div class="contep">'+c.empresa+'</div>'+(c.nome?'<div class="contnm">'+c.nome+'</div>':'')+'<div class="contlinks">'+wpp+delBtn+'</div></div>';
     }).join('');
   }).catch(function(){document.getElementById('listaContatos').innerHTML='<div class="empty">Erro ao carregar contatos.</div>';});
 }
@@ -572,7 +571,6 @@ function salvarContato(){
   }).catch(function(){toast('Erro ao salvar.');});
 }
 
-function abrirEmail(el){var e=el.getAttribute("data-email");if(e)window.open("mailto:"+e);}
 function excluirContato(btn){
   var id=btn.getAttribute('data-id');
   if(!id){return;}

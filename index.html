@@ -255,7 +255,39 @@ select.inp{cursor:pointer;}
 
     <div id="catalogos" class="pg">
       <div class="ph"><div class="pt">Catalogos</div><div class="ps">Arcofoods e parceiros fornecedores</div></div>
-      <div class="empty"><div class="empty-icon">&#128218;</div>Catalogos serao adicionados pelo coordenador em breve.</div>
+      <div class="catalogo-card">
+        <div class="catalogo-icon">&#128218;</div>
+        <div class="catalogo-info">
+          <div class="catalogo-nome">Catalogo Arcofoods 2024-2025</div>
+          <div class="catalogo-desc">Produtos e informacoes completas Arcofoods</div>
+        </div>
+        <a href="https://drive.google.com/file/d/1P0zJckSfqXxu25xaeuJeix_2iv-pJdM1/preview" target="_blank" class="catalogo-btn">Abrir</a>
+      </div>
+      <div class="catalogo-card">
+        <div class="catalogo-icon">&#128172;</div>
+        <div class="catalogo-info">
+          <div class="catalogo-nome">Compartilhar Arcofoods</div>
+          <div class="catalogo-desc">Enviar catalogo Arcofoods ao cliente</div>
+        </div>
+        <a href="https://wa.me/?text=Segue%20o%20Catalogo%20Arcofoods%202024-2025%3A%0Ahttps://drive.google.com/file/d/1P0zJckSfqXxu25xaeuJeix_2iv-pJdM1/view?usp=drive_link" target="_blank" class="catalogo-btn" style="background:#10B981">WhatsApp</a>
+      </div>
+      <div style="height:1px;background:var(--b);margin:8px 0"></div>
+      <div class="catalogo-card">
+        <div class="catalogo-icon">&#127869;</div>
+        <div class="catalogo-info">
+          <div class="catalogo-nome">Catalogo Cargill Food Service 2025</div>
+          <div class="catalogo-desc">Produtos para o segmento food service</div>
+        </div>
+        <a href="https://simplebooklet.com/catalogodeprodutoscrgl_food_service2025" target="_blank" class="catalogo-btn">Abrir</a>
+      </div>
+      <div class="catalogo-card">
+        <div class="catalogo-icon">&#128172;</div>
+        <div class="catalogo-info">
+          <div class="catalogo-nome">Compartilhar Cargill</div>
+          <div class="catalogo-desc">Enviar catalogo Cargill ao cliente</div>
+        </div>
+        <a href="https://wa.me/?text=Segue%20o%20Catalogo%20Cargill%20Food%20Service%202025%3A%0Ahttps://simplebooklet.com/catalogodeprodutoscrgl_food_service2025" target="_blank" class="catalogo-btn" style="background:#10B981">WhatsApp</a>
+      </div>
     </div>
 
     <div id="documentos" class="pg">
@@ -522,52 +554,115 @@ function gerarNegociacao(){
   var skus=document.getElementById('negSkus').value.trim();
   var ctx=document.getElementById('negCtx').value.trim();
   var prods=negProdutosData.map(function(p,i){
-    try{var qtd=parseFloat(document.getElementById('np'+i+'qtd').value)||p.qtd||0,tab=parseFloat(document.getElementById('np'+i+'tab').value)||p.tab||0,vend=parseFloat(document.getElementById('np'+i+'vend').value)||p.vend||0,ideal=parseFloat(document.getElementById('np'+i+'ideal').value)||p.ideal||0,unid=document.getElementById('np'+i+'unid').value||p.unid,nome=document.getElementById('np'+i+'nome').value||p.nome||'',dif=vend-ideal,pct=tab>0?(dif/tab)*100:0,total=dif*qtd;return{nome:nome,qtd:qtd,unid:unid,tab:tab,vend:vend,ideal:ideal,dif:dif,pct:pct,total:total};}catch(e){return p;}
+    try{
+      var qtd=parseFloat(document.getElementById('np'+i+'qtd').value)||p.qtd||0;
+      var tab=parseFloat(document.getElementById('np'+i+'tab').value)||p.tab||0;
+      var vend=parseFloat(document.getElementById('np'+i+'vend').value)||p.vend||0;
+      var ideal=parseFloat(document.getElementById('np'+i+'ideal').value)||p.ideal||0;
+      var unid=document.getElementById('np'+i+'unid').value||p.unid;
+      var nome=document.getElementById('np'+i+'nome').value||p.nome||'';
+      var dif=vend-ideal,pct=tab>0?(dif/tab)*100:0,total=dif*qtd;
+      return{nome:nome,qtd:qtd,unid:unid,tab:tab,vend:vend,ideal:ideal,dif:dif,pct:pct,total:total};
+    }catch(e){return p;}
   });
   var totalGeral=prods.reduce(function(s,p){return s+Math.abs(p.total||0);},0);
   var pctMedio=prods.length>0?prods.reduce(function(s,p){return s+Math.abs(p.pct||0);},0)/prods.length:0;
   var hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
   var vendedor=usuarioAtual.codigo+' - '+usuarioAtual.nome;
-  var itens=prods.map(function(p){return p.nome;}).join(', ');
-  var just='Solicito aprovacao de condicao especial para o cliente '+cli+'.';
-  if(ctx)just+=' '+ctx.charAt(0).toUpperCase()+ctx.slice(1)+(ctx.endsWith('.')?'':'.');
-  if(conc)just+=' Concorrente: '+conc+'.';
-  if(skus)just+=' Pedido: '+skus+'.';
-  just+=' Itens: '+itens+'. Investimento medio: '+pctMedio.toFixed(2)+'% sobre tabela (R$ '+totalGeral.toFixed(2)+' total). Solicito aprovacao urgente para nao perder o pedido.';
-  var html='<div style="background:var(--s2);border:1px solid var(--b);border-radius:12px;padding:18px;display:block">';
+  window._negData={cli:cli,vendedor:vendedor,hoje:hoje,ctx:ctx,prods:prods,totalGeral:totalGeral,pctMedio:pctMedio,conc:conc,skus:skus};
+  var html='<div style="background:var(--s2);border:1px solid var(--b);border-radius:12px;padding:18px">';
   html+='<div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--am);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--b)">SOLICITACAO DE NEGOCIACAO COMERCIAL</div>';
   html+='<div style="font-size:12px;color:var(--t2);margin-bottom:12px">'+hoje+' - Arcofoods - Norte Fluminense</div>';
-  html+='<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--t2)">Vendedor</div><div style="font-size:16px;font-weight:700;color:var(--am)">'+vendedor+'</div></div>';
+  html+='<div style="margin-bottom:10px"><div style="font-size:11px;color:var(--t2)">Vendedor</div><div style="font-size:16px;font-weight:700;color:var(--am)">'+vendedor+'</div></div>';
   html+='<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--t2)">Cliente</div><div style="font-size:15px;font-weight:600;color:var(--t)">'+cli+'</div></div>';
-  html+='<div style="background:var(--s1);border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--t2);line-height:1.7">'+just+'</div>';
-  prods.forEach(function(p){
-    html+='<div style="border:1px solid var(--b);border-radius:8px;padding:14px;margin-bottom:10px">';
-    html+='<div style="font-weight:700;color:var(--t);margin-bottom:10px;font-size:15px">'+p.nome+'</div>';
-    html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px">';
-    html+=cN('Qtd',p.qtd+' '+p.unid,'var(--t)');
-    html+=cN('P. Tabela','R$ '+p.tab.toFixed(4),'var(--t2)');
-    html+=cN('P. Vendedor','R$ '+p.vend.toFixed(4),'var(--am)');
-    html+=cN('P. Ideal','R$ '+p.ideal.toFixed(4),'var(--gn)');
-    html+=cN('Invest. Unit.','R$ '+Math.abs(p.dif||0).toFixed(4),'var(--rd)');
-    html+=cN('Total Invest.','R$ '+Math.abs(p.total||0).toFixed(2),'var(--rd)');
-    html+='</div></div>';
-  });
-  html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;text-align:center">';
-  html+='<div style="background:var(--am2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">Produtos</div><div style="font-size:22px;font-weight:700;color:var(--am)">'+prods.length+'</div></div>';
-  html+='<div style="background:var(--am2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">% Medio</div><div style="font-size:22px;font-weight:700;color:var(--am)">'+pctMedio.toFixed(2)+'%</div></div>';
-  html+='<div style="background:var(--rd2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">Investimento</div><div style="font-size:20px;font-weight:700;color:var(--rd)">R$ '+totalGeral.toFixed(2)+'</div></div>';
-  html+='</div>';
-  var msg='NEGOCIACAO COMERCIAL - GERENCION QG\n'+hoje+'\nVendedor: '+vendedor+'\nCliente: '+cli+'\n\n'+just;
-  var wpp='https://wa.me/5521971922229?text='+encodeURIComponent(msg);
-  var email='mailto:leandro.felipe@arcofoods.com.br?subject=Negociacao - '+encodeURIComponent(cli)+'&body='+encodeURIComponent(msg);
-  html+='<div style="display:flex;gap:10px;flex-wrap:wrap">';
-  html+='<a href="'+wpp+'" target="_blank" style="flex:1;padding:12px;background:var(--am);border-radius:10px;color:#0A0A0A;font-weight:700;font-size:14px;text-decoration:none;text-align:center;display:block">&#128172; Enviar WhatsApp</a>';
-  html+='<a href="'+email+'" style="flex:1;padding:12px;background:var(--s1);border:1px solid var(--b2);border-radius:10px;color:var(--t2);font-weight:700;font-size:14px;text-decoration:none;text-align:center;display:block">&#9993; Enviar E-mail</a>';
-  html+='</div></div>';
+  if(conc||skus){html+='<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">';if(conc)html+='<div style="background:var(--s1);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--t2)">Concorrente: <strong style="color:var(--t)">'+conc+'</strong></div>';if(skus)html+='<div style="background:var(--s1);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--t2)">Pedido: <strong style="color:var(--t)">'+skus+'</strong></div>';html+='</div>';}
+  if(ctx)html+='<div style="background:var(--s1);border-left:3px solid var(--am);border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--t2);line-height:1.7">'+ctx+'</div>';
+  prods.forEach(function(p){html+='<div style="border:1px solid var(--b);border-radius:10px;padding:14px;margin-bottom:10px"><div style="font-weight:700;color:var(--t);margin-bottom:10px;font-size:15px">'+p.nome+'</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+cN('Qtd',p.qtd+' '+p.unid,'var(--t)')+cN('P. Tabela','R$ '+p.tab.toFixed(4),'var(--t2)')+cN('P. Vendedor','R$ '+p.vend.toFixed(4),'var(--am)')+cN('P. Ideal','R$ '+p.ideal.toFixed(4),'var(--gn)')+cN('Invest. Unit.','R$ '+Math.abs(p.dif||0).toFixed(4),'var(--rd)')+cN('Total Invest.','R$ '+Math.abs(p.total||0).toFixed(2),'var(--rd)')+'</div></div>';});
+  html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;text-align:center"><div style="background:var(--am2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">Produtos</div><div style="font-size:22px;font-weight:700;color:var(--am)">'+prods.length+'</div></div><div style="background:var(--am2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">% Medio</div><div style="font-size:22px;font-weight:700;color:var(--am)">'+pctMedio.toFixed(2)+'%</div></div><div style="background:var(--rd2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">Investimento</div><div style="font-size:20px;font-weight:700;color:var(--rd)">R$ '+totalGeral.toFixed(2)+'</div></div></div>';
+  html+='<div style="display:flex;gap:8px;flex-wrap:wrap"><button onclick="abrirPdfNeg()" style="flex:1;padding:12px;background:var(--am);border:none;border-radius:10px;color:#0A0A0A;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#128196; Gerar PDF</button><button onclick="enviarWppNeg()" style="flex:1;padding:12px;background:#10B981;border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#128172; WhatsApp</button><button onclick="enviarEmailNeg()" style="flex:1;padding:12px;background:var(--s1);border:1px solid var(--b2);border-radius:10px;color:var(--t2);font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#9993; E-mail</button></div></div>';
   document.getElementById('negResultado').innerHTML=html;
-  toast('Proposta gerada! Envie ao coordenador.');
+  toast('Proposta gerada!');
   window.scrollTo(0,document.getElementById('negResultado').offsetTop-20);
 }
+
+function abrirPdfNeg(){
+  var d=window._negData;if(!d){toast('Gere a proposta primeiro.');return;}
+  var win=window.open('','_blank');if(!win){toast('Permita popups.');return;}
+  var css='*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Inter,sans-serif;background:#060E1E;color:#F0F6FF;padding:20px 16px 80px;font-size:14px;}.hdr{background:linear-gradient(135deg,rgba(245,158,11,0.2),#0A1628);border:1px solid rgba(245,158,11,0.3);border-radius:14px;padding:20px;margin-bottom:14px;}.ttl{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#F59E0B;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08);}.lbl{font-size:11px;color:#94A3B8;margin-bottom:2px;}.val{font-size:16px;font-weight:700;color:#F59E0B;margin-bottom:10px;}.val2{font-size:15px;font-weight:600;color:#F0F6FF;margin-bottom:10px;}.tag{background:#0F1F35;border-radius:8px;padding:5px 10px;font-size:12px;color:#94A3B8;display:inline-block;margin-right:6px;margin-bottom:6px;}.ctx{background:#0F1F35;border-left:3px solid #F59E0B;border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:#94A3B8;line-height:1.7;}.prod{border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;margin-bottom:10px;}.pn{font-size:15px;font-weight:700;color:#F0F6FF;margin-bottom:10px;}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}.cel{background:#0F1F35;border-radius:8px;padding:8px;text-align:center;}.cl{font-size:10px;color:#475569;text-transform:uppercase;margin-bottom:3px;}.cv{font-size:13px;font-weight:700;}.res{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;text-align:center;}.rb{border-radius:10px;padding:14px;}.rl{font-size:11px;color:#94A3B8;margin-bottom:4px;}.rv{font-size:20px;font-weight:700;}.bar{position:fixed;bottom:0;left:0;right:0;background:rgba(6,14,30,0.97);border-top:1px solid rgba(255,255,255,0.08);padding:12px 16px;display:flex;gap:10px;z-index:99;}@media print{.bar{display:none!important;}body{background:white!important;color:black!important;padding:10px;}.hdr{background:#f8f9ff!important;border-color:#dde!important;}.ttl{color:#c97a00!important;border-color:#dde!important;}.val{color:#c97a00!important;}.ctx{background:#f8f9ff!important;border-color:#c97a00!important;}.prod{border-color:#dde!important;}.cel{background:#f0f4ff!important;}.rb{border:1px solid #dde!important;}}';
+  var b='<div class="hdr"><div class="ttl">SOLICITACAO DE NEGOCIACAO COMERCIAL</div>';
+  b+='<div style="font-size:12px;color:#94A3B8;margin-bottom:12px">'+d.hoje+' &middot; Arcofoods &middot; Norte Fluminense</div>';
+  b+='<div class="lbl">Vendedor</div><div class="val">'+d.vendedor+'</div>';
+  b+='<div class="lbl">Cliente</div><div class="val2">'+d.cli+'</div>';
+  if(d.conc)b+='<span class="tag">Concorrente: '+d.conc+'</span>';
+  if(d.skus)b+='<span class="tag">Pedido: '+d.skus+'</span>';
+  b+='</div>';
+  if(d.ctx)b+='<div class="ctx">'+d.ctx+'</div>';
+  d.prods.forEach(function(p){b+='<div class="prod"><div class="pn">'+p.nome+'</div><div class="g3"><div class="cel"><div class="cl">Qtd</div><div class="cv" style="color:#F0F6FF">'+p.qtd+' '+p.unid+'</div></div><div class="cel"><div class="cl">P. Tabela</div><div class="cv" style="color:#94A3B8">R$ '+p.tab.toFixed(4)+'</div></div><div class="cel"><div class="cl">P. Vendedor</div><div class="cv" style="color:#F59E0B">R$ '+p.vend.toFixed(4)+'</div></div><div class="cel"><div class="cl">P. Ideal</div><div class="cv" style="color:#10B981">R$ '+p.ideal.toFixed(4)+'</div></div><div class="cel"><div class="cl">Invest. Unit.</div><div class="cv" style="color:#EF4444">R$ '+Math.abs(p.dif||0).toFixed(4)+'</div></div><div class="cel"><div class="cl">Total Invest.</div><div class="cv" style="color:#EF4444">R$ '+Math.abs(p.total||0).toFixed(2)+'</div></div></div></div>';});
+  b+='<div class="res"><div class="rb" style="background:rgba(245,158,11,0.12)"><div class="rl">Produtos</div><div class="rv" style="color:#F59E0B">'+d.prods.length+'</div></div><div class="rb" style="background:rgba(245,158,11,0.12)"><div class="rl">% Medio</div><div class="rv" style="color:#F59E0B">'+d.pctMedio.toFixed(2)+'%</div></div><div class="rb" style="background:rgba(239,68,68,0.12)"><div class="rl">Investimento</div><div class="rv" style="color:#EF4444">R$ '+d.totalGeral.toFixed(2)+'</div></div></div>';
+  b+='<div class="bar"><button onclick="window.print()" style="flex:1;padding:12px;background:#F59E0B;border:none;border-radius:10px;color:#0A0A0A;font-weight:700;font-size:14px;cursor:pointer;font-family:Inter,sans-serif">&#128196; Salvar PDF</button><button onclick="if(window.opener)window.opener.focus();window.close();" style="padding:12px 16px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#94A3B8;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">Fechar</button></div>';
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Negociacao</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"><style>'+css+'</style></head><body>'+b+'</body></html>');
+  win.document.close();
+}
+
+function enviarWppNeg(){
+  var d=window._negData;if(!d){toast('Gere a proposta primeiro.');return;}
+  var msg='*SOLICITACAO DE NEGOCIACAO COMERCIAL*
+';
+  msg+='Arcofoods - Norte Fluminense - '+d.hoje+'
+
+';
+  msg+='*Vendedor:* '+d.vendedor+'
+';
+  msg+='*Cliente:* '+d.cli+'
+';
+  if(d.conc)msg+='*Concorrente:* '+d.conc+'
+';
+  if(d.skus)msg+='*Pedido:* '+d.skus+'
+';
+  if(d.ctx)msg+='
+'+d.ctx+'
+';
+  msg+='
+';
+  d.prods.forEach(function(p){msg+='*'+p.nome+'*
+Qtd: '+p.qtd+' '+p.unid+' | P.Tabela: R$'+p.tab.toFixed(4)+' | P.Vendedor: R$'+p.vend.toFixed(4)+'
+P.Ideal: R$'+p.ideal.toFixed(4)+' | Invest: R$'+Math.abs(p.dif||0).toFixed(4)+'/un | Total: R$'+Math.abs(p.total||0).toFixed(2)+'
+
+';});
+  msg+='*Resumo:* '+d.prods.length+' produto(s) | '+d.pctMedio.toFixed(2)+'% investimento | R$ '+d.totalGeral.toFixed(2)+' total';
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+
+function enviarEmailNeg(){
+  var d=window._negData;if(!d){toast('Gere a proposta primeiro.');return;}
+  var email=prompt('Digite o e-mail do comprador:');
+  if(!email)return;
+  var subj='Negociacao Comercial - '+d.cli+' - Arcofoods';
+  var body='SOLICITACAO DE NEGOCIACAO COMERCIAL
+Arcofoods - Norte Fluminense - '+d.hoje+'
+
+';
+  body+='Vendedor: '+d.vendedor+'
+Cliente: '+d.cli+'
+';
+  if(d.conc)body+='Concorrente: '+d.conc+'
+';
+  if(d.skus)body+='Pedido: '+d.skus+'
+';
+  if(d.ctx)body+='
+'+d.ctx+'
+';
+  body+='
+';
+  d.prods.forEach(function(p){body+=p.nome+'
+Qtd: '+p.qtd+' '+p.unid+' | P.Tabela: R$'+p.tab.toFixed(4)+' | P.Vendedor: R$'+p.vend.toFixed(4)+'
+P.Ideal: R$'+p.ideal.toFixed(4)+' | Invest: R$'+Math.abs(p.dif||0).toFixed(4)+' | Total: R$'+Math.abs(p.total||0).toFixed(2)+'
+
+';});
+  body+='Resumo: '+d.prods.length+' produto(s) | '+d.pctMedio.toFixed(2)+'% investimento | R$ '+d.totalGeral.toFixed(2)+' total';
+  window.location.href='mailto:'+encodeURIComponent(email)+'?cc=leandro.felipe%40arcofoods.com.br&subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+}
+
 
 function cN(lbl,val,cor){return'<div style="background:var(--s1);border-radius:8px;padding:8px;text-align:center"><div style="color:var(--t3);font-size:10px;text-transform:uppercase;margin-bottom:3px">'+lbl+'</div><div style="font-weight:700;color:'+cor+';font-size:13px">'+val+'</div></div>';}
 

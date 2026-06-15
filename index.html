@@ -543,12 +543,10 @@ function limparNeg(){if(confirm('Limpar?')){prods=[];['negCli','negConc','negSku
 
 function verPix(){var b=document.getElementById('pixBox');b.style.display=b.style.display==='none'?'block':'none';}
 function salvarPix(){var img=document.getElementById('pixImg');if(!img)return;var a=document.createElement('a');a.href=img.src;a.download='PIX-Arcofoods.png';a.click();toast('Imagem salva!');}
-function copiarPix(){var t='Dados Bancarios Arcofoods
-Tipo de Chave: CNPJ
-Chave PIX: 08.365.731/0001-42
-Banco: Itau
-Agencia: 0530
-C/c: 55341-1';navigator.clipboard&&navigator.clipboard.writeText(t).then(function(){toast('Dados PIX copiados!');});}
+function copiarPix(){
+  var ls=['Dados Bancarios Arcofoods','Tipo de Chave: CNPJ','Chave PIX: 08.365.731/0001-42','Banco: Itau','Agencia: 0530','C/c: 55341-1'];
+  navigator.clipboard&&navigator.clipboard.writeText(ls.join('\n')).then(function(){toast('Dados PIX copiados!');});
+}
 
 function carregarContatos(){
   supaFetch('contatos?order=criado_em.asc').then(function(r){return r.json();}).then(function(data){

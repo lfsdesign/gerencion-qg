@@ -115,10 +115,6 @@ textarea.inp{resize:vertical;min-height:80px;}
 .cdesc{font-size:11px;color:var(--t2);}
 .cbtn{padding:8px 14px;background:var(--am);border:none;border-radius:8px;color:#0A0A0A;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;font-family:'Inter',sans-serif;}
 .cbtn-gn{background:var(--gn);color:#fff;}
-.ctag-arc{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.3);margin-bottom:6px;}
-.ctag-for{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(59,130,246,0.15);color:#3B82F6;border:1px solid rgba(59,130,246,0.3);margin-bottom:6px;}
-.cont-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-@media(max-width:480px){.cont-grid{grid-template-columns:1fr;}}
 .contcard{background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:16px;margin-bottom:10px;}
 .contep{font-size:13px;font-weight:700;color:var(--am);margin-bottom:4px;}
 .contnm{font-size:14px;color:var(--t);margin-bottom:10px;}
@@ -299,10 +295,7 @@ textarea.inp{resize:vertical;min-height:80px;}
       <div id="adminContatos" style="display:none">
         <div class="admin-box">
           <div class="admin-title">&#128274; Area do Coordenador - Novo Contato</div>
-          <div class="g2">
-            <div class="fg"><label class="fl">Empresa</label><input id="cEmp" class="inp" placeholder="ex: Arcofoods"></div>
-            <div class="fg"><label class="fl">Tipo</label><select id="cTipo" class="inp"><option value="arcofoods">Arcofoods</option><option value="fornecedor">Fornecedor</option></select></div>
-          </div>
+          <div class="fg"><label class="fl">Empresa</label><input id="cEmp" class="inp" placeholder="ex: Arcofoods"></div>
           <div class="fg"><label class="fl">Nome do Contato</label><input id="cNome" class="inp" placeholder="ex: Leandro Felipe"></div>
           <div class="g2">
             <div class="fg"><label class="fl">Telefone (com DDD)</label><input id="cTel" class="inp" placeholder="ex: 21971922229"></div>
@@ -316,7 +309,7 @@ textarea.inp{resize:vertical;min-height:80px;}
         <div class="contnm">Leandro Felipe &middot; COOD 40</div>
         <div class="contlinks">
           <a href="https://wa.me/5521971922229?text=Ola%20Leandro!" target="_blank" class="cwpp">&#128172; WhatsApp</a>
-          
+          <a href="mailto:leandro.felipe@arcofoods.com.br" class="cemail" onclick="window.location.href='mailto:'+this.getAttribute('data-email')">&#9993; E-mail</a>
         </div>
       </div>
       <div id="listaContatos"><div class="loading">Carregando contatos...</div></div>
@@ -399,11 +392,31 @@ function fazerLogin(){
   if(!u){err.style.display='block';return;}
   if(u.t==='coord'){entrar(u);return;}
   var did=getDevId();
-  var k='QG_D_'+u.c;
-  var reg=localStorage.getItem(k);
-  if(!reg){localStorage.setItem(k,did);entrar(u);toast('Dispositivo registrado!');}
-  else if(reg===did){entrar(u);}
-  else{err.textContent='Acesso negado. Login ja registrado em outro dispositivo. Fale com o coordenador.';err.style.display='block';}
+  err.textContent='Verificando dispositivo...';
+  err.style.display='block';
+  err.style.color='var(--am)';
+  supaFetch('dispositivos?codigo_usuario=eq.'+encodeURIComponent(u.c)).then(function(r){return r.json();}).then(function(data){
+    err.style.display='none';
+    if(!data||!data.length){
+      supaFetch('dispositivos',{method:'POST',body:JSON.stringify({codigo_usuario:u.c,device_id:did})}).then(function(){
+        entrar(u);toast('Dispositivo registrado com sucesso!');
+      }).catch(function(){
+        err.textContent='Erro ao registrar dispositivo. Tente novamente.';
+        err.style.color='var(--rd)';
+        err.style.display='block';
+      });
+    } else if(data[0].device_id===did){
+      entrar(u);
+    } else {
+      err.textContent='Acesso negado. Este login ja esta registrado em outro dispositivo. Fale com o coordenador.';
+      err.style.color='var(--rd)';
+      err.style.display='block';
+    }
+  }).catch(function(){
+    err.textContent='Erro de conexao. Verifique sua internet.';
+    err.style.color='var(--rd)';
+    err.style.display='block';
+  });
 }
 
 document.getElementById('loginPass').addEventListener('keypress',function(e){if(e.key==='Enter')fazerLogin();});
@@ -411,7 +424,25 @@ document.getElementById('loginCode').addEventListener('keypress',function(e){if(
 
 (function(){
   var s=localStorage.getItem('QG_LOG');
-  if(s){try{var d=JSON.parse(s);var u=USERS.find(function(x){return x.c===d.c;});if(u){if(u.t==='coord'){entrar(u);}else{var did=getDevId();var reg=localStorage.getItem('QG_D_'+u.c);if(reg&&reg===did){entrar(u);}}}}catch(e){}}
+  if(s){
+    try{
+      var d=JSON.parse(s);
+      var u=USERS.find(function(x){return x.c===d.c;});
+      if(u){
+        if(u.t==='coord'){entrar(u);}
+        else{
+          var did=getDevId();
+          supaFetch('dispositivos?codigo_usuario=eq.'+encodeURIComponent(u.c)).then(function(r){return r.json();}).then(function(data){
+            if(data&&data.length&&data[0].device_id===did){entrar(u);}
+            else{localStorage.removeItem('QG_LOG');}
+          }).catch(function(){
+            var reg=localStorage.getItem('QG_D_'+u.c);
+            if(reg&&reg===did){entrar(u);}
+          });
+        }
+      }
+    }catch(e){}
+  }
 })();
 
 function sair(){if(confirm('Deseja sair?')){eu=null;localStorage.removeItem('QG_LOG');document.getElementById('app').style.display='none';document.getElementById('loginScreen').style.display='flex';document.getElementById('loginCode').value='';document.getElementById('loginPass').value='';}}
@@ -559,45 +590,26 @@ function carregarContatos(){
   supaFetch('contatos?order=criado_em.asc').then(function(r){return r.json();}).then(function(data){
     var el=document.getElementById('listaContatos');
     if(!data.length){el.innerHTML='<div class="empty"><div class="eico">&#128222;</div>Nenhum contato cadastrado ainda.</div>';return;}
-    el.innerHTML='<div class="cont-grid">'+data.map(function(c){
-      var delBtn=eu&&eu.t==='coord'?'<button class="cdel" onclick="excluirContato(this)" data-id="'+c.id+'">&#128465;</button><button class="cdel" onclick="editarContato(this)" data-id="'+c.id+'" data-emp="'+c.empresa+'" data-nome="'+(c.nome||'')+'" data-tel="'+(c.telefone||'')+'" data-tipo="'+(c.tipo||'arcofoods')+'" style="background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3);color:#3B82F6;margin-left:4px">&#9999;</button>':'';
+    el.innerHTML=data.map(function(c){
+      var delBtn=eu&&eu.t==='coord'?'<button class="cdel" onclick="excluirContato(this)" data-id="'+c.id+'">&#128465;</button>':'';
       var wpp=c.telefone?'<a href="https://wa.me/55'+c.telefone.replace(/\D/g,'')+'" target="_blank" class="cwpp">&#128172; WhatsApp</a>':'';
-
-      var tag=c.tipo==='fornecedor'?'<span class="ctag-for">Fornecedor</span>':'<span class="ctag-arc">Arcofoods</span>';return '<div class="contcard">'+tag+'<div class="contep">'+c.empresa+'</div>'+(c.nome?'<div class="contnm">'+c.nome+'</div>':'')+'<div class="contlinks">'+wpp+delBtn+'</div></div>';
-    }).join('')+'</div>';
+      var em=c.email?'<a href="mailto:'+c.email+'" class="cemail" onclick="window.location.href='mailto:'+this.getAttribute('data-email')">&#9993; E-mail</a>':'';
+      return '<div class="contcard"><div class="contep">'+c.empresa+'</div>'+(c.nome?'<div class="contnm">'+c.nome+'</div>':'')+'<div class="contlinks">'+wpp+em+delBtn+'</div></div>';
+    }).join('');
   }).catch(function(){document.getElementById('listaContatos').innerHTML='<div class="empty">Erro ao carregar contatos.</div>';});
 }
 
 function salvarContato(){
   var emp=document.getElementById('cEmp').value.trim();
   if(!emp){toast('Informe a empresa.');return;}
-  var dados={empresa:emp,nome:document.getElementById('cNome').value.trim(),telefone:document.getElementById('cTel').value.trim(),email:document.getElementById('cEmail').value.trim(),tipo:document.getElementById('cTipo').value};
-  var metodo=window._editId?'PATCH':'POST';
-  var url=window._editId?'contatos?id=eq.'+window._editId:'contatos';
-  supaFetch(url,{method:metodo,body:JSON.stringify(dados)}).then(function(){
-    window._editId=null;
-    document.querySelector('#adminContatos button').textContent='+ Salvar Contato';
+  var dados={empresa:emp,nome:document.getElementById('cNome').value.trim(),telefone:document.getElementById('cTel').value.trim(),email:document.getElementById('cEmail').value.trim()};
+  supaFetch('contatos',{method:'POST',body:JSON.stringify(dados)}).then(function(){
     ['cEmp','cNome','cTel','cEmail'].forEach(function(id){document.getElementById(id).value='';});
     toast('Contato salvo!');
     carregarContatos();
   }).catch(function(){toast('Erro ao salvar.');});
 }
 
-function editarContato(btn){
-  var id=btn.getAttribute('data-id');
-  var emp=btn.getAttribute('data-emp');
-  var nome=btn.getAttribute('data-nome');
-  var tel=btn.getAttribute('data-tel');
-  var tipo=btn.getAttribute('data-tipo');
-  document.getElementById('cEmp').value=emp||'';
-  document.getElementById('cNome').value=nome||'';
-  document.getElementById('cTel').value=tel||'';
-  document.getElementById('cTipo').value=tipo||'arcofoods';
-  window._editId=id;
-  document.getElementById('adminContatos').scrollIntoView({behavior:'smooth'});
-  toast('Edite os dados e clique em Salvar.');
-  document.querySelector('#adminContatos button').textContent='Atualizar Contato';
-}
 function excluirContato(btn){
   var id=btn.getAttribute('data-id');
   if(!id){return;}

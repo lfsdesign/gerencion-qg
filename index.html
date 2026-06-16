@@ -316,7 +316,7 @@ textarea.inp{resize:vertical;min-height:80px;}
         <div class="contnm">Leandro Felipe &middot; COOD 40</div>
         <div class="contlinks">
           <a href="https://wa.me/5521971922229?text=Ola%20Leandro!" target="_blank" class="cwpp">&#128172; WhatsApp</a>
-          <a href="mailto:leandro.felipe@arcofoods.com.br" class="cemail" onclick="window.location.href='mailto:'+this.getAttribute('data-email')">&#9993; E-mail</a>
+          
         </div>
       </div>
       <div id="listaContatos"><div class="loading">Carregando contatos...</div></div>
@@ -560,7 +560,7 @@ function carregarContatos(){
     var el=document.getElementById('listaContatos');
     if(!data.length){el.innerHTML='<div class="empty"><div class="eico">&#128222;</div>Nenhum contato cadastrado ainda.</div>';return;}
     el.innerHTML='<div class="cont-grid">'+data.map(function(c){
-      var delBtn=eu&&eu.t==='coord'?'<button class="cdel" onclick="excluirContato(this)" data-id="'+c.id+'">&#128465;</button>':'';
+      var delBtn=eu&&eu.t==='coord'?'<button class="cdel" onclick="excluirContato(this)" data-id="'+c.id+'">&#128465;</button><button class="cdel" onclick="editarContato(this)" data-id="'+c.id+'" data-emp="'+c.empresa+'" data-nome="'+(c.nome||'')+'" data-tel="'+(c.telefone||'')+'" data-tipo="'+(c.tipo||'arcofoods')+'" style="background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3);color:#3B82F6;margin-left:4px">&#9999;</button>':'';
       var wpp=c.telefone?'<a href="https://wa.me/55'+c.telefone.replace(/\D/g,'')+'" target="_blank" class="cwpp">&#128172; WhatsApp</a>':'';
 
       var tag=c.tipo==='fornecedor'?'<span class="ctag-for">Fornecedor</span>':'<span class="ctag-arc">Arcofoods</span>';return '<div class="contcard">'+tag+'<div class="contep">'+c.empresa+'</div>'+(c.nome?'<div class="contnm">'+c.nome+'</div>':'')+'<div class="contlinks">'+wpp+delBtn+'</div></div>';
@@ -572,13 +572,32 @@ function salvarContato(){
   var emp=document.getElementById('cEmp').value.trim();
   if(!emp){toast('Informe a empresa.');return;}
   var dados={empresa:emp,nome:document.getElementById('cNome').value.trim(),telefone:document.getElementById('cTel').value.trim(),email:document.getElementById('cEmail').value.trim(),tipo:document.getElementById('cTipo').value};
-  supaFetch('contatos',{method:'POST',body:JSON.stringify(dados)}).then(function(){
+  var metodo=window._editId?'PATCH':'POST';
+  var url=window._editId?'contatos?id=eq.'+window._editId:'contatos';
+  supaFetch(url,{method:metodo,body:JSON.stringify(dados)}).then(function(){
+    window._editId=null;
+    document.querySelector('#adminContatos button').textContent='+ Salvar Contato';
     ['cEmp','cNome','cTel','cEmail'].forEach(function(id){document.getElementById(id).value='';});
     toast('Contato salvo!');
     carregarContatos();
   }).catch(function(){toast('Erro ao salvar.');});
 }
 
+function editarContato(btn){
+  var id=btn.getAttribute('data-id');
+  var emp=btn.getAttribute('data-emp');
+  var nome=btn.getAttribute('data-nome');
+  var tel=btn.getAttribute('data-tel');
+  var tipo=btn.getAttribute('data-tipo');
+  document.getElementById('cEmp').value=emp||'';
+  document.getElementById('cNome').value=nome||'';
+  document.getElementById('cTel').value=tel||'';
+  document.getElementById('cTipo').value=tipo||'arcofoods';
+  window._editId=id;
+  document.getElementById('adminContatos').scrollIntoView({behavior:'smooth'});
+  toast('Edite os dados e clique em Salvar.');
+  document.querySelector('#adminContatos button').textContent='Atualizar Contato';
+}
 function excluirContato(btn){
   var id=btn.getAttribute('data-id');
   if(!id){return;}

@@ -199,7 +199,7 @@ textarea.inp{resize:vertical;min-height:80px;}
     </div>
 
     <div id="negociacao" class="pg">
-      <div class="ph"><div class="pt">Negociacao Comercial</div><div class="ps">Solicite aprovacao de condicao especial</div></div>
+      <div class="ph"><div class="pt">Negociacao Comercial</div><div class="ps">Solicite aprovacao de condicao especial</div><div style="margin-top:6px;font-size:12px;color:#3B82F6;font-weight:600">Coordenador: COOD 40 - Leandro Felipe - Norte Fluminense</div></div>
       <div class="nvend"><span style="font-size:24px">&#128100;</span><div><div class="nvlbl">Vendedor</div><div class="nvnome" id="negVend">-</div></div></div>
       <div class="card">
         <div class="ct">Dados da Negociacao</div>
@@ -618,6 +618,21 @@ function salvarContato(){
   }).catch(function(){toast('Erro ao salvar.');});
 }
 
+function editarContato(btn){
+  var id=btn.getAttribute('data-id');
+  var emp=btn.getAttribute('data-emp');
+  var nome=btn.getAttribute('data-nome');
+  var tel=btn.getAttribute('data-tel');
+  var tipo=btn.getAttribute('data-tipo');
+  document.getElementById('cEmp').value=emp||'';
+  document.getElementById('cNome').value=nome||'';
+  document.getElementById('cTel').value=tel||'';
+  var tipoEl=document.getElementById('cTipo');
+  if(tipoEl)tipoEl.value=tipo||'arcofoods';
+  window._editId=id;
+  document.getElementById('adminContatos').scrollIntoView({behavior:'smooth'});
+  toast('Edite os dados e clique em Salvar.');
+}
 function excluirContato(btn){
   var id=btn.getAttribute('data-id');
   if(!id){return;}

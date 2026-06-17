@@ -595,7 +595,7 @@ function carregarContatos(){
     var el=document.getElementById('listaContatos');
     if(!data.length){el.innerHTML='<div class="empty"><div class="eico">&#128222;</div>Nenhum contato cadastrado ainda.</div>';return;}
     el.innerHTML=data.map(function(c){
-      var delBtn=eu&&eu.t==='coord'?'<button class="cdel" onclick="excluirContato(this)" data-id="'+c.id+'">&#128465;</button>':'';
+      var delBtn=eu&&eu.t==='coord'?'<button class="cdel" onclick="excluirContato(this)" data-id="'+c.id+'">&#128465;</button><button class="cdel" onclick="editarContato(this)" data-id="'+c.id+'" data-emp="'+c.empresa+'" data-nome="'+(c.nome||'')+'" data-tel="'+(c.telefone||'')+'" data-tipo="'+(c.tipo||'arcofoods')+'" style="background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3);color:#3B82F6;margin-left:4px">&#9999;</button>':'';
       var wpp=c.telefone?'<a href="https://wa.me/55'+c.telefone.replace(/\D/g,'')+'" target="_blank" class="cwpp">&#128172; WhatsApp</a>':'';
 
       return '<div class="contcard"><div class="contep">'+c.empresa+'</div>'+(c.nome?'<div class="contnm">'+c.nome+'</div>':'')+'<div class="contlinks">'+wpp+delBtn+'</div></div>';
@@ -614,7 +614,7 @@ function salvarContato(){
   }).catch(function(){toast('Erro ao salvar.');});
 }
 
-function excluirContato(btn){
+function editarContato(btn){var id=btn.getAttribute('data-id');var emp=btn.getAttribute('data-emp');var nome=btn.getAttribute('data-nome');var tel=btn.getAttribute('data-tel');var tipo=btn.getAttribute('data-tipo');document.getElementById('cEmp').value=emp||'';document.getElementById('cNome').value=nome||'';document.getElementById('cTel').value=tel||'';var tipoEl=document.getElementById('cTipo');if(tipoEl)tipoEl.value=tipo||'arcofoods';window._editId=id;document.getElementById('adminContatos').scrollIntoView({behavior:'smooth'});toast('Edite os dados e clique em Salvar.');} function excluirContato(btn){
   var id=btn.getAttribute('data-id');
   if(!id){return;}
   if(!confirm('Excluir este contato?'))return;

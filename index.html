@@ -195,7 +195,7 @@ textarea.inp{resize:vertical;min-height:80px;}
     </div>
 
     <div id="negociacao" class="pg">
-      <div class="ph"><div class="pt">Negociacao Comercial</div><div class="ps">Solicite aprovacao de condicao especial</div><div style="margin-top:6px;font-size:12px;color:#3B82F6;font-weight:600">Coordenador: COOD 40 - Leandro Felipe - Norte Fluminense</div></div>
+      <div class="ph"><div class="pt">Negociacao Comercial</div><div class="ps">Solicite aprovacao de condicao especial</div></div>
       <div class="nvend"><span style="font-size:24px">&#128100;</span><div><div class="nvlbl">Vendedor</div><div class="nvnome" id="negVend">-</div></div></div>
       <div class="card">
         <div class="ct">Dados da Negociacao</div>
@@ -295,10 +295,7 @@ textarea.inp{resize:vertical;min-height:80px;}
       <div id="adminContatos" style="display:none">
         <div class="admin-box">
           <div class="admin-title">&#128274; Area do Coordenador - Novo Contato</div>
-          <div class="g2">
-            <div class="fg"><label class="fl">Empresa</label><input id="cEmp" class="inp" placeholder="ex: Arcofoods"></div>
-            <div class="fg"><label class="fl">Tipo</label><select id="cTipo" class="inp"><option value="arcofoods">Arcofoods</option><option value="fornecedor">Fornecedor</option></select></div>
-          </div>
+          <div class="fg"><label class="fl">Empresa</label><input id="cEmp" class="inp" placeholder="ex: Arcofoods"></div>
           <div class="fg"><label class="fl">Nome do Contato</label><input id="cNome" class="inp" placeholder="ex: Leandro Felipe"></div>
           <div class="g2">
             <div class="fg"><label class="fl">Telefone (com DDD)</label><input id="cTel" class="inp" placeholder="ex: 21971922229"></div>
@@ -312,7 +309,7 @@ textarea.inp{resize:vertical;min-height:80px;}
         <div class="contnm">Leandro Felipe &middot; COOD 40</div>
         <div class="contlinks">
           <a href="https://wa.me/5521971922229?text=Ola%20Leandro!" target="_blank" class="cwpp">&#128172; WhatsApp</a>
-          
+          <a href="mailto:leandro.felipe@arcofoods.com.br" class="cemail" onclick="window.location.href='mailto:'+this.getAttribute('data-email')">&#9993; E-mail</a>
         </div>
       </div>
       <div id="listaContatos"><div class="loading">Carregando contatos...</div></div>
@@ -496,7 +493,7 @@ function renderProds(){
   }).join('');
 }
 function sp(i){if(prods[i])prods[i].n=document.getElementById('pn'+i).value;}
-function cp(i){if(!prods[i])return;var q=parseFloat(document.getElementById('pq'+i).value)||0,t=parseFloat(document.getElementById('pt'+i).value)||0,v=parseFloat(document.getElementById('pv'+i).value)||0,id=parseFloat(document.getElementById('pi'+i).value)||0,u=document.getElementById('pu'+i).value,nm=document.getElementById('pn'+i).value,dif=v-id,pct=t>0?(dif/t)*100:0,tot=dif*q;prods[i]={n:nm,q:q,u:u,t:t,v:v,i:id,dif:dif,pct:pct,tot:tot};if(!t||!id||!q)return;var el=document.getElementById('pr'+i);el.style.display='block';el.innerHTML='Diferenca: <strong style="color:var(--rd)">R$ '+fBR(Math.abs(dif))+'/'+u+'</strong> | Invest: <strong style="color:var(--am)">'+Math.abs(pct).toFixed(2)+'%</strong> | Total: <strong style="color:var(--rd)">R$ '+fBR(Math.abs(tot))+'</strong>';}
+function cp(i){if(!prods[i])return;var q=parseFloat(document.getElementById('pq'+i).value)||0,t=parseFloat(document.getElementById('pt'+i).value)||0,v=parseFloat(document.getElementById('pv'+i).value)||0,id=parseFloat(document.getElementById('pi'+i).value)||0,u=document.getElementById('pu'+i).value,nm=document.getElementById('pn'+i).value,dif=v-id,pct=t>0?(dif/t)*100:0,tot=dif*q;prods[i]={n:nm,q:q,u:u,t:t,v:v,i:id,dif:dif,pct:pct,tot:tot};if(!t||!id||!q)return;var el=document.getElementById('pr'+i);el.style.display='block';el.innerHTML='Diferenca: <strong style="color:var(--rd)">R$ '+Math.abs(dif).toFixed(4)+'/'+u+'</strong> | Invest: <strong style="color:var(--am)">'+Math.abs(pct).toFixed(2)+'%</strong> | Total: <strong style="color:var(--rd)">R$ '+Math.abs(tot).toFixed(2)+'</strong>';}
 function remProd(i){prods.splice(i,1);renderProds();}
 
 function coletarProds(){return prods.map(function(p,i){try{var q=parseFloat(document.getElementById('pq'+i).value)||p.q||0,t=parseFloat(document.getElementById('pt'+i).value)||p.t||0,v=parseFloat(document.getElementById('pv'+i).value)||p.v||0,id=parseFloat(document.getElementById('pi'+i).value)||p.i||0,u=document.getElementById('pu'+i).value||p.u,nm=document.getElementById('pn'+i).value||p.n||'',dif=v-id,pct=t>0?(dif/t)*100:0,tot=dif*q;return{n:nm,q:q,u:u,t:t,v:v,i:id,dif:dif,pct:pct,tot:tot};}catch(e){return p;}});}
@@ -522,7 +519,7 @@ function gerarNeg(){
   h+='<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--t2)">Cliente</div><div style="font-size:15px;font-weight:600;color:var(--t)">'+cli+'</div></div>';
   if(conc||skus){h+='<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">';if(conc)h+='<div style="background:var(--s1);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--t2)">Concorrente: <strong style="color:var(--t)">'+conc+'</strong></div>';if(skus)h+='<div style="background:var(--s1);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--t2)">Pedido: <strong style="color:var(--t)">'+skus+'</strong></div>';h+='</div>';}
   if(ctx)h+='<div style="background:var(--s1);border-left:3px solid var(--am);border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--t2);line-height:1.7">'+ctx+'</div>';
-  ps.forEach(function(p){h+='<div style="border:1px solid var(--b);border-radius:10px;padding:14px;margin-bottom:10px"><div style="font-weight:700;color:var(--t);margin-bottom:10px;font-size:15px">'+p.n+'</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+cl('Qtd',p.q+' '+p.u,'var(--t)')+cl('P.Tabela','R$ '+fBR(p.t),'var(--t2)')+cl('P.Vendedor','R$ '+fBR(p.v),'var(--am)')+cl('P.Ideal','R$ '+fBR(p.i),'var(--gn)')+cl('Invest.Unit','R$ '+fBR(Math.abs(p.dif||0)),'var(--rd)')+cl('Total','R$ '+fBR(Math.abs(p.tot||0)),'var(--rd)')+'</div></div>';});
+  ps.forEach(function(p){h+='<div style="border:1px solid var(--b);border-radius:10px;padding:14px;margin-bottom:10px"><div style="font-weight:700;color:var(--t);margin-bottom:10px;font-size:15px">'+p.n+'</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+cl('Qtd',p.q+' '+p.u,'var(--t)')+cl('P.Tabela','R$ '+p.t.toFixed(4),'var(--t2)')+cl('P.Vendedor','R$ '+p.v.toFixed(4),'var(--am)')+cl('P.Ideal','R$ '+p.i.toFixed(4),'var(--gn)')+cl('Invest.Unit','R$ '+Math.abs(p.dif||0).toFixed(4),'var(--rd)')+cl('Total','R$ '+Math.abs(p.tot||0).toFixed(2),'var(--rd)')+'</div></div>';});
   h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;text-align:center"><div style="background:var(--am2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">Produtos</div><div style="font-size:22px;font-weight:700;color:var(--am)">'+ps.length+'</div></div><div style="background:var(--am2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">% Medio</div><div style="font-size:22px;font-weight:700;color:var(--am)">'+med.toFixed(2)+'%</div></div><div style="background:var(--rd2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">Investimento</div><div style="font-size:20px;font-weight:700;color:var(--rd)">R$ '+tot.toFixed(2)+'</div></div></div>';
   h+='<div id="negBtns" style="display:flex;gap:8px;flex-wrap:wrap"><button onclick="tirarPrint()" style="flex:1;padding:12px;background:var(--am);border:none;border-radius:10px;color:#0A0A0A;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#128247; Salvar Imagem</button><button onclick="envWpp()" style="flex:1;padding:12px;background:var(--gn);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">WhatsApp</button><button onclick="envEmail()" style="flex:1;padding:12px;background:var(--s1);border:1px solid var(--b2);border-radius:10px;color:var(--t2);font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">E-mail</button></div>';
   h+='</div>';
@@ -531,7 +528,6 @@ function gerarNeg(){
   window.scrollTo(0,document.getElementById('negRes').offsetTop-20);
 }
 
-function fBR(v){return v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function cl(lb,vl,cor){return'<div style="background:var(--s1);border-radius:8px;padding:8px;text-align:center"><div style="color:var(--t3);font-size:10px;text-transform:uppercase;margin-bottom:3px">'+lb+'</div><div style="font-weight:700;color:'+cor+';font-size:13px">'+vl+'</div></div>';}
 
 function tirarPrint(){
@@ -595,7 +591,7 @@ function carregarContatos(){
     var el=document.getElementById('listaContatos');
     if(!data.length){el.innerHTML='<div class="empty"><div class="eico">&#128222;</div>Nenhum contato cadastrado ainda.</div>';return;}
     el.innerHTML=data.map(function(c){
-      var delBtn=eu&&eu.t==='coord'?'<button class="cdel" onclick="excluirContato(this)" data-id="'+c.id+'">&#128465;</button><button class="cdel" onclick="editarContato(this)" data-id="'+c.id+'" data-emp="'+c.empresa+'" data-nome="'+(c.nome||'')+'" data-tel="'+(c.telefone||'')+'" data-tipo="'+(c.tipo||'arcofoods')+'" style="background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3);color:#3B82F6;margin-left:4px">&#9999;</button>':'';
+      var delBtn=eu&&eu.t==='coord'?'<button class="cdel" onclick="excluirContato(this)" data-id="'+c.id+'">&#128465;</button>':'';
       var wpp=c.telefone?'<a href="https://wa.me/55'+c.telefone.replace(/\D/g,'')+'" target="_blank" class="cwpp">&#128172; WhatsApp</a>':'';
 
       return '<div class="contcard"><div class="contep">'+c.empresa+'</div>'+(c.nome?'<div class="contnm">'+c.nome+'</div>':'')+'<div class="contlinks">'+wpp+delBtn+'</div></div>';
@@ -606,15 +602,19 @@ function carregarContatos(){
 function salvarContato(){
   var emp=document.getElementById('cEmp').value.trim();
   if(!emp){toast('Informe a empresa.');return;}
-  var tipoEl=document.getElementById('cTipo');var dados={empresa:emp,nome:document.getElementById('cNome').value.trim(),telefone:document.getElementById('cTel').value.trim(),email:document.getElementById('cEmail').value.trim(),tipo:tipoEl?tipoEl.value:'arcofoods'};
-  supaFetch('contatos',{method:'POST',body:JSON.stringify(dados)}).then(function(){
+  var dados={empresa:emp,nome:document.getElementById('cNome').value.trim(),telefone:document.getElementById('cTel').value.trim(),email:document.getElementById('cEmail').value.trim()};
+  var metodo=window._editId?'PATCH':'POST';
+  var url=window._editId?'contatos?id=eq.'+window._editId:'contatos';
+  supaFetch(url,{method:metodo,body:JSON.stringify(dados)}).then(function(){
+    window._editId=null;
     ['cEmp','cNome','cTel','cEmail'].forEach(function(id){document.getElementById(id).value='';});
-    toast('Contato salvo!');
+    if(document.getElementById('cTipo'))document.getElementById('cTipo').value='arcofoods';
+    toast(metodo==='PATCH'?'Contato atualizado!':'Contato salvo!');
     carregarContatos();
   }).catch(function(){toast('Erro ao salvar.');});
 }
 
-function editarContato(btn){var id=btn.getAttribute('data-id');var emp=btn.getAttribute('data-emp');var nome=btn.getAttribute('data-nome');var tel=btn.getAttribute('data-tel');var tipo=btn.getAttribute('data-tipo');document.getElementById('cEmp').value=emp||'';document.getElementById('cNome').value=nome||'';document.getElementById('cTel').value=tel||'';var tipoEl=document.getElementById('cTipo');if(tipoEl)tipoEl.value=tipo||'arcofoods';window._editId=id;document.getElementById('adminContatos').scrollIntoView({behavior:'smooth'});toast('Edite os dados e clique em Salvar.');} function excluirContato(btn){
+function excluirContato(btn){
   var id=btn.getAttribute('data-id');
   if(!id){return;}
   if(!confirm('Excluir este contato?'))return;

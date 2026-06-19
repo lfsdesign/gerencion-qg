@@ -180,6 +180,7 @@ textarea.inp{resize:vertical;min-height:80px;}
     <button class="mb" onclick="ir('documentos',this)">Documentacao</button>
     <button class="mb" onclick="ir('contatos',this);carregarContatos()">Contatos</button>
     <button class="mb" onclick="ir('campanhas',this);carregarCampanhas()">Campanhas</button>
+    <button class="mb" onclick="irBI()">BI Vendas</button>
   </div>
   <div id="main">
 
@@ -195,6 +196,7 @@ textarea.inp{resize:vertical;min-height:80px;}
         <div class="mcard" onclick="irM('documentos')"><div class="micon">&#128196;</div><div class="mname">Documentacao</div><div class="mdesc">PIX e documentos</div></div>
         <div class="mcard" onclick="irM('contatos');carregarContatos()"><div class="micon">&#128222;</div><div class="mname">Contatos</div><div class="mdesc">Arcofoods e fornecedores</div></div>
         <div class="mcard" onclick="irM('campanhas');carregarCampanhas()"><div class="micon">&#127919;</div><div class="mname">Campanhas</div><div class="mdesc">Promocoes ativas</div></div>
+        <div class="mcard" onclick="irBI()"><div class="micon">&#128200;</div><div class="mname">BI Vendas</div><div class="mdesc">Painel de performance</div></div>
       </div>
     </div>
 
@@ -301,13 +303,11 @@ textarea.inp{resize:vertical;min-height:80px;}
           <div class="admin-title">&#128274; Area do Coordenador - Novo Contato</div>
           <div class="g2">
             <div class="fg"><label class="fl">Empresa</label><input id="cEmp" class="inp" placeholder="ex: Arcofoods"></div>
-            <div class="fg"><label class="fl">Tipo</label><select id="cTipo" class="inp"><option value="arcofoods">Arcofoods</option><option value="fornecedor">Fornecedor</option></select></div>
+            <div class="fg"><label class="fl">Tipo</label><select id="cTipo" class="inp" onchange="toggleEmailField()"><option value="arcofoods">Arcofoods</option><option value="fornecedor">Fornecedor</option></select></div>
           </div>
           <div class="fg"><label class="fl">Nome do Contato</label><input id="cNome" class="inp" placeholder="ex: Leandro Felipe"></div>
-          <div class="g2">
-            <div class="fg"><label class="fl">Telefone (com DDD)</label><input id="cTel" class="inp" placeholder="ex: 21971922229"></div>
-            <div class="fg"><label class="fl">E-mail</label><input id="cEmail" class="inp" placeholder="ex: email@email.com"></div>
-          </div>
+          <div class="fg"><label class="fl">Telefone (com DDD)</label><input id="cTel" class="inp" placeholder="ex: 21971922229"></div>
+          <div class="fg" id="emailField" style="display:none"><label class="fl">E-mail</label><input id="cEmail" class="inp" placeholder="ex: email@fornecedor.com.br"></div>
           <button class="btn bp" onclick="salvarContato()" style="width:100%">+ Salvar Contato</button>
         </div>
       </div>
@@ -316,7 +316,6 @@ textarea.inp{resize:vertical;min-height:80px;}
         <div class="contnm">Leandro Felipe &middot; COOD 40</div>
         <div class="contlinks">
           <a href="https://wa.me/5521971922229?text=Ola%20Leandro!" target="_blank" class="cwpp">&#128172; WhatsApp</a>
-          
         </div>
       </div>
       <div id="listaContatos"><div class="loading">Carregando contatos...</div></div>
@@ -333,6 +332,21 @@ textarea.inp{resize:vertical;min-height:80px;}
           <div class="fg"><label class="fl">Imagem (opcional)</label><input type="file" id="campImg" accept="image/*" class="inp" style="padding:8px"></div>
           <button class="btn bp" onclick="salvarCampanha()" style="width:100%">+ Publicar Campanha</button>
         </div>
+      </div>
+      <div id="biCampBox" style="background:linear-gradient(135deg,rgba(99,102,241,0.18),rgba(59,130,246,0.12));border:1.5px solid rgba(99,102,241,0.4);border-radius:16px;padding:22px 18px;margin-bottom:18px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-18px;right:-18px;font-size:80px;opacity:0.07;pointer-events:none">&#128200;</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <div style="width:44px;height:44px;background:linear-gradient(135deg,#6366f1,#3B82F6);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">&#128200;</div>
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#818cf8;margin-bottom:2px">PAINEL INTERATIVO</div>
+            <div style="font-size:17px;font-weight:700;color:var(--t)">BI de Campanhas</div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:var(--t2);margin-bottom:16px;line-height:1.6">Acompanhe em tempo real o desempenho das campanhas, metas e resultados da equipe.</div>
+        <a id="biCampLink" href="https://app.powerbi.com/view?r=eyJrIjoiZmMxNjg0ZmYtZjY3OS00MWYyLWE5ZGEtYzA3MDNkM2RlOGY2IiwidCI6IjZlOGU5MWQ2LWQyY2QtNDA4MC05MTFlLTlhODE3NjNhOTA0ZiJ9" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#6366f1,#3B82F6);border:none;border-radius:12px;padding:14px;color:#fff;font-weight:700;font-size:14px;text-decoration:none;letter-spacing:.5px;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+          <span style="font-size:20px">&#128200;</span> Abrir BI de Campanhas &rarr;
+        </a>
+        <div style="margin-top:10px;text-align:center;font-size:10px;color:var(--t3)">Clique para abrir o painel no Power BI</div>
       </div>
       <div id="listaCampanhas"><div class="loading">Carregando campanhas...</div></div>
     </div>
@@ -374,9 +388,24 @@ function supaFetch(path,opts){
 
 function getDevId(){var id=localStorage.getItem('QG_DEV');if(!id){id='D_'+Math.random().toString(36).substr(2,10).toUpperCase()+'_'+Date.now();localStorage.setItem('QG_DEV',id);}return id;}
 
+function toggleEmailField(){
+  var tipo=document.getElementById('cTipo').value;
+  var ef=document.getElementById('emailField');
+  if(ef)ef.style.display=tipo==='fornecedor'?'block':'none';
+  if(tipo!=='fornecedor'){var e=document.getElementById('cEmail');if(e)e.value='';}
+}
+function registrarAcesso(u){
+  try{
+    supaFetch('acessos',{method:'POST',body:JSON.stringify({codigo_usuario:u.cd,nome:u.n,tipo:u.t==='coord'?'Coordenador':'Vendedor'})});
+  }catch(e){}
+}
+function irBI(){
+  window.open('https://app.powerbi.com/view?r=eyJrIjoiM2Q0NzhkOWEtNDZkYi00YTQ5LTkxZTYtM2IwMGE4NWY1YTdiIiwidCI6IjZlOGU5MWQ2LWQyY2QtNDA4MC05MTFlLTlhODE3NjNhOTA0ZiJ9','_blank');
+}
 function entrar(u){
   eu=u;
   localStorage.setItem('QG_LOG',JSON.stringify({c:u.c,n:u.n,cd:u.cd,t:u.t}));
+  registrarAcesso(u);
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('topNome').textContent=u.n;
@@ -500,7 +529,7 @@ function renderProds(){
   }).join('');
 }
 function sp(i){if(prods[i])prods[i].n=document.getElementById('pn'+i).value;}
-function cp(i){if(!prods[i])return;var q=parseFloat(document.getElementById('pq'+i).value)||0,t=parseFloat(document.getElementById('pt'+i).value)||0,v=parseFloat(document.getElementById('pv'+i).value)||0,id=parseFloat(document.getElementById('pi'+i).value)||0,u=document.getElementById('pu'+i).value,nm=document.getElementById('pn'+i).value,dif=v-id,pct=t>0?(dif/t)*100:0,tot=dif*q;prods[i]={n:nm,q:q,u:u,t:t,v:v,i:id,dif:dif,pct:pct,tot:tot};if(!t||!id||!q)return;var el=document.getElementById('pr'+i);el.style.display='block';el.innerHTML='Diferenca: <strong style="color:var(--rd)">R$ '+fBR(Math.abs(dif))+'/'+u+'</strong> | Invest: <strong style="color:var(--am)">'+Math.abs(pct).toFixed(2)+'%</strong> | Total: <strong style="color:var(--rd)">R$ '+fBR(Math.abs(tot))+'</strong>';}
+function cp(i){if(!prods[i])return;var q=parseFloat(document.getElementById('pq'+i).value)||0,t=parseFloat(document.getElementById('pt'+i).value)||0,v=parseFloat(document.getElementById('pv'+i).value)||0,id=parseFloat(document.getElementById('pi'+i).value)||0,u=document.getElementById('pu'+i).value,nm=document.getElementById('pn'+i).value,dif=v-id,pct=t>0?(dif/t)*100:0,tot=dif*q;prods[i]={n:nm,q:q,u:u,t:t,v:v,i:id,dif:dif,pct:pct,tot:tot};if(!t||!id||!q)return;var el=document.getElementById('pr'+i);el.style.display='block';el.innerHTML='Diferenca: <strong style="color:var(--rd)">R$ '+Math.abs(dif).toFixed(4)+'/'+u+'</strong> | Invest: <strong style="color:var(--am)">'+Math.abs(pct).toFixed(2)+'%</strong> | Total: <strong style="color:var(--rd)">R$ '+Math.abs(tot).toFixed(2)+'</strong>';}
 function remProd(i){prods.splice(i,1);renderProds();}
 
 function coletarProds(){return prods.map(function(p,i){try{var q=parseFloat(document.getElementById('pq'+i).value)||p.q||0,t=parseFloat(document.getElementById('pt'+i).value)||p.t||0,v=parseFloat(document.getElementById('pv'+i).value)||p.v||0,id=parseFloat(document.getElementById('pi'+i).value)||p.i||0,u=document.getElementById('pu'+i).value||p.u,nm=document.getElementById('pn'+i).value||p.n||'',dif=v-id,pct=t>0?(dif/t)*100:0,tot=dif*q;return{n:nm,q:q,u:u,t:t,v:v,i:id,dif:dif,pct:pct,tot:tot};}catch(e){return p;}});}
@@ -526,7 +555,7 @@ function gerarNeg(){
   h+='<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--t2)">Cliente</div><div style="font-size:15px;font-weight:600;color:var(--t)">'+cli+'</div></div>';
   if(conc||skus){h+='<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">';if(conc)h+='<div style="background:var(--s1);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--t2)">Concorrente: <strong style="color:var(--t)">'+conc+'</strong></div>';if(skus)h+='<div style="background:var(--s1);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--t2)">Pedido: <strong style="color:var(--t)">'+skus+'</strong></div>';h+='</div>';}
   if(ctx)h+='<div style="background:var(--s1);border-left:3px solid var(--am);border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--t2);line-height:1.7">'+ctx+'</div>';
-  ps.forEach(function(p){h+='<div style="border:1px solid var(--b);border-radius:10px;padding:14px;margin-bottom:10px"><div style="font-weight:700;color:var(--t);margin-bottom:10px;font-size:15px">'+p.n+'</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+cl('Qtd',p.q+' '+p.u,'var(--t)')+cl('P.Tabela','R$ '+fBR(p.t),'var(--t2)')+cl('P.Vendedor','R$ '+fBR(p.v),'var(--am)')+cl('P.Ideal','R$ '+fBR(p.i),'var(--gn)')+cl('Invest.Unit','R$ '+fBR(Math.abs(p.dif||0)),'var(--rd)')+cl('Total','R$ '+fBR(Math.abs(p.tot||0)),'var(--rd)')+'</div></div>';});
+  ps.forEach(function(p){h+='<div style="border:1px solid var(--b);border-radius:10px;padding:14px;margin-bottom:10px"><div style="font-weight:700;color:var(--t);margin-bottom:10px;font-size:15px">'+p.n+'</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+cl('Qtd',p.q+' '+p.u,'var(--t)')+cl('P.Tabela','R$ '+p.t.toFixed(4),'var(--t2)')+cl('P.Vendedor','R$ '+p.v.toFixed(4),'var(--am)')+cl('P.Ideal','R$ '+p.i.toFixed(4),'var(--gn)')+cl('Invest.Unit','R$ '+Math.abs(p.dif||0).toFixed(4),'var(--rd)')+cl('Total','R$ '+Math.abs(p.tot||0).toFixed(2),'var(--rd)')+'</div></div>';});
   h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;text-align:center"><div style="background:var(--am2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">Produtos</div><div style="font-size:22px;font-weight:700;color:var(--am)">'+ps.length+'</div></div><div style="background:var(--am2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">% Medio</div><div style="font-size:22px;font-weight:700;color:var(--am)">'+med.toFixed(2)+'%</div></div><div style="background:var(--rd2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">Investimento</div><div style="font-size:20px;font-weight:700;color:var(--rd)">R$ '+tot.toFixed(2)+'</div></div></div>';
   h+='<div id="negBtns" style="display:flex;gap:8px;flex-wrap:wrap"><button onclick="tirarPrint()" style="flex:1;padding:12px;background:var(--am);border:none;border-radius:10px;color:#0A0A0A;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#128247; Salvar Imagem</button><button onclick="envWpp()" style="flex:1;padding:12px;background:var(--gn);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">WhatsApp</button><button onclick="envEmail()" style="flex:1;padding:12px;background:var(--s1);border:1px solid var(--b2);border-radius:10px;color:var(--t2);font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">E-mail</button></div>';
   h+='</div>';
@@ -535,7 +564,6 @@ function gerarNeg(){
   window.scrollTo(0,document.getElementById('negRes').offsetTop-20);
 }
 
-function fBR(v){return v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function cl(lb,vl,cor){return'<div style="background:var(--s1);border-radius:8px;padding:8px;text-align:center"><div style="color:var(--t3);font-size:10px;text-transform:uppercase;margin-bottom:3px">'+lb+'</div><div style="font-weight:700;color:'+cor+';font-size:13px">'+vl+'</div></div>';}
 
 function tirarPrint(){
@@ -603,14 +631,15 @@ function carregarContatos(){
       var editBtn=eu&&eu.t==='coord'?'<button class="cdel" onclick="editarContato(this)" data-id="'+c.id+'" data-emp="'+c.empresa+'" data-nome="'+(c.nome||'')+'" data-tel="'+(c.telefone||'')+'" data-tipo="'+(c.tipo||'arcofoods')+'" style="background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3);color:#3B82F6;margin-left:4px">&#9999;</button>':'';
       var delBtn=eu&&eu.t==='coord'?'<button class="cdel" onclick="excluirContato(this)" data-id="'+c.id+'">&#128465;</button>':'';
       var wpp=c.telefone?'<a href="https://wa.me/55'+c.telefone.replace(/\D/g,'')+'" target="_blank" class="cwpp">&#128172; WhatsApp</a>':'';
-      return '<div class="contcard">'+tag+'<div class="contep">'+c.empresa+'</div>'+(c.nome?'<div class="contnm">'+c.nome+'</div>':'')+'<div class="contlinks">'+wpp+delBtn+editBtn+'</div></div>';
+      var emailBtn=(c.tipo==='fornecedor'&&c.email)?'<a href="mailto:'+c.email+'" class="cemail">&#9993; E-mail</a>':'';
+      return '<div class="contcard">'+tag+'<div class="contep">'+c.empresa+'</div>'+(c.nome?'<div class="contnm">'+c.nome+'</div>':'')+'<div class="contlinks">'+wpp+emailBtn+delBtn+editBtn+'</div></div>';
     }).join('')+'</div>';
   }).catch(function(){document.getElementById('listaContatos').innerHTML='<div class="empty">Erro ao carregar contatos.</div>';});
 }
 function salvarContato(){
   var emp=document.getElementById('cEmp').value.trim();
   if(!emp){toast('Informe a empresa.');return;}
-  var tipoEl=document.getElementById('cTipo');var dados={empresa:emp,nome:document.getElementById('cNome').value.trim(),telefone:document.getElementById('cTel').value.trim(),email:document.getElementById('cEmail').value.trim(),tipo:tipoEl?tipoEl.value:'arcofoods'};
+  var dados={empresa:emp,nome:document.getElementById('cNome').value.trim(),telefone:document.getElementById('cTel').value.trim(),email:document.getElementById('cEmail').value.trim()};
   var metodo=window._editId?'PATCH':'POST';
   var url=window._editId?'contatos?id=eq.'+window._editId:'contatos';
   supaFetch(url,{method:metodo,body:JSON.stringify(dados)}).then(function(){
@@ -634,6 +663,8 @@ function editarContato(btn){
   var tipoEl=document.getElementById('cTipo');
   if(tipoEl)tipoEl.value=tipo||'arcofoods';
   window._editId=id;
+  toggleEmailField();
+  if(tipo==='fornecedor'){var emailEl=document.getElementById('cEmail');supaFetch('contatos?id=eq.'+id).then(function(r){return r.json();}).then(function(d){if(d&&d[0]&&d[0].email&&emailEl)emailEl.value=d[0].email;}).catch(function(){});}
   document.getElementById('adminContatos').scrollIntoView({behavior:'smooth'});
   toast('Edite os dados e clique em Salvar.');
 }

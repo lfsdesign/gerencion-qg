@@ -181,6 +181,7 @@ textarea.inp{resize:vertical;min-height:80px;}
     <button class="mb" onclick="ir('contatos',this);carregarContatos()">Contatos</button>
     <button class="mb" onclick="ir('campanhas',this);carregarCampanhas()">Campanhas</button>
     <button class="mb" onclick="irBI()">BI Vendas</button>
+    <button class="mb" onclick="ir('mixestrategico',this);carregarMix()">Mix Estratégico</button>
   </div>
   <div id="main">
 
@@ -197,6 +198,7 @@ textarea.inp{resize:vertical;min-height:80px;}
         <div class="mcard" onclick="irM('contatos');carregarContatos()"><div class="micon">&#128222;</div><div class="mname">Contatos</div><div class="mdesc">Arcofoods e fornecedores</div></div>
         <div class="mcard" onclick="irM('campanhas');carregarCampanhas()"><div class="micon">&#127919;</div><div class="mname">Campanhas</div><div class="mdesc">Promocoes ativas</div></div>
         <div class="mcard" onclick="irBI()"><div class="micon">&#128200;</div><div class="mname">BI Vendas</div><div class="mdesc">Painel de performance</div></div>
+        <div class="mcard" onclick="irM('mixestrategico');carregarMix()"><div class="micon">&#11088;</div><div class="mname">Mix Estratégico</div><div class="mdesc">Produtos de alta rentabilidade</div></div>
       </div>
     </div>
 
@@ -351,6 +353,45 @@ textarea.inp{resize:vertical;min-height:80px;}
       <div id="listaCampanhas"><div class="loading">Carregando campanhas...</div></div>
     </div>
 
+
+    <div id="mixestrategico" class="pg">
+      <div class="ph">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <div style="width:40px;height:40px;background:linear-gradient(135deg,#F59E0B,#EF4444);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">&#11088;</div>
+          <div>
+            <div class="pt">Mix Estratégico</div>
+            <div class="ps">Produtos de alta rentabilidade</div>
+          </div>
+        </div>
+        <div style="background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(239,68,68,0.08));border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--t2);line-height:1.6">
+          <strong style="color:var(--am)">&#128161; Foque nesses produtos!</strong> Eles geram mais resultado para a equipe e fortalecem nossa posição com a empresa. Cada item do Mix Estratégico que voce coloca no pedido faz a diferença.
+        </div>
+      </div>
+      <div id="adminMix" style="display:none">
+        <div class="admin-box">
+          <div class="admin-title">&#128274; Area do Coordenador - Adicionar Item</div>
+          <div class="g2">
+            <div class="fg"><label class="fl">Departamento</label><input id="mixNovoDep" class="inp" placeholder="ex: Mercearia Seca"></div>
+            <div class="fg"><label class="fl">Secao</label><input id="mixNovoSec" class="inp" placeholder="ex: Condimentos/Molhos"></div>
+          </div>
+          <div class="fg"><label class="fl">Produto (Codigo + Nome)</label><input id="mixNovoNome" class="inp" placeholder="ex: 12345 - PRODUTO EXEMPLO 1KG"></div>
+          <button class="btn bp" onclick="adicionarMixItem()" style="width:100%">+ Adicionar ao Mix Estrategico</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <input id="mixBusca" class="inp" placeholder="&#128269; Buscar produto ou codigo..." oninput="filtrarMix()" style="flex:1;min-width:200px">
+        <select id="mixDep" class="inp" onchange="filtrarMix()" style="flex:1;min-width:140px">
+          <option value="">Todos os departamentos</option>
+          <option value="Bebidas Alcoolicas">Bebidas Alcoolicas</option>
+          <option value="Bebidas Não Alcoolicas">Bebidas Nao Alcoolicas</option>
+          <option value="Congelados e Resfriados">Congelados e Resfriados</option>
+          <option value="Limpeza/Higiene">Limpeza/Higiene</option>
+          <option value="Mercearia Seca">Mercearia Seca</option>
+        </select>
+      </div>
+      <div id="mixContador" style="font-size:12px;color:var(--t2);margin-bottom:12px;text-align:right"></div>
+      <div id="mixLista"></div>
+    </div>
   </div>
 </div>
 
@@ -379,6 +420,80 @@ var TIPOS={
 };
 var UNI=['kg','fardo','cx','bombona','bag','pct','unid','balde','lata','saco','galao','caixa'];
 var eu=null;var prods=[];var tipoAtual=null;
+var mixCache=[];
+
+function carregarMix(){
+  document.getElementById('mixLista').innerHTML='<div class="loading">Carregando Mix Estrategico...</div>';
+  supaFetch('mix_estrategico?ativo=eq.true&order=departamento.asc,secao.asc,nome.asc').then(function(r){return r.json();}).then(function(data){
+    mixCache=data||[];
+    filtrarMix();
+  }).catch(function(){
+    document.getElementById('mixLista').innerHTML='<div class="empty">Erro ao carregar Mix Estrategico.</div>';
+  });
+}
+
+function renderMix(filtroTexto,filtroDep){
+  filtroTexto=(filtroTexto||'').toLowerCase().trim();
+  filtroDep=filtroDep||'';
+  var isAdmin=eu&&eu.t==='coord';
+  var grupos={};
+  mixCache.forEach(function(p){
+    if(filtroDep&&p.departamento!==filtroDep)return;
+    if(filtroTexto&&p.nome.toLowerCase().indexOf(filtroTexto)<0)return;
+    if(!grupos[p.departamento])grupos[p.departamento]={};
+    if(!grupos[p.departamento][p.secao])grupos[p.departamento][p.secao]=[];
+    grupos[p.departamento][p.secao].push(p);
+  });
+  var html='';
+  var count=0;
+  Object.keys(grupos).sort().forEach(function(dep){
+    var secs=grupos[dep];
+    var depHtml='';
+    var depCount=0;
+    Object.keys(secs).sort().forEach(function(sec){
+      var itens=secs[sec];
+      depCount+=itens.length;
+      depHtml+='<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin:14px 0 8px 4px">'+sec+' &middot; '+itens.length+'</div>';
+      itens.forEach(function(p){
+        var delBtn=isAdmin?'<button onclick="excluirMixItem(&#39;'+p.id+'&#39;)" style="background:var(--rd2);border:1px solid rgba(239,68,68,.2);color:var(--rd);border-radius:6px;padding:4px 8px;font-size:10px;cursor:pointer;font-family:Inter,sans-serif;flex-shrink:0">Excluir</button>':'';
+        depHtml+='<div style="background:var(--s1);border:1px solid var(--b);border-left:3px solid var(--am);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px"><span style="background:linear-gradient(135deg,#F59E0B,#EF4444);color:#0A0A0A;font-size:9px;font-weight:800;padding:3px 8px;border-radius:20px;letter-spacing:.5px;flex-shrink:0">&#11088; OURO</span><div style="font-size:13px;color:var(--t);flex:1;line-height:1.4">'+p.nome+'</div>'+delBtn+'</div>';
+      });
+    });
+    if(depCount>0){
+      count+=depCount;
+      html+='<div style="margin-bottom:18px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;padding:8px 12px;background:var(--am2);border-radius:8px"><span style="font-size:16px">&#128230;</span><div style="font-size:13px;font-weight:700;color:var(--am)">'+dep+'</div><div style="margin-left:auto;font-size:11px;color:var(--t2)">'+depCount+' itens</div></div>'+depHtml+'</div>';
+    }
+  });
+  document.getElementById('mixLista').innerHTML=count?html:'<div class="empty"><div class="eico">&#128269;</div>Nenhum produto encontrado.</div>';
+  document.getElementById('mixContador').textContent=count+' produto(s) exibido(s)';
+}
+function filtrarMix(){
+  var texto=document.getElementById('mixBusca').value;
+  var dep=document.getElementById('mixDep').value;
+  renderMix(texto,dep);
+}
+function excluirMixItem(id){
+  if(!confirm('Excluir este item do Mix Estrategico?'))return;
+  supaFetch('mix_estrategico?id=eq.'+id,{method:'DELETE'}).then(function(){
+    toast('Item excluido!');
+    mixCache=mixCache.filter(function(p){return p.id!==id;});
+    filtrarMix();
+  }).catch(function(){toast('Erro ao excluir.');});
+}
+function adicionarMixItem(){
+  var dep=document.getElementById('mixNovoDep').value.trim();
+  var sec=document.getElementById('mixNovoSec').value.trim();
+  var nome=document.getElementById('mixNovoNome').value.trim();
+  if(!dep||!sec||!nome){toast('Preencha todos os campos.');return;}
+  supaFetch('mix_estrategico',{method:'POST',body:JSON.stringify({departamento:dep,secao:sec,nome:nome,ativo:true})}).then(function(r){return r.json();}).then(function(data){
+    toast('Item adicionado!');
+    document.getElementById('mixNovoDep').value='';
+    document.getElementById('mixNovoSec').value='';
+    document.getElementById('mixNovoNome').value='';
+    if(data&&data[0])mixCache.push(data[0]);
+    filtrarMix();
+  }).catch(function(){toast('Erro ao adicionar.');});
+}
 
 function toast(m){var e=document.getElementById('toast');e.textContent=m;e.classList.add('on');setTimeout(function(){e.classList.remove('on');},2800);}
 
@@ -416,6 +531,7 @@ function entrar(u){
   if(u.t==='coord'){
     document.getElementById('adminContatos').style.display='block';
     document.getElementById('adminCampanhas').style.display='block';
+    document.getElementById('adminMix').style.display='block';
   }
 }
 

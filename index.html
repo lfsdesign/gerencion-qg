@@ -377,6 +377,8 @@ textarea.inp{resize:vertical;min-height:80px;}
           <div class="fg"><label class="fl">Produto (Codigo + Nome)</label><input id="mixNovoNome" class="inp" placeholder="ex: 12345 - PRODUTO EXEMPLO 1KG"></div>
           <button class="btn bp" onclick="adicionarMixItem()" style="width:100%">+ Adicionar ao Mix Estrategico</button>
         </div>
+        <button id="mixInativosBtn" class="btn bs" onclick="toggleMixInativos()" style="width:100%;margin-bottom:14px">Ver itens desativados</button>
+        <div id="mixInativosBox" style="display:none;margin-bottom:14px"></div>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
         <input id="mixBusca" class="inp" placeholder="&#128269; Buscar produto ou codigo..." oninput="filtrarMix()" style="flex:1;min-width:200px">
@@ -460,7 +462,8 @@ function renderMix(filtroTexto,filtroDep){
       depHtml+='<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin:14px 0 8px 4px">'+sec+' &middot; '+itens.length+'</div>';
       itens.forEach(function(p){
         var delBtn=isAdmin?'<button onclick="excluirMixItem(&#39;'+p.id+'&#39;)" style="background:var(--rd2);border:1px solid rgba(239,68,68,.2);color:var(--rd);border-radius:6px;padding:4px 8px;font-size:10px;cursor:pointer;font-family:Inter,sans-serif;flex-shrink:0">Excluir</button>':'';
-        depHtml+='<div style="background:var(--s1);border:1px solid var(--b);border-left:3px solid var(--am);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px"><span style="background:linear-gradient(135deg,#F59E0B,#EF4444);color:#0A0A0A;font-size:9px;font-weight:800;padding:3px 8px;border-radius:20px;letter-spacing:.5px;flex-shrink:0">&#11088; OURO</span><div style="font-size:13px;color:var(--t);flex:1;line-height:1.4">'+p.nome+'</div>'+delBtn+'</div>';
+        var offBtn=isAdmin?'<button onclick="desativarMixItem(&#39;'+p.id+'&#39;)" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,.25);color:var(--am);border-radius:6px;padding:4px 8px;font-size:10px;cursor:pointer;font-family:Inter,sans-serif;flex-shrink:0">Desativar</button>':'';
+        depHtml+='<div style="background:var(--s1);border:1px solid var(--b);border-left:3px solid var(--am);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px"><span style="background:linear-gradient(135deg,#F59E0B,#EF4444);color:#0A0A0A;font-size:9px;font-weight:800;padding:3px 8px;border-radius:20px;letter-spacing:.5px;flex-shrink:0">&#11088; OURO</span><div style="font-size:13px;color:var(--t);flex:1;line-height:1.4">'+p.nome+'</div>'+offBtn+delBtn+'</div>';
       });
     });
     if(depCount>0){
@@ -483,6 +486,43 @@ function excluirMixItem(id){
     mixCache=mixCache.filter(function(p){return p.id!==id;});
     filtrarMix();
   }).catch(function(){toast('Erro ao excluir.');});
+}
+function desativarMixItem(id){
+  supaFetch('mix_estrategico?id=eq.'+id,{method:'PATCH',body:JSON.stringify({ativo:false})}).then(function(){
+    toast('Item desativado!');
+    mixCache=mixCache.filter(function(p){return p.id!==id;});
+    filtrarMix();
+  }).catch(function(){toast('Erro ao desativar.');});
+}
+function reativarMixItem(id){
+  supaFetch('mix_estrategico?id=eq.'+id,{method:'PATCH',body:JSON.stringify({ativo:true})}).then(function(){
+    toast('Item reativado!');
+    carregarMixInativos();
+  }).catch(function(){toast('Erro ao reativar.');});
+}
+function carregarMixInativos(){
+  var box=document.getElementById('mixInativosBox');
+  if(!box)return;
+  box.innerHTML='<div class="loading">Carregando itens desativados...</div>';
+  supaFetch('mix_estrategico?ativo=eq.false&order=nome.asc').then(function(r){return r.json();}).then(function(data){
+    if(!data||!data.length){box.innerHTML='<div class="empty" style="padding:16px">Nenhum item desativado.</div>';return;}
+    var html=data.map(function(p){
+      return '<div style="background:var(--s1);border:1px solid var(--b);border-left:3px solid var(--t3);border-radius:10px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;opacity:.7"><div style="font-size:12px;color:var(--t2);flex:1;line-height:1.4">'+p.nome+'</div><button onclick="reativarMixItem(&#39;'+p.id+'&#39;)" style="background:var(--gn2);border:1px solid rgba(16,185,129,.3);color:var(--gn);border-radius:6px;padding:4px 10px;font-size:10px;cursor:pointer;font-family:Inter,sans-serif;flex-shrink:0">Reativar</button></div>';
+    }).join('');
+    box.innerHTML=html;
+  }).catch(function(){box.innerHTML='<div class="empty" style="padding:16px">Erro ao carregar.</div>';});
+}
+function toggleMixInativos(){
+  var box=document.getElementById('mixInativosBox');
+  var btn=document.getElementById('mixInativosBtn');
+  if(box.style.display==='none'){
+    box.style.display='block';
+    btn.textContent='Ocultar itens desativados';
+    carregarMixInativos();
+  }else{
+    box.style.display='none';
+    btn.textContent='Ver itens desativados';
+  }
 }
 function adicionarMixItem(){
   var dep=document.getElementById('mixNovoDep').value.trim();

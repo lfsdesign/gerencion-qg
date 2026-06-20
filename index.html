@@ -424,11 +424,15 @@ var mixCache=[];
 
 function carregarMix(){
   document.getElementById('mixLista').innerHTML='<div class="loading">Carregando Mix Estrategico...</div>';
-  supaFetch('mix_estrategico?ativo=eq.true&order=departamento.asc,secao.asc,nome.asc').then(function(r){return r.json();}).then(function(data){
+  supaFetch('mix_estrategico?ativo=eq.true&order=departamento.asc,secao.asc,nome.asc').then(function(r){
+    if(!r.ok){return r.text().then(function(t){throw new Error('HTTP '+r.status+': '+t);});}
+    return r.json();
+  }).then(function(data){
     mixCache=data||[];
     filtrarMix();
-  }).catch(function(){
-    document.getElementById('mixLista').innerHTML='<div class="empty">Erro ao carregar Mix Estrategico.</div>';
+  }).catch(function(e){
+    console.error('Erro ao carregar Mix Estrategico:',e);
+    document.getElementById('mixLista').innerHTML='<div class="empty">Erro ao carregar Mix Estrategico.<br><span style="font-size:10px;color:var(--t3)">'+(e.message||'')+'</span></div>';
   });
 }
 
@@ -510,9 +514,9 @@ function toggleEmailField(){
   if(tipo!=='fornecedor'){var e=document.getElementById('cEmail');if(e)e.value='';}
 }
 function registrarAcesso(u){
-  try{
-    supaFetch('acessos',{method:'POST',body:JSON.stringify({codigo_usuario:u.cd,nome:u.n,tipo:u.t==='coord'?'Coordenador':'Vendedor'})});
-  }catch(e){}
+  supaFetch('acessos',{method:'POST',body:JSON.stringify({codigo_usuario:u.cd,nome:u.n,tipo:u.t==='coord'?'Coordenador':'Vendedor'})}).then(function(r){
+    if(!r.ok){r.text().then(function(t){console.error('Erro ao registrar acesso:',r.status,t);});}
+  }).catch(function(e){console.error('Erro de rede ao registrar acesso:',e);});
 }
 function irBI(){
   window.open('https://app.powerbi.com/view?r=eyJrIjoiM2Q0NzhkOWEtNDZkYi00YTQ5LTkxZTYtM2IwMGE4NWY1YTdiIiwidCI6IjZlOGU5MWQ2LWQyY2QtNDA4MC05MTFlLTlhODE3NjNhOTA0ZiJ9','_blank');
@@ -645,7 +649,7 @@ function renderProds(){
   }).join('');
 }
 function sp(i){if(prods[i])prods[i].n=document.getElementById('pn'+i).value;}
-function cp(i){if(!prods[i])return;var q=parseFloat(document.getElementById('pq'+i).value)||0,t=parseFloat(document.getElementById('pt'+i).value)||0,v=parseFloat(document.getElementById('pv'+i).value)||0,id=parseFloat(document.getElementById('pi'+i).value)||0,u=document.getElementById('pu'+i).value,nm=document.getElementById('pn'+i).value,dif=v-id,pct=t>0?(dif/t)*100:0,tot=dif*q;prods[i]={n:nm,q:q,u:u,t:t,v:v,i:id,dif:dif,pct:pct,tot:tot};if(!t||!id||!q)return;var el=document.getElementById('pr'+i);el.style.display='block';el.innerHTML='Diferenca: <strong style="color:var(--rd)">R$ '+Math.abs(dif).toFixed(4)+'/'+u+'</strong> | Invest: <strong style="color:var(--am)">'+Math.abs(pct).toFixed(2)+'%</strong> | Total: <strong style="color:var(--rd)">R$ '+Math.abs(tot).toFixed(2)+'</strong>';}
+function cp(i){if(!prods[i])return;var q=parseFloat(document.getElementById('pq'+i).value)||0,t=parseFloat(document.getElementById('pt'+i).value)||0,v=parseFloat(document.getElementById('pv'+i).value)||0,id=parseFloat(document.getElementById('pi'+i).value)||0,u=document.getElementById('pu'+i).value,nm=document.getElementById('pn'+i).value,dif=v-id,pct=t>0?(dif/t)*100:0,tot=dif*q;prods[i]={n:nm,q:q,u:u,t:t,v:v,i:id,dif:dif,pct:pct,tot:tot};if(!t||!id||!q)return;var el=document.getElementById('pr'+i);el.style.display='block';el.innerHTML='Diferenca: <strong style="color:var(--rd)">R$ '+fBR(Math.abs(dif))+'/'+u+'</strong> | Invest: <strong style="color:var(--am)">'+fBR(Math.abs(pct))+'%</strong> | Total: <strong style="color:var(--rd)">R$ '+fBR(Math.abs(tot))+'</strong>';}
 function remProd(i){prods.splice(i,1);renderProds();}
 
 function coletarProds(){return prods.map(function(p,i){try{var q=parseFloat(document.getElementById('pq'+i).value)||p.q||0,t=parseFloat(document.getElementById('pt'+i).value)||p.t||0,v=parseFloat(document.getElementById('pv'+i).value)||p.v||0,id=parseFloat(document.getElementById('pi'+i).value)||p.i||0,u=document.getElementById('pu'+i).value||p.u,nm=document.getElementById('pn'+i).value||p.n||'',dif=v-id,pct=t>0?(dif/t)*100:0,tot=dif*q;return{n:nm,q:q,u:u,t:t,v:v,i:id,dif:dif,pct:pct,tot:tot};}catch(e){return p;}});}
@@ -666,13 +670,14 @@ function gerarNeg(){
   window._ND={cli:cli,vend:vend,hoje:hoje,ctx:ctx,conc:conc,skus:skus,ps:ps,tot:tot,med:med};
   var h='<div id="proposta" style="background:var(--s2);border:1px solid var(--b);border-radius:12px;padding:18px">';
   h+='<div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--am);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--b)">SOLICITACAO DE NEGOCIACAO COMERCIAL</div>';
-  h+='<div style="font-size:12px;color:var(--t2);margin-bottom:12px">'+hoje+' - Arcofoods - Norte Fluminense</div>';
+  h+='<div style="font-size:12px;color:var(--t2);margin-bottom:6px">'+hoje+' - Arcofoods - Norte Fluminense</div>';
+  h+='<div style="font-size:12px;color:#3B82F6;font-weight:600;margin-bottom:12px">Coordenador: COOD 40 - Leandro Felipe - Norte Fluminense</div>';
   h+='<div style="margin-bottom:10px"><div style="font-size:11px;color:var(--t2)">Vendedor</div><div style="font-size:16px;font-weight:700;color:var(--am)">'+vend+'</div></div>';
   h+='<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--t2)">Cliente</div><div style="font-size:15px;font-weight:600;color:var(--t)">'+cli+'</div></div>';
   if(conc||skus){h+='<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">';if(conc)h+='<div style="background:var(--s1);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--t2)">Concorrente: <strong style="color:var(--t)">'+conc+'</strong></div>';if(skus)h+='<div style="background:var(--s1);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--t2)">Pedido: <strong style="color:var(--t)">'+skus+'</strong></div>';h+='</div>';}
   if(ctx)h+='<div style="background:var(--s1);border-left:3px solid var(--am);border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--t2);line-height:1.7">'+ctx+'</div>';
-  ps.forEach(function(p){h+='<div style="border:1px solid var(--b);border-radius:10px;padding:14px;margin-bottom:10px"><div style="font-weight:700;color:var(--t);margin-bottom:10px;font-size:15px">'+p.n+'</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+cl('Qtd',p.q+' '+p.u,'var(--t)')+cl('P.Tabela','R$ '+p.t.toFixed(4),'var(--t2)')+cl('P.Vendedor','R$ '+p.v.toFixed(4),'var(--am)')+cl('P.Ideal','R$ '+p.i.toFixed(4),'var(--gn)')+cl('Invest.Unit','R$ '+Math.abs(p.dif||0).toFixed(4),'var(--rd)')+cl('Total','R$ '+Math.abs(p.tot||0).toFixed(2),'var(--rd)')+'</div></div>';});
-  h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;text-align:center"><div style="background:var(--am2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">Produtos</div><div style="font-size:22px;font-weight:700;color:var(--am)">'+ps.length+'</div></div><div style="background:var(--am2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">% Medio</div><div style="font-size:22px;font-weight:700;color:var(--am)">'+med.toFixed(2)+'%</div></div><div style="background:var(--rd2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">Investimento</div><div style="font-size:20px;font-weight:700;color:var(--rd)">R$ '+tot.toFixed(2)+'</div></div></div>';
+  ps.forEach(function(p){h+='<div style="border:1px solid var(--b);border-radius:10px;padding:14px;margin-bottom:10px"><div style="font-weight:700;color:var(--t);margin-bottom:10px;font-size:15px">'+p.n+'</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+cl('Qtd',p.q+' '+p.u,'var(--t)')+cl('P.Tabela','R$ '+fBR(p.t),'var(--t2)')+cl('P.Vendedor','R$ '+fBR(p.v),'var(--am)')+cl('P.Ideal','R$ '+fBR(p.i),'var(--gn)')+cl('Invest.Unit','R$ '+fBR(Math.abs(p.dif||0)),'var(--rd)')+cl('Total','R$ '+fBR(Math.abs(p.tot||0)),'var(--rd)')+'</div></div>';});
+  h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;text-align:center"><div style="background:var(--am2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">Produtos</div><div style="font-size:22px;font-weight:700;color:var(--am)">'+ps.length+'</div></div><div style="background:var(--am2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">% Medio</div><div style="font-size:22px;font-weight:700;color:var(--am)">'+fBR(med)+'%</div></div><div style="background:var(--rd2);border-radius:10px;padding:12px"><div style="font-size:11px;color:var(--t2)">Investimento</div><div style="font-size:20px;font-weight:700;color:var(--rd)">R$ '+fBR(tot)+'</div></div></div>';
   h+='<div id="negBtns" style="display:flex;gap:8px;flex-wrap:wrap"><button onclick="tirarPrint()" style="flex:1;padding:12px;background:var(--am);border:none;border-radius:10px;color:#0A0A0A;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#128247; Salvar Imagem</button><button onclick="envWpp()" style="flex:1;padding:12px;background:var(--gn);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">WhatsApp</button><button onclick="envEmail()" style="flex:1;padding:12px;background:var(--s1);border:1px solid var(--b2);border-radius:10px;color:var(--t2);font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">E-mail</button></div>';
   h+='</div>';
   document.getElementById('negRes').innerHTML=h;
@@ -680,6 +685,7 @@ function gerarNeg(){
   window.scrollTo(0,document.getElementById('negRes').offsetTop-20);
 }
 
+function fBR(v){return (v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function cl(lb,vl,cor){return'<div style="background:var(--s1);border-radius:8px;padding:8px;text-align:center"><div style="color:var(--t3);font-size:10px;text-transform:uppercase;margin-bottom:3px">'+lb+'</div><div style="font-weight:700;color:'+cor+';font-size:13px">'+vl+'</div></div>';}
 
 function tirarPrint(){
@@ -710,8 +716,8 @@ function envWpp(){
   if(d.skus)t+='%0A'+encodeURIComponent('Pedido: '+d.skus);
   if(d.ctx)t+='%0A%0A'+encodeURIComponent(d.ctx);
   t+='%0A%0A';
-  d.ps.forEach(function(p){t+=encodeURIComponent(p.n)+'%0A'+encodeURIComponent('Qtd: '+p.q+' '+p.u+' | P.Tab: R$'+p.t.toFixed(4)+' | P.Vend: R$'+p.v.toFixed(4))+'%0A'+encodeURIComponent('P.Ideal: R$'+p.i.toFixed(4)+' | Invest: R$'+Math.abs(p.dif||0).toFixed(4)+' | Total: R$'+Math.abs(p.tot||0).toFixed(2))+'%0A%0A';});
-  t+=encodeURIComponent('RESUMO: '+d.ps.length+' produto(s) | '+d.med.toFixed(2)+'% invest. | R$ '+d.tot.toFixed(2)+' total');
+  d.ps.forEach(function(p){t+=encodeURIComponent(p.n)+'%0A'+encodeURIComponent('Qtd: '+p.q+' '+p.u+' | P.Tab: R$'+fBR(p.t)+' | P.Vend: R$'+fBR(p.v))+'%0A'+encodeURIComponent('P.Ideal: R$'+fBR(p.i)+' | Invest: R$'+fBR(Math.abs(p.dif||0))+' | Total: R$'+fBR(Math.abs(p.tot||0)))+'%0A%0A';});
+  t+=encodeURIComponent('RESUMO: '+d.ps.length+' produto(s) | '+fBR(d.med)+'% invest. | R$ '+fBR(d.tot)+' total');
   window.open('https://wa.me/?text='+t,'_blank');
 }
 
@@ -724,8 +730,8 @@ function envEmail(){
   if(d.skus)ls.push('Pedido: '+d.skus);
   if(d.ctx){ls.push('');ls.push(d.ctx);}
   ls.push('');
-  d.ps.forEach(function(p){ls.push(p.n);ls.push('Qtd: '+p.q+' '+p.u+' | P.Tabela: R$'+p.t.toFixed(4)+' | P.Vendedor: R$'+p.v.toFixed(4));ls.push('P.Ideal: R$'+p.i.toFixed(4)+' | Invest: R$'+Math.abs(p.dif||0).toFixed(4)+' | Total: R$'+Math.abs(p.tot||0).toFixed(2));ls.push('');});
-  ls.push('RESUMO: '+d.ps.length+' produto(s) | '+d.med.toFixed(2)+'% invest. | R$ '+d.tot.toFixed(2)+' total');
+  d.ps.forEach(function(p){ls.push(p.n);ls.push('Qtd: '+p.q+' '+p.u+' | P.Tabela: R$'+fBR(p.t)+' | P.Vendedor: R$'+fBR(p.v));ls.push('P.Ideal: R$'+fBR(p.i)+' | Invest: R$'+fBR(Math.abs(p.dif||0))+' | Total: R$'+fBR(Math.abs(p.tot||0)));ls.push('');});
+  ls.push('RESUMO: '+d.ps.length+' produto(s) | '+fBR(d.med)+'% invest. | R$ '+fBR(d.tot)+' total');
   window.location.href='mailto:'+encodeURIComponent(email)+'?cc=leandro.felipe%40arcofoods.com.br&subject='+subj+'&body='+ls.join('%0D%0A');
 }
 

@@ -1016,7 +1016,7 @@ function fraseLupaIndic(d){
   frase+='A margem de contribuição é de '+nBR1(d.mc2026)+'%';
   frase+=d.deltaMc>=0?(', '+nBR1(d.deltaMc)+' pontos acima do ano anterior.'):(', '+nBR1(Math.abs(d.deltaMc))+' pontos abaixo do ano anterior.');
   frase+=' A venda média por cliente é de '+fBRL(d.vm2026)+'';
-  frase+=d.pctVm?(', '+(d.pctVm>=0?'crescimento':'queda')+' de '+fPct1(Math.abs(d.pctVm))+'.');'.';
+  frase+=d.pctVm?(', '+(d.pctVm>=0?'crescimento':'queda')+' de '+fPct1(Math.abs(d.pctVm))+'.'):'';
   return frase;
 }
 

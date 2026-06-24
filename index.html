@@ -825,26 +825,14 @@ function renderPremiacao() {
     return;
   }
 
-  if(!premiacaoData || !premiacaoData.vendedores) {
-    el.innerHTML = renderPremiacaoVazia();
-    return;
-  }
-
-  var regional = premiacaoData.regional_bateu;
-  var arcofoods = premiacaoData.arcofoods_bateu;
-
-  // Para vendedor — mostrar só os próprios dados + ranking
+  // Vendedor vê tela "em breve" — coordenador está configurando
   if(!isCoord) {
-    var meuVend = premiacaoData.vendedores.find(function(v) {
-      return v.nome && eu && v.nome.toUpperCase().indexOf(eu.n.split(' ')[0].toUpperCase()) >= 0;
-    });
-    if(!meuVend) {
-      el.innerHTML = '<div class="empty"><div class="eico">💰</div><p>Seus dados ainda não foram carregados.<br>Aguarde o coordenador atualizar.</p></div>';
-      return;
-    }
-    el.innerHTML = renderCardVendedor(meuVend, regional, arcofoods, true) + renderRankingEquipe(regional, arcofoods);
+    el.innerHTML = renderPremiacaoEmBreve();
     return;
   }
+
+  var regional = premiacaoData ? premiacaoData.regional_bateu : null;
+  var arcofoods = premiacaoData ? premiacaoData.arcofoods_bateu : null;
 
   // Para coordenador — painel completo
   var html = renderPainelCoordenador(regional, arcofoods);
@@ -1102,6 +1090,22 @@ function carregarPremiacao() {
   carregarPremiacaoSupabase(function() {
     renderPremiacao();
   });
+}
+
+function renderPremiacaoEmBreve() {
+  return '<div style="text-align:center;padding:48px 24px">'
+    + '<div style="font-size:56px;margin-bottom:16px">&#128176;</div>'
+    + '<div style="font-size:20px;font-weight:700;color:var(--am);margin-bottom:10px">Premia&#231;&#227;o</div>'
+    + '<div style="font-size:13px;color:var(--t2);line-height:1.8;margin-bottom:24px">'
+    + 'O coordenador est&#225; configurando<br>os detalhes da premia&#231;&#227;o.<br>'
+    + 'Em breve voc&#234; ver&#225; seus resultados aqui!'
+    + '</div>'
+    + '<div style="background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(6,14,30,0.9));border:1.5px solid rgba(245,158,11,0.3);border-radius:14px;padding:18px 20px;max-width:320px;margin:0 auto">'
+    + '<div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--am);margin-bottom:8px">Sabia que voc&#234; pode ganhar at&#233;</div>'
+    + '<div style="font-size:42px;font-weight:800;color:var(--am);line-height:1">R$ 2.000</div>'
+    + '<div style="font-size:11px;color:var(--t2);margin-top:6px">por m&#234;s batendo todos os indicadores</div>'
+    + '</div>'
+    + '</div>';
 }
 
 function salvarPix(){

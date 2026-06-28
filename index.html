@@ -181,7 +181,7 @@ textarea.inp{resize:vertical;min-height:80px;}
     <button class="mb" onclick="ir('documentos',this)">Documentacao</button>
     <button class="mb" onclick="ir('contatos',this);carregarContatos()">Contatos</button>
     <button class="mb" onclick="ir('campanhas',this);carregarCampanhas()">Campanhas</button>
-    <button class="mb" onclick="irBI()">BI Vendas</button>
+    <button class="mb" onclick="ir('bivendas',this)">BI Vendas</button>
     <button class="mb" onclick="ir('mixestrategico',this);carregarMix()">Mix Estrat&#233;gico</button>
     <button class="mb" onclick="ir('premiacao',this);carregarPremiacao()">&#128176; Premia&#231;&#227;o</button>
   </div>
@@ -199,7 +199,7 @@ textarea.inp{resize:vertical;min-height:80px;}
         <div class="mcard" onclick="irM('documentos')"><div class="micon">&#128196;</div><div class="mname">Documentacao</div><div class="mdesc">PIX e documentos</div></div>
         <div class="mcard" onclick="irM('contatos');carregarContatos()"><div class="micon">&#128222;</div><div class="mname">Contatos</div><div class="mdesc">Arcofoods e fornecedores</div></div>
         <div class="mcard" onclick="irM('campanhas');carregarCampanhas()"><div class="micon">&#127919;</div><div class="mname">Campanhas</div><div class="mdesc">Promocoes ativas</div></div>
-        <div class="mcard" onclick="irBI()"><div class="micon">&#128200;</div><div class="mname">BI Vendas</div><div class="mdesc">Painel de performance</div></div>
+        <div class="mcard" onclick="irM('bivendas')"><div class="micon">&#128200;</div><div class="mname">BI Vendas</div><div class="mdesc">Painel de performance</div></div>
         <div class="mcard" onclick="irM('mixestrategico');carregarMix()"><div class="micon">&#11088;</div><div class="mname">Mix Estrat&#233;gico</div><div class="mdesc">Produtos de alta rentabilidade</div></div>
         <div class="mcard" onclick="irM('premiacao');carregarPremiacao()"><div class="micon">&#128176;</div><div class="mname">Minha Premia&#231;&#227;o</div><div class="mdesc">Veja quanto voc&#234; vai ganhar</div></div>
       </div>
@@ -255,11 +255,14 @@ textarea.inp{resize:vertical;min-height:80px;}
 
     <div id="catalogos" class="pg">
       <div class="ph"><div class="pt">Catalogos</div><div class="ps">Arcofoods e parceiros fornecedores</div></div>
-      <div class="ccard"><div class="cicon">&#128218;</div><div class="cinfo"><div class="cnome">Catalogo Arcofoods 2024-2025</div><div class="cdesc">Produtos e informacoes completas</div></div><a href="https://drive.google.com/file/d/1P0zJckSfqXxu25xaeuJeix_2iv-pJdM1/preview" target="_blank" class="cbtn">Abrir</a></div>
-      <div class="ccard"><div class="cicon">&#128172;</div><div class="cinfo"><div class="cnome">Compartilhar Arcofoods</div><div class="cdesc">Enviar catalogo ao cliente</div></div><a href="https://wa.me/?text=Segue%20o%20Catalogo%20Arcofoods%202024-2025%3A%20https%3A%2F%2Fdrive.google.com%2Ffile%2Fd%2F1P0zJckSfqXxu25xaeuJeix_2iv-pJdM1%2Fview" target="_blank" class="cbtn cbtn-gn">WhatsApp</a></div>
-      <div style="height:1px;background:var(--b);margin:8px 0"></div>
-      <div class="ccard"><div class="cicon">&#127869;</div><div class="cinfo"><div class="cnome">Catalogo Cargill Food Service 2025</div><div class="cdesc">Produtos para food service</div></div><a href="https://drive.google.com/file/d/1QQCHKAls9QFXax9FCtQyiHvmW6XpI96P/preview" target="_blank" class="cbtn">Abrir</a></div>
-      <div class="ccard"><div class="cicon">&#128172;</div><div class="cinfo"><div class="cnome">Compartilhar Cargill</div><div class="cdesc">Enviar catalogo ao cliente</div></div><a href="https://wa.me/?text=Segue%20o%20Catalogo%20Cargill%20Food%20Service%202025%3A%20https%3A%2F%2Fdrive.google.com%2Ffile%2Fd%2F1QQCHKAls9QFXax9FCtQyiHvmW6XpI96P%2Fview" target="_blank" class="cbtn cbtn-gn">WhatsApp</a></div>
+      <div id="adminCatalogos" style="display:none">
+        <div class="admin-box">
+          <div class="admin-title">&#128274; Area do Coordenador - Gerenciar Catalogos</div>
+          <div class="fg"><label class="fl">Catalogos (um por linha: Nome | URL do Google Drive)</label><textarea id="catInput" class="inp" rows="6" placeholder="Catalogo Arcofoods 2024-2025 | https://drive.google.com/file/d/ID/preview&#10;Catalogo Cargill Food Service 2025 | https://drive.google.com/file/d/ID/preview"></textarea></div>
+          <button class="btn bp" onclick="salvarCatalogos()" style="width:100%">&#128190; Salvar Catalogos</button>
+        </div>
+      </div>
+      <div id="catLista"></div>
     </div>
 
     <div id="documentos" class="pg">
@@ -338,6 +341,18 @@ textarea.inp{resize:vertical;min-height:80px;}
         <a href="https://app.powerbi.com/view?r=eyJrIjoiZmMxNjg0ZmYtZjY3OS00MWYyLWE5ZGEtYzA3MDNkM2RlOGY2IiwidCI6IjZlOGU5MWQ2LWQyY2QtNDA4MC05MTFlLTlhODE3NjNhOTA0ZiJ9" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#6366f1,#3B82F6);border:none;border-radius:12px;padding:14px;color:#fff;font-weight:700;font-size:14px;text-decoration:none">&#128200; Abrir BI de Campanhas &rarr;</a>
       </div>
       <div id="listaCampanhas"><div class="loading">Carregando campanhas...</div></div>
+    </div>
+
+    <div id="bivendas" class="pg">
+      <div class="ph"><div class="pt">BI Vendas</div><div class="ps">Selecione o painel que deseja acessar</div></div>
+      <div id="adminBI" style="display:none">
+        <div class="admin-box">
+          <div class="admin-title">&#128274; Area do Coordenador - Gerenciar Paineis BI</div>
+          <div class="fg"><label class="fl">Paineis BI (um por linha: Nome | Icone emoji | Descricao | URL Power BI)</label><textarea id="biInput" class="inp" rows="5" placeholder="Painel Geral NF | &#128202; | Visao completa da regiao | https://app.powerbi.com/view?r=...&#10;Ranking Vendedores | &#127942; | Performance individual | https://app.powerbi.com/view?r=..."></textarea></div>
+          <button class="btn bp" onclick="salvarBI()" style="width:100%">&#128190; Salvar Paineis BI</button>
+        </div>
+      </div>
+      <div id="biLista" class="tgrid"></div>
     </div>
 
     <div id="mixestrategico" class="pg">
@@ -481,7 +496,78 @@ function supaFetch(path,opts){return fetch(SUPA_URL+'/rest/v1/'+path,Object.assi
 function getDevId(){var id=localStorage.getItem('QG_DEV');if(!id){id='D_'+Math.random().toString(36).substr(2,10).toUpperCase()+'_'+Date.now();localStorage.setItem('QG_DEV',id);}return id;}
 function toggleEmailField(){var tipo=document.getElementById('cTipo').value;var ef=document.getElementById('emailField');if(ef)ef.style.display=tipo==='fornecedor'?'block':'none';if(tipo!=='fornecedor'){var e=document.getElementById('cEmail');if(e)e.value='';}}
 function registrarAcesso(u){supaFetch('acessos',{method:'POST',body:JSON.stringify({codigo_usuario:u.cd,nome:u.n,tipo:u.t==='coord'?'Coordenador':'Vendedor'})}).catch(function(e){console.log('Erro registro:',e);});}
-function irBI(){window.open('https://app.powerbi.com/view?r=eyJrIjoiM2Q0NzhkOWEtNDZkYi00YTQ5LTkxZTYtM2IwMGE4NWY1YTdiIiwidCI6IjZlOGU5MWQ2LWQyY2QtNDA4MC05MTFlLTlhODE3NjNhOTA0ZiJ9','_blank');}
+var CATALOGOS_DEFAULT=[
+  {nome:'Catalogo Arcofoods 2024-2025',url:'https://drive.google.com/file/d/1P0zJckSfqXxu25xaeuJeix_2iv-pJdM1/preview'},
+  {nome:'Catalogo Cargill Food Service 2025',url:'https://drive.google.com/file/d/1QQCHKAls9QFXax9FCtQyiHvmW6XpI96P/preview'}
+];
+var BI_DEFAULT=[
+  {nome:'Painel Geral NF',icone:'📊',desc:'Visao completa da regiao',url:'https://app.powerbi.com/view?r=eyJrIjoiM2Q0NzhkOWEtNDZkYi00YTQ5LTkxZTYtM2IwMGE4NWY1YTdiIiwidCI6IjZlOGU5MWQ2LWQyY2QtNDA4MC05MTFlLTlhODE3NjNhOTA0ZiJ9'}
+];
+
+function getCatalogos(){var s=localStorage.getItem('QG_CATS');return s?JSON.parse(s):CATALOGOS_DEFAULT;}
+function getBI(){var s=localStorage.getItem('QG_BI');return s?JSON.parse(s):BI_DEFAULT;}
+
+function carregarCatalogosAdmin(){
+  var cats=getCatalogos();
+  var txt=cats.map(function(c){return c.nome+' | '+c.url;}).join('\n');
+  var el=document.getElementById('catInput');
+  if(el)el.value=txt;
+}
+
+function salvarCatalogos(){
+  var txt=document.getElementById('catInput').value.trim();
+  var linhas=txt.split('\n').filter(function(l){return l.trim();});
+  var cats=linhas.map(function(l){
+    var p=l.split('|');
+    return {nome:(p[0]||'').trim(),url:(p[1]||'').trim()};
+  }).filter(function(c){return c.nome&&c.url;});
+  localStorage.setItem('QG_CATS',JSON.stringify(cats));
+  renderCatalogos();
+  toast('Catalogos salvos com sucesso!');
+}
+
+function salvarBI(){
+  var txt=document.getElementById('biInput').value.trim();
+  var linhas=txt.split('\n').filter(function(l){return l.trim();});
+  var bis=linhas.map(function(l){
+    var p=l.split('|');
+    return {nome:(p[0]||'').trim(),icone:(p[1]||'📊').trim(),desc:(p[2]||'').trim(),url:(p[3]||'').trim()};
+  }).filter(function(b){return b.nome&&b.url;});
+  localStorage.setItem('QG_BI',JSON.stringify(bis));
+  renderBI();
+  toast('Paineis BI salvos com sucesso!');
+}
+
+function renderCatalogos(){
+  var cats=getCatalogos();
+  var el=document.getElementById('catLista');
+  if(!el)return;
+  var h='';
+  cats.forEach(function(c,i){
+    var urlView=c.url.replace('/preview','').replace('/view','');
+    var urlShare=encodeURIComponent(c.nome+': '+urlView);
+    h+='<div class="ccard"><div class="cicon">📚</div><div class="cinfo"><div class="cnome">'+c.nome+'</div><div class="cdesc">Toque para abrir</div></div><a href="'+c.url+'" target="_blank" class="cbtn">Abrir</a></div>';
+    h+='<div class="ccard"><div class="cicon">💬</div><div class="cinfo"><div class="cnome">Compartilhar</div><div class="cdesc">Enviar ao cliente</div></div><a href="https://wa.me/?text='+urlShare+'" target="_blank" class="cbtn cbtn-gn">WhatsApp</a></div>';
+    if(i<cats.length-1)h+='<div style="height:1px;background:var(--b);margin:8px 0"></div>';
+  });
+  el.innerHTML=h||'<div class="empty">Nenhum catalogo cadastrado.</div>';
+}
+
+function renderBI(){
+  var bis=getBI();
+  var el=document.getElementById('biLista');
+  if(!el)return;
+  var h='';
+  bis.forEach(function(b){
+    h+='<div class="tcard" style="background:linear-gradient(135deg,rgba(59,130,246,0.15),var(--s1));border:1px solid rgba(59,130,246,0.3);border-radius:14px;padding:20px 16px;cursor:pointer;text-align:center;" onclick="window.open(\''+b.url+'\',\'_blank\')">';
+    h+='<div class="ticon">'+b.icone+'</div><div class="tname" style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:4px;">'+b.nome+'</div>';
+    h+='<div style="font-size:11px;color:var(--t2);">'+b.desc+'</div>';
+    h+='<div style="margin-top:10px;font-size:11px;color:#3B82F6;font-weight:600;">▶ Abrir painel</div></div>';
+  });
+  el.innerHTML=h||'<div class="empty">Nenhum painel BI cadastrado.</div>';
+}
+
+function irBI(){ir('bivendas',null);}
 
 function entrar(u){
   eu=u;localStorage.setItem('QG_LOG',JSON.stringify({c:u.c,n:u.n,cd:u.cd,t:u.t}));
@@ -493,10 +579,15 @@ function entrar(u){
   document.getElementById('wNome').textContent='Ola, '+u.n.split(' ')[0]+'!';
   document.getElementById('wSub').textContent=u.cd+' - Arcofoods - Norte Fluminense';
   document.getElementById('negVend').textContent=u.cd+' - '+u.n;
+  renderCatalogos();
+  renderBI();
   if(u.t==='coord'){
     document.getElementById('adminContatos').style.display='block';
     document.getElementById('adminCampanhas').style.display='block';
     document.getElementById('adminMix').style.display='block';
+    document.getElementById('adminCatalogos').style.display='block';
+    document.getElementById('adminBI').style.display='block';
+    carregarCatalogosAdmin();
   }
 }
 

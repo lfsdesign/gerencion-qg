@@ -516,11 +516,16 @@ function carregarCatalogosAdmin(){
 
 function salvarCatalogos(){
   var txt=document.getElementById('catInput').value.trim();
-  var linhas=txt.split('\n').filter(function(l){return l.trim();});
+  var linhas=txt.split(/\r?\n/).filter(function(l){return l.trim();});
   var cats=linhas.map(function(l){
-    var p=l.split('|');
-    return {nome:(p[0]||'').trim(),url:(p[1]||'').trim()};
-  }).filter(function(c){return c.nome&&c.url;});
+    var idx=l.indexOf('|');
+    if(idx<0)return null;
+    var nome=l.substring(0,idx).trim();
+    var url=l.substring(idx+1).trim();
+    url=url.replace('/view?usp=sharing','').replace('/view?usp=drivesdk','').replace('/view','');
+    if(url.indexOf('/preview')<0)url=url.split('?')[0]+'/preview';
+    return {nome:nome,url:url};
+  }).filter(function(c){return c&&c.nome&&c.url;});
   localStorage.setItem('QG_CATS',JSON.stringify(cats));
   renderCatalogos();
   toast('Catalogos salvos com sucesso!');

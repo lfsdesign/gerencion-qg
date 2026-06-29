@@ -685,7 +685,7 @@ function ir(id,btn){document.querySelectorAll('.pg').forEach(function(p){p.class
 function irM(id){var btn=Array.from(document.querySelectorAll('.mb')).find(function(b){return b.getAttribute('onclick')&&b.getAttribute('onclick').indexOf("'"+id+"'")>=0;});ir(id,btn);}
 
 function abrirTipo(t){tipoAtual=t;var tp=TIPOS[t];if(!tp)return;document.getElementById('tipoList').style.display='none';document.getElementById('listaBox').style.display='block';document.getElementById('listaTitulo').textContent=tp.n;cotSelecionados=[];cotDados={};document.getElementById('cotBadge').textContent='0';cotTab('prod');renderProdGrid();}
-function renderProdGrid(){var tp=TIPOS[tipoAtual];if(!tp)return;var g=document.getElementById('prodGrid');var ps=tp.p.slice().sort();g.innerHTML=ps.map(function(p){var sel=cotSelecionados.indexOf(p)>=0;return'<div class="pitem" style="'+(sel?'background:rgba(59,130,246,.08);border-left:3px solid #3B82F6;':'')+'" onclick="toggleCotProd(''+p+'')"><div class="pdot" style="'+(sel?'background:#3B82F6':'')+'"></div><span style="flex:1">'+p+'</span>'+(sel?'<span style="font-size:10px;color:#60A5FA;font-weight:700">✓</span>':'')+'</div>';}).join('');}
+function renderProdGrid(){var tp=TIPOS[tipoAtual];if(!tp)return;var g=document.getElementById('prodGrid');var ps=tp.p.slice().sort();g.innerHTML=ps.map(function(p){var sel=cotSelecionados.indexOf(p)>=0;var estilo=sel?'background:rgba(59,130,246,.08);border-left:3px solid #3B82F6;':'';var check=sel?'<span style="font-size:10px;color:#60A5FA;font-weight:700">\u2713</span>':'';var dot=sel?'background:#3B82F6':'';return'<div class="pitem" style="'+estilo+'" onclick="toggleCotProd(this.dataset.nome)" data-nome="'+p+'"><div class="pdot" style="'+dot+'"></div><span style="flex:1">'+p+'</span>'+check+'</div>';}).join('');}
 function cotTab(t){
   document.getElementById('tabProd').style.display=t==='prod'?'block':'none';
   document.getElementById('tabCot').style.display=t==='cot'?'block':'none';
@@ -701,7 +701,8 @@ function cotTab(t){
 var cotSelecionados=[];
 var cotDados={};
 
-function toggleCotProd(nome){
+function toggleCotProd(el){
+  var nome=typeof el==='string'?el:el.dataset.nome;
   var idx=cotSelecionados.indexOf(nome);
   if(idx>=0){cotSelecionados.splice(idx,1);}
   else{cotSelecionados.push(nome);}

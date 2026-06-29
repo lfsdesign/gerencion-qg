@@ -175,7 +175,6 @@ textarea.inp{resize:vertical;min-height:80px;}
   </div>
   <div id="menuBar">
     <button class="mb on" onclick="ir('home',this)">Inicio</button>
-    <button class="mb" onclick="ir('qgdia',this);carregarQGDia()">&#9889; QG do Dia</button>
     <button class="mb" onclick="ir('negociacao',this)">Negociacao</button>
     <button class="mb" onclick="ir('tipologia',this)">Mix por Segmento</button>
     <button class="mb" onclick="ir('catalogos',this)">Catalogos</button>
@@ -194,7 +193,6 @@ textarea.inp{resize:vertical;min-height:80px;}
         <div class="wsub" id="wSub">Bem-vindo ao GERENCION QG &middot; Norte Fluminense</div>
       </div>
       <div class="mgrid">
-        <div class="mcard" onclick="irM('qgdia');carregarQGDia()" style="grid-column:1/-1;background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(239,68,68,0.1));border:2px solid rgba(245,158,11,0.4)"><div class="micon">&#9889;</div><div class="mname">QG do Dia</div><div class="mdesc">Metas, dica e motivacao do dia</div></div>
         <div class="mcard" onclick="irM('negociacao')"><div class="micon">&#129309;</div><div class="mname">Negociacao</div><div class="mdesc">Solicitar aprovacao de preco</div></div>
         <div class="mcard" onclick="irM('tipologia')"><div class="micon">&#128203;</div><div class="mname">Mix por Segmento</div><div class="mdesc">Lista por tipo de cliente</div></div>
         <div class="mcard" onclick="irM('catalogos')"><div class="micon">&#128218;</div><div class="mname">Catalogos</div><div class="mdesc">Arcofoods e fornecedores</div></div>
@@ -424,19 +422,29 @@ textarea.inp{resize:vertical;min-height:80px;}
       <div id="adminQGDia" style="display:none">
         <div class="admin-box">
           <div class="admin-title">&#128274; Coordenador — QG do Dia</div>
-          <div class="fg"><label class="fl">Foco do Dia</label><input id="qgFoco" class="inp" placeholder="ex: Prospecção! / Positivação! / Mix Rentável!"></div>
-          <div class="fg"><label class="fl">Metas da Equipe — Digite o valor de cada vendedor</label>
+          <div class="fg"><label class="fl">Foco do Dia</label><input id="qgFoco" class="inp" placeholder="ex: Prospeccao! / Positivacao! / Mix Rentavel!"></div>
+          <div class="fg"><label class="fl">Metas da Equipe</label>
             <div id="qgMetasGrid" style="display:flex;flex-direction:column;gap:6px;margin-top:4px"></div>
           </div>
-          <div style="display:flex;gap:8px;margin-bottom:0">
-            <button onclick="gerarQGIA()" style="flex:1;padding:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#10024; Gerar com IA (ChatGPT)</button>
+          <div style="margin-top:10px">
+            <button onclick="gerarQGIA()" style="width:100%;padding:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif;margin-bottom:8px">&#10024; Gerar Frase + Dica com IA</button>
+            <div id="qgIAHint" style="display:none;background:var(--pu2);border:1px solid rgba(99,102,241,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#818cf8;margin-bottom:10px">&#128161; Prompt copiado! Abra o ChatGPT, cole e copie cada parte abaixo.</div>
           </div>
-          <div id="qgIABox" style="display:none;margin-top:10px">
-            <div id="qgIAHint" style="background:var(--pu2);border:1px solid rgba(99,102,241,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#818cf8;margin-bottom:8px">Prompt copiado! Abra o ChatGPT, cole (Ctrl+V). A IA vai responder com FRASE e DICA separadas. Cole cada uma no campo correto abaixo.</div>
-            <div class="fg"><label class="fl">&#10024; Frase Motivacional</label><input id="qgFrase" class="inp" placeholder='Cole a frase aqui...'></div>
-            <div class="fg"><label class="fl">&#128161; Dica de Vendas</label><input id="qgDica" class="inp" placeholder='Cole a dica aqui...'></div>
+          <div class="fg">
+            <label class="fl">&#10024; Frase Motivacional</label>
+            <div style="display:flex;gap:6px">
+              <input id="qgFrase" class="inp" placeholder="Cole a frase aqui..." style="flex:1">
+              <button onclick="copiarCampo('qgFrase')" style="padding:0 12px;background:var(--s1);border:1px solid var(--b2);border-radius:8px;color:var(--t2);font-size:12px;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap">Copiar</button>
+            </div>
           </div>
-          <button onclick="publicarQGDia()" style="width:100%;margin-top:10px;padding:14px;background:var(--am);border:none;border-radius:10px;color:#0A0A0A;font-weight:800;font-size:14px;cursor:pointer;font-family:Inter,sans-serif;letter-spacing:.5px">&#128228; Publicar para a Equipe</button>
+          <div class="fg">
+            <label class="fl">&#128161; Dica de Vendas</label>
+            <div style="display:flex;gap:6px">
+              <input id="qgDica" class="inp" placeholder="Cole a dica aqui..." style="flex:1">
+              <button onclick="copiarCampo('qgDica')" style="padding:0 12px;background:var(--s1);border:1px solid var(--b2);border-radius:8px;color:var(--t2);font-size:12px;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap">Copiar</button>
+            </div>
+          </div>
+          <button onclick="publicarQGDia()" style="width:100%;margin-top:4px;padding:14px;background:var(--am);border:none;border-radius:10px;color:#0A0A0A;font-weight:800;font-size:14px;cursor:pointer;font-family:Inter,sans-serif">&#128228; Publicar para a Equipe</button>
         </div>
       </div>
       <div id="qgDiaBox"><div class="loading">Carregando...</div></div>
@@ -692,28 +700,51 @@ function voltarTipo(){
 
 function compartilhar(){if(!tipoAtual)return;var t=TIPOS[tipoAtual];var ps=t.p.slice().sort();var ls=[t.n+' - Lista Basica de Produtos - Arcofoods',''];ps.forEach(function(p,i){ls.push((i+1)+'. '+p);});ls.push('');ls.push('GERENCION QG - Norte Fluminense');window.open('https://wa.me/?text='+encodeURIComponent(ls.join('\n')),'_blank');}
 
+function copiarCampo(id){
+  var el=document.getElementById(id);
+  if(!el)return;
+  if(navigator.clipboard){navigator.clipboard.writeText(el.value).then(function(){toast('Copiado!');});}
+  else{el.select();document.execCommand('copy');toast('Copiado!');}
+}
+
 function gerarQGIA(){
   var foco=document.getElementById('qgFoco').value.trim()||'vendas';
-  var prompt='Você é um coach de vendas. Crie para o tema "'+foco+'":\n\n1) FRASE: Uma frase motivacional CURTÍSSIMA (máximo 10 palavras, impactante, para vendedores de alimentos).\n\n2) DICA: Uma dica de vendas CURTÍSSIMA (máximo 18 palavras, prática e no mesmo contexto da frase acima).\n\nResponda EXATAMENTE assim:\nFRASE: [escreva aqui]\nDICA: [escreva aqui]';
+  var prompt='Você é um coach de vendas de alimentos. Tema do dia: "'+foco+'"\n\nCrie APENAS:\nFRASE: [frase motivacional máximo 10 palavras, impactante]\nDICA: [dica prática de vendas máximo 15 palavras, no mesmo contexto]\n\nSeja direto. Não escreva mais nada além do formato acima.';
   if(navigator.clipboard){
     navigator.clipboard.writeText(prompt).then(function(){
-      document.getElementById('qgIABox').style.display='block';
       document.getElementById('qgIAHint').style.display='block';
-      toast('Prompt copiado! Cole no ChatGPT e copie a resposta nos campos abaixo.');
+      toast('Prompt copiado! Cole no ChatGPT.');
     });
   }
   window.open('https://chatgpt.com','_blank');
 }
+
+function fBRMoeda(str){
+  // Aceita "17000", "17.000", "17000,98", "17.000,98", "R$ 17.000,98"
+  if(!str)return 0;
+  var s=String(str).replace(/[^\d,]/g,''); // mantém só dígitos e vírgula
+  if(s.indexOf(',')>=0){
+    var p=s.split(',');
+    s=p[0]+'.'+p[1];
+  }
+  return parseFloat(s)||0;
+}
+
+function formatBRL(val){
+  return 'R$ '+val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
 function iniciarMetasGrid(){
   var grid=document.getElementById('qgMetasGrid');
   if(!grid)return;
   var vs=[['017','EDIMAR BARBOSA'],['081','ADSON BRUNO'],['118','EDUARDO REZENDE'],['122','MATHEUS PAIOTTI'],['167','EDUARDO BRITTO'],['249','VINICIUS BARAO'],['295','CRISTIAN VIANNA'],['429','VICTOR HUGO'],['459','CARLOS BORDIGNON']];
   grid.innerHTML=vs.map(function(v){
-    return '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.03);border-radius:8px;padding:8px 10px;border:1px solid rgba(255,255,255,0.06)">'
-      +'<span style="font-size:11px;color:rgba(240,246,255,0.5);min-width:28px">'+v[0]+'</span>'
+    return '<div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 12px;border:1px solid rgba(255,255,255,0.07)">'
+      +'<span style="font-size:11px;color:rgba(240,246,255,0.45);min-width:30px">'+v[0]+'</span>'
       +'<span style="flex:1;font-size:13px;font-weight:600;color:#F0F6FF">'+v[1]+'</span>'
-      +'<span style="font-size:11px;color:rgba(240,246,255,0.5);margin-right:2px">R$</span>'
-      +'<input class="inp" id="meta_'+v[0]+'" type="number" placeholder="0" style="width:90px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--am);text-align:right">'
+      +'<span style="font-size:12px;color:rgba(240,246,255,0.5);margin-right:2px">R$</span>'
+      +'<input id="meta_'+v[0]+'" class="inp" inputmode="decimal" placeholder="0,00"'
+      +' style="width:110px;padding:7px 10px;font-size:14px;font-weight:700;color:var(--am);text-align:right;border-color:rgba(245,158,11,0.25)">'
       +'</div>';
   }).join('');
 }
@@ -725,18 +756,18 @@ function publicarQGDia(){
   if(!foco){toast('Informe o foco do dia.');return;}
   var vs=[['017','EDIMAR BARBOSA'],['081','ADSON BRUNO'],['118','EDUARDO REZENDE'],['122','MATHEUS PAIOTTI'],['167','EDUARDO BRITTO'],['249','VINICIUS BARAO'],['295','CRISTIAN VIANNA'],['429','VICTOR HUGO'],['459','CARLOS BORDIGNON']];
   var metasArr=vs.map(function(v){
-    var val=parseFloat(document.getElementById('meta_'+v[0]).value)||0;
+    var val=fBRMoeda(document.getElementById('meta_'+v[0]).value);
     return{cod:v[0],nome:v[1],meta:val};
   });
   var hoje=new Date();
   var data=hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   data=data.charAt(0).toUpperCase()+data.slice(1);
-  var dados={foco:foco,metasArr:metasArr,frase:frase||'',dica:dica||'',data:data,publicado_em:hoje.toISOString()};
+  var dados={foco:foco,metasArr:metasArr,frase:frase,dica:dica,data:data,publicado_em:hoje.toISOString()};
   supaFetch('qg_dia?id=eq.1',{method:'DELETE'}).then(function(){
     return supaFetch('qg_dia',{method:'POST',body:JSON.stringify({id:1,dados:JSON.stringify(dados)})});
   }).then(function(){
     localStorage.setItem('QG_DIA',JSON.stringify(dados));
-    toast('QG do Dia publicado para toda a equipe!');
+    toast('QG do Dia publicado!');
     renderQGDia(dados);
   }).catch(function(){
     localStorage.setItem('QG_DIA',JSON.stringify(dados));
@@ -744,20 +775,45 @@ function publicarQGDia(){
     renderQGDia(dados);
   });
 }
+
+function carregarQGDia(){
+  var el=document.getElementById('qgDiaBox');
+  if(el)el.innerHTML='<div class="loading">Carregando...</div>';
+  supaFetch('qg_dia?id=eq.1').then(function(r){return r.json();}).then(function(data){
+    if(data&&data[0]&&data[0].dados){try{renderQGDia(JSON.parse(data[0].dados));return;}catch(e){}}
+    var local=localStorage.getItem('QG_DIA');
+    if(local){try{renderQGDia(JSON.parse(local));return;}catch(e){}}
+    if(el)el.innerHTML=renderQGVazio();
+  }).catch(function(){
+    var local=localStorage.getItem('QG_DIA');
+    if(local){try{renderQGDia(JSON.parse(local));return;}catch(e){}}
+    if(el)el.innerHTML=renderQGVazio();
+  });
+}
+
+function renderQGVazio(){
+  return '<div style="text-align:center;padding:48px 24px">'
+    +'<div style="font-size:56px;margin-bottom:16px">⚡</div>'
+    +'<div style="font-size:18px;font-weight:700;color:var(--am);margin-bottom:8px">Nenhum comunicado hoje</div>'
+    +'<div style="font-size:13px;color:rgba(240,246,255,0.6);line-height:1.8">O coordenador ainda não publicou<br>o QG do Dia.</div>'
+    +'</div>';
+}
+
 function renderQGDia(d){
   var el=document.getElementById('qgDiaBox');
   if(!el)return;
+  window._qgDadosAtual=d;
   var metas=d.metasArr||[];
-  var total=metas.reduce(function(s,m){return s+(m.meta||0);},0);
-  var temMeta=metas.some(function(m){return m.meta>0;});
+  var comMeta=metas.filter(function(m){return m.meta>0;});
+  var total=comMeta.reduce(function(s,m){return s+m.meta;},0);
 
   var html='<div id="qgCard" style="background:linear-gradient(160deg,#0C1A2E,#060E1E);border:2px solid rgba(245,158,11,0.45);border-radius:20px;padding:24px 20px">';
 
   // Cabeçalho
   html+='<div style="text-align:center;margin-bottom:22px">';
-  html+='<div style="font-size:9px;font-weight:800;letter-spacing:3px;color:var(--am);text-transform:uppercase;margin-bottom:8px">COMUNICADO DIÁRIO — GERENCION QG</div>';
-  html+='<div style="font-size:12px;color:rgba(240,246,255,0.7);margin-bottom:14px">'+d.data+'</div>';
-  html+='<div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);border-radius:10px;display:inline-block;padding:5px 18px;font-size:13px;font-weight:800;color:var(--am)">🎯 Foco: '+d.foco+'</div>';
+  html+='<div style="font-size:9px;font-weight:800;letter-spacing:3px;color:var(--am);text-transform:uppercase;margin-bottom:8px">COMUNICADO DIÁRIO · GERENCION QG</div>';
+  html+='<div style="font-size:12px;color:rgba(240,246,255,0.6);margin-bottom:14px">'+d.data+'</div>';
+  html+='<div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);border-radius:10px;display:inline-block;padding:6px 20px;font-size:13px;font-weight:800;color:var(--am)">🎯 Foco: '+d.foco+'</div>';
   html+='<div style="font-size:13px;color:rgba(240,246,255,0.75);margin-top:12px">Bom dia, time! 🚀</div>';
   html+='</div>';
 
@@ -769,22 +825,20 @@ function renderQGDia(d){
   }
 
   // Metas
-  if(temMeta){
+  if(comMeta.length){
     html+='<div style="margin-bottom:20px">';
-    html+='<div style="font-size:9px;font-weight:800;letter-spacing:2px;color:rgba(240,246,255,0.5);text-transform:uppercase;margin-bottom:10px">🏆 METAS PARA HOJE</div>';
-    metas.forEach(function(m){
-      if(!m.meta)return;
-      var metaFmt='R$ '+m.meta.toLocaleString('pt-BR');
-      html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px;margin-bottom:6px;border:1px solid rgba(255,255,255,0.07)">';
-      html+='<span style="font-size:10px;color:rgba(240,246,255,0.45);min-width:30px">'+m.cod+'</span>';
-      html+='<span style="flex:1;font-size:13px;font-weight:600;color:#F0F6FF;padding:0 8px">'+m.nome+'</span>';
-      html+='<span style="font-size:14px;font-weight:800;color:var(--am)">'+metaFmt+'</span>';
+    html+='<div style="font-size:9px;font-weight:800;letter-spacing:2px;color:rgba(240,246,255,0.45);text-transform:uppercase;margin-bottom:10px">🏆 METAS PARA HOJE</div>';
+    comMeta.forEach(function(m){
+      html+='<div style="display:flex;align-items:center;padding:11px 14px;background:rgba(255,255,255,0.04);border-radius:10px;margin-bottom:6px;border:1px solid rgba(255,255,255,0.07)">';
+      html+='<span style="font-size:10px;color:rgba(240,246,255,0.4);min-width:32px;font-weight:600">'+m.cod+'</span>';
+      html+='<span style="flex:1;font-size:13px;font-weight:600;color:#F0F6FF">'+m.nome+'</span>';
+      html+='<span style="font-size:15px;font-weight:800;color:var(--am)">'+formatBRL(m.meta)+'</span>';
       html+='</div>';
     });
     if(total>0){
-      html+='<div style="margin-top:10px;padding:10px 14px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:10px;display:flex;justify-content:space-between;align-items:center">';
-      html+='<span style="font-size:11px;color:rgba(240,246,255,0.6);font-weight:700">META TOTAL DA EQUIPE</span>';
-      html+='<span style="font-size:18px;font-weight:800;color:var(--am)">R$ '+total.toLocaleString('pt-BR')+'</span>';
+      html+='<div style="margin-top:8px;padding:11px 14px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:10px;display:flex;justify-content:space-between;align-items:center">';
+      html+='<span style="font-size:11px;color:rgba(240,246,255,0.55);font-weight:700;letter-spacing:.5px">META TOTAL DA EQUIPE</span>';
+      html+='<span style="font-size:18px;font-weight:800;color:var(--am)">'+formatBRL(total)+'</span>';
       html+='</div>';
     }
     html+='</div>';
@@ -793,48 +847,68 @@ function renderQGDia(d){
   // Dica
   if(d.dica){
     html+='<div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:12px;padding:14px 16px;margin-bottom:20px">';
-    html+='<div style="font-size:9px;font-weight:800;letter-spacing:1.5px;color:#10B981;text-transform:uppercase;margin-bottom:6px">💡 DICA DO DIA</div>';
-    html+='<div style="font-size:13px;color:#F0F6FF;line-height:1.7">'+d.dica+'</div>';
+    html+='<div style="font-size:9px;font-weight:800;letter-spacing:1.5px;color:#10B981;text-transform:uppercase;margin-bottom:8px">💡 DICA DO DIA</div>';
+    html+='<div style="font-size:14px;color:#F0F6FF;line-height:1.7;font-weight:500">'+d.dica+'</div>';
     html+='</div>';
   }
 
   // Rodapé
   html+='<div style="text-align:center;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08)">';
-  html+='<div style="font-size:13px;color:rgba(240,246,255,0.75);margin-bottom:6px">Vamos juntos bater essas metas hoje! 👊</div>';
+  html+='<div style="font-size:13px;color:rgba(240,246,255,0.7);margin-bottom:6px">Vamos juntos bater essas metas hoje! 👊</div>';
   html+='<div style="font-size:9px;font-weight:800;letter-spacing:3px;color:var(--am)">GERENCION QG</div>';
   html+='</div>';
   html+='</div>';
 
-  // Botões — SÓ se for coordenador
+  // Botões — apenas coordenador
   var isCoord=eu&&eu.t==="coord";
-  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">';
   if(isCoord){
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">';
     html+='<button onclick="salvarQGImagem()" style="padding:14px;background:var(--am);border:none;border-radius:12px;color:#0A0A0A;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">📷 Salvar Imagem</button>';
-    html+='<button onclick="compartilharQGWpp(d)" style="padding:14px;background:var(--gn);border:none;border-radius:12px;color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">💬 WhatsApp</button>';
+    html+='<button onclick="compartilharQGWpp()" style="padding:14px;background:var(--gn);border:none;border-radius:12px;color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">💬 WhatsApp</button>';
+    html+='</div>';
   }
-  html+='</div>';
 
   el.innerHTML=html;
-  // guardar referência para WhatsApp
-  window._qgDadosAtual=d;
 }
-function compartilharQGWpp(d){
-  if(!d)d=window._qgDadosAtual;
+
+function salvarQGImagem(){
+  var el=document.getElementById('qgCard');
+  if(!el){toast('Gere o comunicado primeiro.');return;}
+  if(typeof html2canvas==='undefined'){toast('Aguarde...');return;}
+  // Esconder botões temporariamente
+  var btns=document.querySelector('#qgDiaBox > div[style*="grid"]');
+  if(btns)btns.style.display='none';
+  setTimeout(function(){
+    html2canvas(el,{backgroundColor:'#060E1E',scale:2,useCORS:true,logging:false}).then(function(canvas){
+      if(btns)btns.style.display='grid';
+      var a=document.createElement('a');
+      a.download='QG-do-Dia.png';
+      a.href=canvas.toDataURL('image/png');
+      a.click();
+      toast('Imagem salva!');
+    }).catch(function(e){
+      if(btns)btns.style.display='grid';
+      toast('Erro ao gerar imagem.');
+    });
+  },300);
+}
+
+function compartilharQGWpp(){
+  var d=window._qgDadosAtual;
   if(!d){var s=localStorage.getItem('QG_DIA');if(s)try{d=JSON.parse(s);}catch(e){};}
-  if(!d){toast('Nenhum comunicado para compartilhar.');return;}
+  if(!d){toast('Nenhum comunicado publicado.');return;}
   var metas=d.metasArr||[];
+  var comMeta=metas.filter(function(m){return m.meta>0;});
+  var total=comMeta.reduce(function(s,m){return s+m.meta;},0);
   var linhas=['📋 *COMUNICADO DIÁRIO — GERENCION QG*','','📅 '+d.data,'','🎯 *Foco: '+d.foco+'*',''];
   if(d.frase)linhas.push('"'+d.frase+'"','');
-  var temMeta=metas.some(function(m){return m.meta>0;});
-  if(temMeta){
+  if(comMeta.length){
     linhas.push('🏆 *Metas para hoje:*');
-    var total=0;
-    metas.forEach(function(m){
-      if(!m.meta)return;
-      total+=m.meta;
-      linhas.push(m.cod+' - '+m.nome+'     R$ '+m.meta.toLocaleString('pt-BR'));
+    comMeta.forEach(function(m){
+      var meta=formatBRL(m.meta);
+      linhas.push(m.cod+' - '+m.nome+'     '+meta);
     });
-    if(total>0)linhas.push('','💰 *Total da equipe: R$ '+total.toLocaleString('pt-BR')+'*');
+    if(total>0)linhas.push('','💰 *Total: '+formatBRL(total)+'*');
   }
   if(d.dica)linhas.push('','💡 *Dica do dia:*',d.dica);
   linhas.push('','Vamos juntos! 👊','_GERENCION QG_');

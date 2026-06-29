@@ -250,28 +250,8 @@ textarea.inp{resize:vertical;min-height:80px;}
           <button class="lback" onclick="voltarTipo()">Voltar</button>
           <div><div class="ltitle" id="listaTitulo">-</div><div class="lsub">Lista Basica de Produtos - Arcofoods</div></div>
         </div>
-        <!-- TABS -->
-        <div style="display:flex;gap:4px;background:var(--s1);border-radius:10px;padding:4px;margin-bottom:12px;">
-          <button id="tabProdBtn" style="flex:1;padding:7px;border:none;background:var(--s2);border-radius:7px;font-size:11px;font-weight:700;color:var(--t);cursor:pointer;" onclick="cotTab('prod')">Produtos</button>
-          <button id="tabCotBtn" style="flex:1;padding:7px;border:none;background:transparent;border-radius:7px;font-size:11px;font-weight:600;color:var(--t2);cursor:pointer;" onclick="cotTab('cot')">Cotacao <span id="cotBadge" style="background:rgba(16,185,129,.2);color:#10B981;font-size:9px;padding:2px 6px;border-radius:20px;font-weight:700;margin-left:2px;">0</span></button>
-        </div>
-        <!-- TAB PRODUTOS -->
-        <div id="tabProd">
-          <div class="card"><div class="pgrid" id="prodGrid"></div></div>
-          <button class="btn bp" onclick="compartilhar()" style="width:100%;margin-top:8px">Compartilhar lista via WhatsApp</button>
-        </div>
-        <!-- TAB COTACAO -->
-        <div id="tabCot" style="display:none">
-          <div class="fg"><label class="fl">Cliente (codigo + nome)</label><input id="cotCliente" class="inp" placeholder="ex: 98270 - Roots Gastrobar Ltda" style="width:100%"></div>
-          <div class="fg"><label class="fl">Observacao (opcional)</label><input id="cotObs" class="inp" placeholder="ex: Validade ate sexta-feira" style="width:100%"></div>
-          <div id="cotItens"></div>
-          <button onclick="addProdManual()" style="width:100%;padding:10px;background:transparent;border:1px dashed rgba(255,255,255,.15);border-radius:10px;color:var(--t2);font-size:12px;font-weight:600;cursor:pointer;margin-bottom:10px">+ Adicionar produto manualmente</button>
-          <div style="display:flex;gap:8px">
-            <button onclick="gerarCotacao()" style="flex:1;padding:12px;background:var(--am);border:none;border-radius:10px;color:#0A0A0A;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#9889; Gerar Cotacao</button>
-            <button onclick="limparCot()" style="padding:12px 16px;background:var(--s1);border:1px solid var(--b);border-radius:10px;color:var(--t2);font-weight:600;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">Limpar</button>
-          </div>
-          <div id="cotRes" style="margin-top:12px"></div>
-        </div>
+        <div class="card"><div class="pgrid" id="prodGrid"></div></div>
+        <button class="btn bp" onclick="compartilhar()" style="width:100%;margin-top:8px">Compartilhar lista via WhatsApp</button>
       </div>
     </div>
 
@@ -689,16 +669,9 @@ function sair(){if(confirm('Deseja sair?')){eu=null;localStorage.removeItem('QG_
 function ir(id,btn){document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});var pg=document.getElementById(id);if(pg)pg.classList.add('on');document.querySelectorAll('.mb').forEach(function(b){b.classList.remove('on');});if(btn)btn.classList.add('on');window.scrollTo(0,0);}
 function irM(id){var btn=Array.from(document.querySelectorAll('.mb')).find(function(b){return b.getAttribute('onclick')&&b.getAttribute('onclick').indexOf("'"+id+"'")>=0;});ir(id,btn);}
 
-function abrirTipo(t){tipoAtual=t;var tp=TIPOS[t];if(!tp)return;document.getElementById('tipoList').style.display='none';document.getElementById('listaBox').style.display='block';document.getElementById('listaTitulo').textContent=tp.n;cotSelecionados=[];cotDados={};document.getElementById('cotBadge').textContent='0';cotTab('prod');renderProdGrid();}
-function renderProdGrid(){var tp=TIPOS[tipoAtual];if(!tp)return;var g=document.getElementById('prodGrid');var ps=tp.p.slice().sort();g.innerHTML=ps.map(function(p){var sel=cotSelecionados.indexOf(p)>=0;var estilo=sel?'background:rgba(59,130,246,.08);border-left:3px solid #3B82F6;':'';var check=sel?'<span style="font-size:10px;color:#60A5FA;font-weight:700">\u2713</span>':'';var dot=sel?'background:#3B82F6':'';return'<div class="pitem" style="'+estilo+'" onclick="toggleCotProd(this.dataset.nome)" data-nome="'+p+'"><div class="pdot" style="'+dot+'"></div><span style="flex:1">'+p+'</span>'+check+'</div>';}).join('');}
+function abrirTipo(t){tipoAtual=t;var tp=TIPOS[t];if(!tp)return;document.getElementById('tipoList').style.display='none';document.getElementById('listaBox').style.display='block';document.getElementById('listaTitulo').textContent=tp.n;var g=document.getElementById('prodGrid');var ps=tp.p.slice().sort();g.innerHTML=ps.map(function(p){return'<div class="pitem"><div class="pdot"></div>'+p+'</div>';}).join('');}
 
-function voltarTipo(){
-  document.getElementById('listaBox').style.display='none';
-  document.getElementById('tipoList').style.display='block';
-  cotSelecionados=[];cotDados={};
-  document.getElementById('cotBadge').textContent='0';
-  cotTab('prod');
-}
+function voltarTipo(){document.getElementById('listaBox').style.display='none';document.getElementById('tipoList').style.display='block';}
 
 function compartilhar(){if(!tipoAtual)return;var t=TIPOS[tipoAtual];var ps=t.p.slice().sort();var ls=[t.n+' - Lista Basica de Produtos - Arcofoods',''];ps.forEach(function(p,i){ls.push((i+1)+'. '+p);});ls.push('');ls.push('GERENCION QG - Norte Fluminense');window.open('https://wa.me/?text='+encodeURIComponent(ls.join('\n')),'_blank');}
 

@@ -675,74 +675,57 @@ function voltarTipo(){document.getElementById('listaBox').style.display='none';d
 
 function compartilhar(){if(!tipoAtual)return;var t=TIPOS[tipoAtual];var ps=t.p.slice().sort();var ls=[t.n+' - Lista Basica de Produtos - Arcofoods',''];ps.forEach(function(p,i){ls.push((i+1)+'. '+p);});ls.push('');ls.push('GERENCION QG - Norte Fluminense');window.open('https://wa.me/?text='+encodeURIComponent(ls.join('\n')),'_blank');}
 
-function copiarCampo(id){
-  var el=document.getElementById(id);
-  if(!el)return;
-  if(navigator.clipboard){navigator.clipboard.writeText(el.value).then(function(){toast('Copiado!');});}
-  else{el.select();document.execCommand('copy');toast('Copiado!');}
+var QG_VENDS=[['017','EDIMAR BARBOSA'],['081','ADSON BRUNO'],['118','EDUARDO REZENDE'],['122','MATHEUS PAIOTTI'],['167','EDUARDO BRITTO'],['249','VINICIUS BARAO'],['295','CRISTIAN VIANNA'],['429','VICTOR HUGO'],['459','CARLOS BORDIGNON']];
+
+function copiarCampo(id){var el=document.getElementById(id);if(!el||!el.value.trim()){toast('Campo vazio.');return;}if(navigator.clipboard){navigator.clipboard.writeText(el.value.trim()).then(function(){toast('Copiado!');});}else{el.select();document.execCommand('copy');toast('Copiado!');}}
+
+function qgFmt(v){return'R$\u00a0'+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+function qgParse(s){if(!s)return 0;return parseFloat(String(s).replace(/[^\d,]/g,'').replace(',','.'))||0;}
+
+function iniciarMetasGrid(){
+  var g=document.getElementById('qgMetasGrid');
+  if(!g)return;
+  g.innerHTML=QG_VENDS.map(function(v){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid rgba(255,255,255,0.07);margin-bottom:4px">'
+      +'<span style="font-size:11px;color:rgba(240,246,255,0.45);width:28px;flex-shrink:0">'+v[0]+'</span>'
+      +'<span style="flex:1;font-size:13px;font-weight:600;color:#F0F6FF">'+v[1]+'</span>'
+      +'<span style="font-size:12px;color:rgba(240,246,255,0.5);margin-right:4px">R$</span>'
+      +'<input id="qgm_'+v[0]+'" class="inp" inputmode="numeric" placeholder="0,00" style="width:100px;padding:6px 8px;font-size:14px;font-weight:700;color:var(--am);text-align:right;border-color:rgba(245,158,11,0.3)">'
+      +'</div>';
+  }).join('');
 }
 
 function gerarQGIA(){
-  var foco=document.getElementById('qgFoco').value.trim()||'vendas';
-  var prompt='Você é um coach de vendas de alimentos. Tema do dia: "'+foco+'"\n\nCrie APENAS:\nFRASE: [frase motivacional máximo 10 palavras, impactante]\nDICA: [dica prática de vendas máximo 15 palavras, no mesmo contexto]\n\nSeja direto. Não escreva mais nada além do formato acima.';
+  var foco=(document.getElementById('qgFoco').value||'vendas').trim();
+  var prompt='Voce e especialista em motivacao para equipes de vendas de alimentos. Tema do dia: '+foco+'.\n\nCrie exatamente:\nFRASE: [frase de impacto, max 12 palavras, sem aspas, profissional e energica]\nDICA: [dica pratica de vendas, max 20 palavras, no mesmo contexto da frase acima, acionavel]\n\nResponda SOMENTE com FRASE e DICA, sem mais nada.';
   if(navigator.clipboard){
     navigator.clipboard.writeText(prompt).then(function(){
       document.getElementById('qgIAHint').style.display='block';
-      toast('Prompt copiado! Cole no ChatGPT.');
+      toast('Prompt copiado! Abra o ChatGPT e cole.');
     });
   }
   window.open('https://chatgpt.com','_blank');
 }
 
-function fBRMoeda(str){
-  // Aceita "17000", "17.000", "17000,98", "17.000,98", "R$ 17.000,98"
-  if(!str)return 0;
-  var s=String(str).replace(/[^\d,]/g,''); // mantém só dígitos e vírgula
-  if(s.indexOf(',')>=0){
-    var p=s.split(',');
-    s=p[0]+'.'+p[1];
-  }
-  return parseFloat(s)||0;
-}
-
-function formatBRL(val){
-  return 'R$ '+val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-}
-
-function iniciarMetasGrid(){
-  var grid=document.getElementById('qgMetasGrid');
-  if(!grid)return;
-  var vs=[['017','EDIMAR BARBOSA'],['081','ADSON BRUNO'],['118','EDUARDO REZENDE'],['122','MATHEUS PAIOTTI'],['167','EDUARDO BRITTO'],['249','VINICIUS BARAO'],['295','CRISTIAN VIANNA'],['429','VICTOR HUGO'],['459','CARLOS BORDIGNON']];
-  grid.innerHTML=vs.map(function(v){
-    return '<div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 12px;border:1px solid rgba(255,255,255,0.07)">'
-      +'<span style="font-size:11px;color:rgba(240,246,255,0.45);min-width:30px">'+v[0]+'</span>'
-      +'<span style="flex:1;font-size:13px;font-weight:600;color:#F0F6FF">'+v[1]+'</span>'
-      +'<span style="font-size:12px;color:rgba(240,246,255,0.5);margin-right:2px">R$</span>'
-      +'<input id="meta_'+v[0]+'" class="inp" inputmode="decimal" placeholder="0,00"'
-      +' style="width:110px;padding:7px 10px;font-size:14px;font-weight:700;color:var(--am);text-align:right;border-color:rgba(245,158,11,0.25)">'
-      +'</div>';
-  }).join('');
-}
-
 function publicarQGDia(){
-  var foco=document.getElementById('qgFoco').value.trim();
-  var frase=document.getElementById('qgFrase').value.trim();
-  var dica=document.getElementById('qgDica').value.trim();
+  var foco=(document.getElementById('qgFoco').value||'').trim();
+  var frase=(document.getElementById('qgFrase').value||'').trim();
+  var dica=(document.getElementById('qgDica').value||'').trim();
   if(!foco){toast('Informe o foco do dia.');return;}
-  var vs=[['017','EDIMAR BARBOSA'],['081','ADSON BRUNO'],['118','EDUARDO REZENDE'],['122','MATHEUS PAIOTTI'],['167','EDUARDO BRITTO'],['249','VINICIUS BARAO'],['295','CRISTIAN VIANNA'],['429','VICTOR HUGO'],['459','CARLOS BORDIGNON']];
-  var metasArr=vs.map(function(v){
-    var val=fBRMoeda(document.getElementById('meta_'+v[0]).value);
-    return{cod:v[0],nome:v[1],meta:val};
+  var metasArr=QG_VENDS.map(function(v){
+    var el=document.getElementById('qgm_'+v[0]);
+    return{cod:v[0],nome:v[1],meta:qgParse(el?el.value:'')};
   });
   var hoje=new Date();
   var data=hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   data=data.charAt(0).toUpperCase()+data.slice(1);
-  var dados={foco:foco,metasArr:metasArr,frase:frase,dica:dica,data:data,publicado_em:hoje.toISOString()};
+  var dados={foco:foco,metasArr:metasArr,frase:frase,dica:dica,data:data};
   supaFetch('qg_dia?id=eq.1',{method:'DELETE'}).then(function(){
     return supaFetch('qg_dia',{method:'POST',body:JSON.stringify({id:1,dados:JSON.stringify(dados)})});
   }).then(function(){
     localStorage.setItem('QG_DIA',JSON.stringify(dados));
-    toast('QG do Dia publicado!');
+    toast('QG do Dia publicado para a equipe!');
     renderQGDia(dados);
   }).catch(function(){
     localStorage.setItem('QG_DIA',JSON.stringify(dados));
@@ -756,164 +739,144 @@ function carregarQGDia(){
   if(el)el.innerHTML='<div class="loading">Carregando...</div>';
   supaFetch('qg_dia?id=eq.1').then(function(r){return r.json();}).then(function(data){
     if(data&&data[0]&&data[0].dados){try{renderQGDia(JSON.parse(data[0].dados));return;}catch(e){}}
-    var local=localStorage.getItem('QG_DIA');
-    if(local){try{renderQGDia(JSON.parse(local));return;}catch(e){}}
-    if(el)el.innerHTML=renderQGVazio();
+    var s=localStorage.getItem('QG_DIA');
+    if(s){try{renderQGDia(JSON.parse(s));return;}catch(e){}}
+    if(el)el.innerHTML=qgVazio();
   }).catch(function(){
-    var local=localStorage.getItem('QG_DIA');
-    if(local){try{renderQGDia(JSON.parse(local));return;}catch(e){}}
-    if(el)el.innerHTML=renderQGVazio();
+    var s=localStorage.getItem('QG_DIA');
+    if(s){try{renderQGDia(JSON.parse(s));return;}catch(e){}}
+    if(el)el.innerHTML=qgVazio();
   });
 }
 
-function renderQGVazio(){
-  return '<div style="text-align:center;padding:48px 24px">'
-    +'<div style="font-size:56px;margin-bottom:16px">⚡</div>'
-    +'<div style="font-size:18px;font-weight:700;color:var(--am);margin-bottom:8px">Nenhum comunicado hoje</div>'
-    +'<div style="font-size:13px;color:rgba(240,246,255,0.6);line-height:1.8">O coordenador ainda não publicou<br>o QG do Dia.</div>'
-    +'</div>';
+function qgVazio(){
+  return '<div style="text-align:center;padding:48px 20px"><div style="font-size:52px;margin-bottom:16px">&#9889;</div><div style="font-size:17px;font-weight:700;color:var(--am);margin-bottom:8px">Nenhum comunicado hoje</div><div style="font-size:13px;color:rgba(240,246,255,0.6);line-height:1.8">O coordenador ainda nao publicou<br>o QG do Dia de hoje.</div></div>';
 }
 
 function renderQGDia(d){
   var el=document.getElementById('qgDiaBox');
   if(!el)return;
-  window._qgDadosAtual=d;
-  var metas=d.metasArr||[];
-  var comMeta=metas.filter(function(m){return m.meta>0;});
-  var total=comMeta.reduce(function(s,m){return s+m.meta;},0);
+  window._qgAtual=d;
+  var metas=(d.metasArr||[]).filter(function(m){return m.meta>0;});
+  var total=metas.reduce(function(s,m){return s+m.meta;},0);
+  var isCoord=eu&&eu.t==='coord';
 
-  var html='<div id="qgCard" style="background:linear-gradient(160deg,#0C1A2E,#060E1E);border:2px solid rgba(245,158,11,0.45);border-radius:20px;padding:24px 20px">';
+  // Card visual — largura maxima 480px centrado para imagem limpa
+  var h='<div id="qgCard" style="background:#0B1929;border:2px solid rgba(245,158,11,0.5);border-radius:16px;padding:28px 24px;max-width:480px;margin:0 auto;font-family:Inter,sans-serif">';
 
-  // Cabeçalho
-  html+='<div style="text-align:center;margin-bottom:22px">';
-  html+='<div style="font-size:9px;font-weight:800;letter-spacing:3px;color:var(--am);text-transform:uppercase;margin-bottom:8px">COMUNICADO DIÁRIO · GERENCION QG</div>';
-  html+='<div style="font-size:12px;color:rgba(240,246,255,0.6);margin-bottom:14px">'+d.data+'</div>';
-  html+='<div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);border-radius:10px;display:inline-block;padding:6px 20px;font-size:13px;font-weight:800;color:var(--am)">🎯 Foco: '+d.foco+'</div>';
-  html+='<div style="font-size:13px;color:rgba(240,246,255,0.75);margin-top:12px">Bom dia, time! 🚀</div>';
-  html+='</div>';
+  // Topo
+  h+='<div style="text-align:center;margin-bottom:20px">';
+  h+='<div style="font-size:8px;font-weight:800;letter-spacing:3px;color:var(--am);text-transform:uppercase;margin-bottom:6px">COMUNICADO DIARIO &mdash; GERENCION QG</div>';
+  h+='<div style="font-size:12px;color:rgba(240,246,255,0.55);margin-bottom:14px">'+d.data+'</div>';
+  h+='<div style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);border-radius:8px;display:inline-block;padding:5px 18px;font-size:13px;font-weight:800;color:var(--am)">&#127919; Foco: '+d.foco+'</div>';
+  h+='<div style="font-size:13px;color:rgba(240,246,255,0.7);margin-top:10px">Bom dia, time! &#128640;</div>';
+  h+='</div>';
 
   // Frase
   if(d.frase){
-    html+='<div style="background:rgba(245,158,11,0.07);border-left:4px solid var(--am);border-radius:0 12px 12px 0;padding:14px 16px;margin-bottom:20px">';
-    html+='<div style="font-size:15px;font-weight:700;color:#F0F6FF;font-style:italic;line-height:1.5">"'+d.frase+'"</div>';
-    html+='</div>';
+    h+='<div style="background:rgba(245,158,11,0.08);border-left:3px solid var(--am);border-radius:0 10px 10px 0;padding:12px 16px;margin-bottom:18px">';
+    h+='<div style="font-size:14px;font-weight:600;color:#F0F6FF;font-style:italic;line-height:1.6">&#8220;'+d.frase+'&#8221;</div>';
+    h+='</div>';
   }
 
-  // Metas
-  if(comMeta.length){
-    html+='<div style="margin-bottom:20px">';
-    html+='<div style="font-size:9px;font-weight:800;letter-spacing:2px;color:rgba(240,246,255,0.45);text-transform:uppercase;margin-bottom:10px">🏆 METAS PARA HOJE</div>';
-    comMeta.forEach(function(m){
-      html+='<div style="display:flex;align-items:center;padding:11px 14px;background:rgba(255,255,255,0.04);border-radius:10px;margin-bottom:6px;border:1px solid rgba(255,255,255,0.07)">';
-      html+='<span style="font-size:10px;color:rgba(240,246,255,0.4);min-width:32px;font-weight:600">'+m.cod+'</span>';
-      html+='<span style="flex:1;font-size:13px;font-weight:600;color:#F0F6FF">'+m.nome+'</span>';
-      html+='<span style="font-size:15px;font-weight:800;color:var(--am)">'+formatBRL(m.meta)+'</span>';
-      html+='</div>';
+  // Metas — alinhadas com monospace nos valores
+  if(metas.length){
+    h+='<div style="margin-bottom:18px">';
+    h+='<div style="font-size:8px;font-weight:800;letter-spacing:2px;color:rgba(240,246,255,0.4);text-transform:uppercase;margin-bottom:8px">&#127942; METAS PARA HOJE</div>';
+    metas.forEach(function(m){
+      h+='<div style="display:flex;align-items:center;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:8px;margin-bottom:5px;border:1px solid rgba(255,255,255,0.07)">';
+      h+='<span style="font-size:10px;color:rgba(240,246,255,0.35);width:30px;flex-shrink:0;font-weight:700">'+m.cod+'</span>';
+      h+='<span style="flex:1;font-size:13px;font-weight:600;color:#F0F6FF">'+m.nome+'</span>';
+      h+='<span style="font-size:14px;font-weight:800;color:var(--am);font-variant-numeric:tabular-nums;min-width:110px;text-align:right">'+qgFmt(m.meta)+'</span>';
+      h+='</div>';
     });
     if(total>0){
-      html+='<div style="margin-top:8px;padding:11px 14px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:10px;display:flex;justify-content:space-between;align-items:center">';
-      html+='<span style="font-size:11px;color:rgba(240,246,255,0.55);font-weight:700;letter-spacing:.5px">META TOTAL DA EQUIPE</span>';
-      html+='<span style="font-size:18px;font-weight:800;color:var(--am)">'+formatBRL(total)+'</span>';
-      html+='</div>';
+      h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:8px;margin-top:6px">';
+      h+='<span style="font-size:10px;color:rgba(240,246,255,0.5);font-weight:800;letter-spacing:1px;text-transform:uppercase">META TOTAL</span>';
+      h+='<span style="font-size:17px;font-weight:800;color:var(--am);font-variant-numeric:tabular-nums">'+qgFmt(total)+'</span>';
+      h+='</div>';
     }
-    html+='</div>';
+    h+='</div>';
   }
 
   // Dica
   if(d.dica){
-    html+='<div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:12px;padding:14px 16px;margin-bottom:20px">';
-    html+='<div style="font-size:9px;font-weight:800;letter-spacing:1.5px;color:#10B981;text-transform:uppercase;margin-bottom:8px">💡 DICA DO DIA</div>';
-    html+='<div style="font-size:14px;color:#F0F6FF;line-height:1.7;font-weight:500">'+d.dica+'</div>';
-    html+='</div>';
+    h+='<div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:12px 16px;margin-bottom:18px">';
+    h+='<div style="font-size:8px;font-weight:800;letter-spacing:1.5px;color:#10B981;text-transform:uppercase;margin-bottom:6px">&#128161; DICA DO DIA</div>';
+    h+='<div style="font-size:13px;color:#F0F6FF;line-height:1.65;font-weight:500">'+d.dica+'</div>';
+    h+='</div>';
   }
 
-  // Rodapé
-  html+='<div style="text-align:center;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08)">';
-  html+='<div style="font-size:13px;color:rgba(240,246,255,0.7);margin-bottom:6px">Vamos juntos bater essas metas hoje! 👊</div>';
-  html+='<div style="font-size:9px;font-weight:800;letter-spacing:3px;color:var(--am)">GERENCION QG</div>';
-  html+='</div>';
-  html+='</div>';
+  // Rodape
+  h+='<div style="text-align:center;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08)">';
+  h+='<div style="font-size:12px;color:rgba(240,246,255,0.65);margin-bottom:4px">Vamos juntos bater essas metas hoje! &#128074;</div>';
+  h+='<div style="font-size:8px;font-weight:800;letter-spacing:3px;color:var(--am)">GERENCION QG</div>';
+  h+='</div>';
+  h+='</div>';
 
-  // Botões — apenas coordenador
-  var isCoord=eu&&eu.t==="coord";
+  // Botoes coordenador — FORA do card para nao aparecer na imagem
   if(isCoord){
-    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">';
-    html+='<button onclick="salvarQGImagem()" style="padding:14px;background:var(--am);border:none;border-radius:12px;color:#0A0A0A;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">📷 Salvar Imagem</button>';
-    html+='<button onclick="compartilharQGWpp()" style="padding:14px;background:var(--gn);border:none;border-radius:12px;color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">💬 WhatsApp</button>';
-    html+='</div>';
+    h+='<div id="qgBtns" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;max-width:480px;margin-left:auto;margin-right:auto">';
+    h+='<button onclick="salvarQGImg()" style="padding:14px;background:var(--am);border:none;border-radius:12px;color:#0A0A0A;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#128247; Salvar Imagem</button>';
+    h+='<button onclick="qgWhatsApp()" style="padding:14px;background:var(--gn);border:none;border-radius:12px;color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#128172; WhatsApp</button>';
+    h+='</div>';
   }
 
-  el.innerHTML=html;
+  el.innerHTML=h;
 }
 
-function salvarQGImagem(){
-  var el=document.getElementById('qgCard');
-  if(!el){toast('Gere o comunicado primeiro.');return;}
-  if(typeof html2canvas==='undefined'){toast('Aguarde...');return;}
-  // Esconder botões temporariamente
-  var btns=document.querySelector('#qgDiaBox > div[style*="grid"]');
-  if(btns)btns.style.display='none';
+function salvarQGImg(){
+  var card=document.getElementById('qgCard');
+  if(!card){toast('Publique o comunicado primeiro.');return;}
+  if(typeof html2canvas==='undefined'){toast('Aguarde e tente novamente.');return;}
+  toast('Gerando imagem...');
   setTimeout(function(){
-    html2canvas(el,{backgroundColor:'#060E1E',scale:2,useCORS:true,logging:false}).then(function(canvas){
-      if(btns)btns.style.display='grid';
+    html2canvas(card,{
+      backgroundColor:'#0B1929',
+      scale:2,
+      useCORS:true,
+      logging:false,
+      width:card.offsetWidth,
+      height:card.offsetHeight
+    }).then(function(canvas){
       var a=document.createElement('a');
       a.download='QG-do-Dia.png';
       a.href=canvas.toDataURL('image/png');
       a.click();
-      toast('Imagem salva!');
-    }).catch(function(e){
-      if(btns)btns.style.display='grid';
-      toast('Erro ao gerar imagem.');
-    });
+      toast('Imagem salva! Compartilhe no grupo.');
+    }).catch(function(){toast('Erro ao gerar imagem. Tente novamente.');});
   },300);
 }
 
-function compartilharQGWpp(){
-  var d=window._qgDadosAtual;
-  if(!d){var s=localStorage.getItem('QG_DIA');if(s)try{d=JSON.parse(s);}catch(e){};}
+function qgWhatsApp(){
+  var d=window._qgAtual;
+  if(!d){try{d=JSON.parse(localStorage.getItem('QG_DIA')||'');}catch(e){}}
   if(!d){toast('Nenhum comunicado publicado.');return;}
-  var metas=d.metasArr||[];
-  var comMeta=metas.filter(function(m){return m.meta>0;});
-  var total=comMeta.reduce(function(s,m){return s+m.meta;},0);
-  var linhas=['📋 *COMUNICADO DIÁRIO — GERENCION QG*','','📅 '+d.data,'','🎯 *Foco: '+d.foco+'*',''];
-  if(d.frase)linhas.push('"'+d.frase+'"','');
-  if(comMeta.length){
-    linhas.push('🏆 *Metas para hoje:*');
-    comMeta.forEach(function(m){
-      var meta=formatBRL(m.meta);
-      linhas.push(m.cod+' - '+m.nome+'     '+meta);
+  var metas=(d.metasArr||[]).filter(function(m){return m.meta>0;});
+  var total=metas.reduce(function(s,m){return s+m.meta;},0);
+  var L=[
+    '*COMUNICADO DIARIO — GERENCION QG*',
+    '',
+    '_'+d.data+'_',
+    '',
+    '🎯 *Foco: '+d.foco+'*',
+    ''
+  ];
+  if(d.frase)L.push('"'+d.frase+'"','');
+  if(metas.length){
+    L.push('🏆 *Metas para hoje:*','');
+    // Calcular largura maxima do nome para alinhar
+    var maxNome=Math.max.apply(null,metas.map(function(m){return m.nome.length;}));
+    metas.forEach(function(m){
+      var pad=m.nome+Array(maxNome-m.nome.length+3).join(' ');
+      L.push(m.cod+' - '+pad+qgFmt(m.meta));
     });
-    if(total>0)linhas.push('','💰 *Total: '+formatBRL(total)+'*');
+    if(total>0)L.push('','💰 *Total: '+qgFmt(total)+'*');
   }
-  if(d.dica)linhas.push('','💡 *Dica do dia:*',d.dica);
-  linhas.push('','Vamos juntos! 👊','_GERENCION QG_');
-  window.open('https://wa.me/?text='+encodeURIComponent(linhas.join('\n')),'_blank');
+  if(d.dica)L.push('','💡 *Dica:* '+d.dica);
+  L.push('','Vamos juntos! 👊','_GERENCION QG_');
+  window.open('https://wa.me/?text='+encodeURIComponent(L.join('\n')),'_blank');
 }
-
-var QG_VENDS=[['017','EDIMAR BARBOSA'],['081','ADSON BRUNO'],['118','EDUARDO REZENDE'],['122','MATHEUS PAIOTTI'],['167','EDUARDO BRITTO'],['249','VINICIUS BARAO'],['295','CRISTIAN VIANNA'],['429','VICTOR HUGO'],['459','CARLOS BORDIGNON']];
-
-function copiarCampo(id){var el=document.getElementById(id);if(!el||!el.value){toast('Campo vazio.');return;}if(navigator.clipboard){navigator.clipboard.writeText(el.value).then(function(){toast('Copiado!');});}else{el.select();document.execCommand('copy');toast('Copiado!');}}
-
-function iniciarMetasGrid(){var grid=document.getElementById('qgMetasGrid');if(!grid)return;grid.innerHTML=QG_VENDS.map(function(v){return'<div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 12px;border:1px solid rgba(255,255,255,0.07)"><span style="font-size:11px;color:rgba(240,246,255,0.45);min-width:30px">'+v[0]+'</span><span style="flex:1;font-size:13px;font-weight:600;color:#F0F6FF">'+v[1]+'</span><span style="font-size:12px;color:rgba(240,246,255,0.5);margin-right:2px">R$</span><input id="meta_'+v[0]+'" class="inp" inputmode="decimal" placeholder="0,00" style="width:110px;padding:7px 10px;font-size:14px;font-weight:700;color:var(--am);text-align:right;border-color:rgba(245,158,11,0.25)"></div>';}).join('');}
-
-function qgParseMoeda(s){if(!s)return 0;s=String(s).replace(/[R$\s]/g,'').replace(/\./g,'').replace(',','.');return parseFloat(s)||0;}
-
-function qgFormatBRL(v){return'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
-
-function gerarQGIA(){var foco=document.getElementById('qgFoco').value.trim()||'vendas';var prompt='Tema do dia: "'+foco+'". Crie:\\nFRASE: [frase motivacional max 10 palavras para vendedor de alimentos]\\nDICA: [dica pratica max 15 palavras no mesmo contexto da frase]\\nResponda APENAS nesse formato, sem mais nada.';if(navigator.clipboard){navigator.clipboard.writeText(prompt).then(function(){document.getElementById('qgIAHint').style.display='block';toast('Prompt copiado! Abra o ChatGPT.');});}window.open('https://chatgpt.com','_blank');}
-
-function publicarQGDia(){var foco=document.getElementById('qgFoco').value.trim();var frase=(document.getElementById('qgFrase').value||'').trim();var dica=(document.getElementById('qgDica').value||'').trim();if(!foco){toast('Informe o foco do dia.');return;}var metasArr=QG_VENDS.map(function(v){return{cod:v[0],nome:v[1],meta:qgParseMoeda((document.getElementById('meta_'+v[0])||{}).value)};});var hoje=new Date();var data=hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});data=data.charAt(0).toUpperCase()+data.slice(1);var dados={foco:foco,metasArr:metasArr,frase:frase,dica:dica,data:data};supaFetch('qg_dia?id=eq.1',{method:'DELETE'}).then(function(){return supaFetch('qg_dia',{method:'POST',body:JSON.stringify({id:1,dados:JSON.stringify(dados)})});}).then(function(){localStorage.setItem('QG_DIA',JSON.stringify(dados));toast('QG do Dia publicado!');renderQGDia(dados);}).catch(function(){localStorage.setItem('QG_DIA',JSON.stringify(dados));toast('QG do Dia publicado!');renderQGDia(dados);});}
-
-function carregarQGDia(){var el=document.getElementById('qgDiaBox');if(el)el.innerHTML='<div class="loading">Carregando...</div>';supaFetch('qg_dia?id=eq.1').then(function(r){return r.json();}).then(function(data){if(data&&data[0]&&data[0].dados){try{renderQGDia(JSON.parse(data[0].dados));return;}catch(e){}}var local=localStorage.getItem('QG_DIA');if(local){try{renderQGDia(JSON.parse(local));return;}catch(e){}}if(el)el.innerHTML=qgVazio();}).catch(function(){var local=localStorage.getItem('QG_DIA');if(local){try{renderQGDia(JSON.parse(local));return;}catch(e){}}if(el)el.innerHTML=qgVazio();});}
-
-function qgVazio(){return'<div style="text-align:center;padding:48px 20px"><div style="font-size:52px;margin-bottom:16px">&#9889;</div><div style="font-size:17px;font-weight:700;color:var(--am);margin-bottom:8px">Nenhum comunicado hoje</div><div style="font-size:13px;color:rgba(240,246,255,0.6);line-height:1.8">O coordenador ainda nao publicou<br>o QG do Dia.</div></div>';}
-
-function renderQGDia(d){var el=document.getElementById('qgDiaBox');if(!el)return;window._qgAtual=d;var metas=(d.metasArr||[]).filter(function(m){return m.meta>0;});var total=metas.reduce(function(s,m){return s+m.meta;},0);var h='<div id="qgCard" style="background:linear-gradient(160deg,#0C1A2E,#060E1E);border:2px solid rgba(245,158,11,0.45);border-radius:20px;padding:24px 20px">';h+='<div style="text-align:center;margin-bottom:22px"><div style="font-size:9px;font-weight:800;letter-spacing:3px;color:var(--am);text-transform:uppercase;margin-bottom:8px">COMUNICADO DIARIO &#8212; GERENCION QG</div><div style="font-size:12px;color:rgba(240,246,255,0.6);margin-bottom:14px">'+d.data+'</div><div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);border-radius:10px;display:inline-block;padding:6px 20px;font-size:13px;font-weight:800;color:var(--am)">&#127919; Foco: '+d.foco+'</div><div style="font-size:13px;color:rgba(240,246,255,0.75);margin-top:12px">Bom dia, time! &#128640;</div></div>';if(d.frase)h+='<div style="background:rgba(245,158,11,0.07);border-left:4px solid var(--am);border-radius:0 12px 12px 0;padding:14px 16px;margin-bottom:20px"><div style="font-size:15px;font-weight:700;color:#F0F6FF;font-style:italic;line-height:1.5">&ldquo;'+d.frase+'&rdquo;</div></div>';if(metas.length){h+='<div style="margin-bottom:20px"><div style="font-size:9px;font-weight:800;letter-spacing:2px;color:rgba(240,246,255,0.45);text-transform:uppercase;margin-bottom:10px">&#127942; METAS PARA HOJE</div>';metas.forEach(function(m){h+='<div style="display:flex;align-items:center;padding:11px 14px;background:rgba(255,255,255,0.04);border-radius:10px;margin-bottom:6px;border:1px solid rgba(255,255,255,0.07)"><span style="font-size:10px;color:rgba(240,246,255,0.4);min-width:32px;font-weight:600">'+m.cod+'</span><span style="flex:1;font-size:13px;font-weight:600;color:#F0F6FF">'+m.nome+'</span><span style="font-size:15px;font-weight:800;color:var(--am)">'+qgFormatBRL(m.meta)+'</span></div>';});if(total>0)h+='<div style="margin-top:8px;padding:11px 14px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:10px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:rgba(240,246,255,0.55);font-weight:700;letter-spacing:.5px">META TOTAL DA EQUIPE</span><span style="font-size:18px;font-weight:800;color:var(--am)">'+qgFormatBRL(total)+'</span></div>';h+='</div>';}if(d.dica)h+='<div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:12px;padding:14px 16px;margin-bottom:20px"><div style="font-size:9px;font-weight:800;letter-spacing:1.5px;color:#10B981;text-transform:uppercase;margin-bottom:8px">&#128161; DICA DO DIA</div><div style="font-size:14px;color:#F0F6FF;line-height:1.7;font-weight:500">'+d.dica+'</div></div>';h+='<div style="text-align:center;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08)"><div style="font-size:13px;color:rgba(240,246,255,0.7);margin-bottom:6px">Vamos juntos bater essas metas hoje! &#128074;</div><div style="font-size:9px;font-weight:800;letter-spacing:3px;color:var(--am)">GERENCION QG</div></div></div>';if(eu&&eu.t==='coord'){h+='<div id="qgBtns" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px"><button onclick="salvarQGImg()" style="padding:14px;background:var(--am);border:none;border-radius:12px;color:#0A0A0A;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#128247; Salvar Imagem</button><button onclick="qgWhatsApp()" style="padding:14px;background:var(--gn);border:none;border-radius:12px;color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#128172; WhatsApp</button></div>';}el.innerHTML=h;}
-
-function salvarQGImg(){var el=document.getElementById('qgCard');if(!el){toast('Nenhum comunicado gerado.');return;}if(typeof html2canvas==='undefined'){toast('Aguarde...');return;}var btns=document.getElementById('qgBtns');if(btns)btns.style.display='none';setTimeout(function(){html2canvas(el,{backgroundColor:'#060E1E',scale:2,useCORS:true,logging:false}).then(function(canvas){if(btns)btns.style.display='grid';var a=document.createElement('a');a.download='QG-do-Dia.png';a.href=canvas.toDataURL('image/png');a.click();toast('Imagem salva!');}).catch(function(){if(btns)btns.style.display='grid';toast('Erro ao gerar imagem.');});},300);}
-
-function qgWhatsApp(){var d=window._qgAtual||null;if(!d){try{d=JSON.parse(localStorage.getItem('QG_DIA')||'');}catch(e){}}if(!d){toast('Nenhum comunicado publicado.');return;}var metas=(d.metasArr||[]).filter(function(m){return m.meta>0;});var total=metas.reduce(function(s,m){return s+m.meta;},0);var txt='*COMUNICADO DIARIO - GERENCION QG*\n\n'+d.data+'\n\nFoco: *'+d.foco+'*\n';if(d.frase)txt+='\n"'+d.frase+'"\n';if(metas.length){txt+='\n*Metas para hoje:*\n';metas.forEach(function(m){txt+=m.cod+' - '+m.nome+'   '+qgFormatBRL(m.meta)+'\n';});if(total>0)txt+='\nTotal: *'+qgFormatBRL(total)+'*\n';}if(d.dica)txt+='\nDica: '+d.dica+'\n';txt+='\nVamos juntos! \nGERENGION QG';window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');}
-
 
 function gerarIA(){var cli=document.getElementById('negCli').value.trim();var conc=document.getElementById('negConc').value.trim();var itens=prods.map(function(p){return p.n||'produto';}).join(', ');var prompt='Escreva uma justificativa comercial CURTA (2 linhas no maximo) para aprovacao de preco especial. Seja objetivo e profissional. Cliente: '+(cli||'a definir')+'. Produtos: '+(itens||'a definir')+'.';navigator.clipboard&&navigator.clipboard.writeText(prompt).then(function(){var hint=document.getElementById('iaHint');if(hint)hint.style.display='block';toast('Prompt copiado! Cole no ChatGPT.');});window.open('https://chatgpt.com','_blank');}
 

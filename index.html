@@ -248,8 +248,66 @@ textarea.inp{resize:vertical;min-height:80px;}
           <button class="lback" onclick="voltarTipo()">Voltar</button>
           <div><div class="ltitle" id="listaTitulo">-</div><div class="lsub">Lista Basica de Produtos - Arcofoods</div></div>
         </div>
-        <div class="card"><div class="pgrid" id="prodGrid"></div></div>
-        <button class="btn bp" onclick="compartilhar()" style="width:100%">Compartilhar via WhatsApp</button>
+        <!-- TABS -->
+        <div style="display:flex;gap:4px;background:var(--s1);border-radius:10px;padding:4px;margin-bottom:12px;">
+          <button id="tabProdBtn" style="flex:1;padding:7px;border:none;background:var(--s2);border-radius:7px;font-size:11px;font-weight:700;color:var(--t);cursor:pointer;" onclick="cotTab('prod')">Produtos</button>
+          <button id="tabCotBtn" style="flex:1;padding:7px;border:none;background:transparent;border-radius:7px;font-size:11px;font-weight:600;color:var(--t2);cursor:pointer;" onclick="cotTab('cot')">Cotacao <span id="cotBadge" style="background:rgba(16,185,129,.2);color:#10B981;font-size:9px;padding:2px 6px;border-radius:20px;font-weight:700;margin-left:2px;">0</span></button>
+          <button id="tabPrevBtn" style="flex:1;padding:7px;border:none;background:transparent;border-radius:7px;font-size:11px;font-weight:600;color:var(--t2);cursor:pointer;" onclick="cotTab('prev')">Preview</button>
+        </div>
+        <!-- TAB PRODUTOS -->
+        <div id="tabProd">
+          <div class="card"><div class="pgrid" id="prodGrid"></div></div>
+          <button class="btn bp" onclick="compartilhar()" style="width:100%;margin-top:8px">Compartilhar lista via WhatsApp</button>
+        </div>
+        <!-- TAB COTACAO -->
+        <div id="tabCot" style="display:none">
+          <div style="margin-bottom:10px">
+            <label style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--t2);display:block;margin-bottom:4px">Cliente (codigo + nome)</label>
+            <input id="cotCliente" class="inp" placeholder="ex: 98270 - Roots Gastrobar Ltda" oninput="atualizaCotPreview()" style="width:100%">
+          </div>
+          <div style="margin-bottom:10px">
+            <label style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--t2);display:block;margin-bottom:4px">Observacao geral (opcional)</label>
+            <input id="cotObs" class="inp" placeholder="ex: Validade ate sexta-feira" oninput="atualizaCotPreview()" style="width:100%">
+          </div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t2);margin-bottom:8px">Produtos da cotacao</div>
+          <div id="cotItens"></div>
+          <button onclick="addProdManual()" style="width:100%;padding:10px;background:transparent;border:1px dashed rgba(255,255,255,.15);border-radius:10px;color:var(--t2);font-size:12px;font-weight:600;cursor:pointer;margin-bottom:10px">+ Adicionar produto manualmente</button>
+          <div id="cotTotalBox" style="display:none;background:var(--s1);border:1px solid rgba(16,185,129,.25);border-radius:10px;padding:10px 14px;display:none;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <span style="font-size:11px;color:var(--t2);font-weight:600">Total geral</span>
+            <span id="cotTotalVal" style="font-size:18px;font-weight:800;color:#10B981">R$ 0,00</span>
+          </div>
+          <button onclick="cotTab('prev')" style="width:100%;padding:10px;background:var(--s1);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:var(--t);font-size:12px;font-weight:700;cursor:pointer;margin-bottom:8px">👁 Ver preview</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button onclick="gerarCotImagem('wa')" style="background:#10B981;border:none;color:#fff;padding:10px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer">📱 WhatsApp</button>
+            <button onclick="gerarCotImagem('email')" style="background:var(--s1);border:1px solid rgba(255,255,255,.12);color:var(--t);padding:10px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer">✉ E-mail</button>
+          </div>
+        </div>
+        <!-- TAB PREVIEW -->
+        <div id="tabPrev" style="display:none">
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t2);margin-bottom:10px">Como o cliente vai receber</div>
+          <div id="cotPreviewBox" style="background:#0D1B2E;border-radius:14px;padding:20px;margin-bottom:12px;border:1px solid rgba(255,255,255,.08)">
+            <div style="font-size:10px;font-weight:800;letter-spacing:2px;color:#F59E0B;margin-bottom:2px">COTACAO COMERCIAL</div>
+            <div id="prevData" style="font-size:10px;color:#64748B;margin-bottom:10px"></div>
+            <div style="width:100%;height:1px;background:rgba(255,255,255,.07);margin:10px 0"></div>
+            <div style="font-size:9px;color:#64748B;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:2px">Vendedor</div>
+            <div id="prevVend" style="font-size:13px;font-weight:700;color:#F0F6FF;margin-bottom:8px"></div>
+            <div style="font-size:9px;color:#64748B;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:2px">Cliente</div>
+            <div id="prevCliente" style="font-size:13px;font-weight:700;color:#F0F6FF;margin-bottom:10px"></div>
+            <div id="prevSegBadge" style="display:inline-block;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:6px;padding:3px 10px;font-size:9px;color:#60A5FA;font-weight:700;margin-bottom:12px"></div>
+            <div id="prevProdutos"></div>
+            <div id="prevTotalArea"></div>
+            <div id="prevObsArea"></div>
+            <div style="width:100%;height:1px;background:rgba(255,255,255,.07);margin:12px 0"></div>
+            <div style="text-align:center">
+              <div style="font-size:9px;color:#64748B;line-height:1.8">Arcofoods - Norte Fluminense</div>
+              <div style="font-size:10px;font-weight:800;letter-spacing:2px;color:#F59E0B;margin-top:3px">GERENCION QG</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button onclick="gerarCotImagem('wa')" style="background:#10B981;border:none;color:#fff;padding:10px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer">📱 WhatsApp</button>
+            <button onclick="gerarCotImagem('email')" style="background:var(--s1);border:1px solid rgba(255,255,255,.12);color:var(--t);padding:10px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer">✉ E-mail</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -626,8 +684,166 @@ function sair(){if(confirm('Deseja sair?')){eu=null;localStorage.removeItem('QG_
 function ir(id,btn){document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});var pg=document.getElementById(id);if(pg)pg.classList.add('on');document.querySelectorAll('.mb').forEach(function(b){b.classList.remove('on');});if(btn)btn.classList.add('on');window.scrollTo(0,0);}
 function irM(id){var btn=Array.from(document.querySelectorAll('.mb')).find(function(b){return b.getAttribute('onclick')&&b.getAttribute('onclick').indexOf("'"+id+"'")>=0;});ir(id,btn);}
 
-function abrirTipo(t){tipoAtual=t;var tp=TIPOS[t];if(!tp)return;document.getElementById('tipoList').style.display='none';document.getElementById('listaBox').style.display='block';document.getElementById('listaTitulo').textContent=tp.n;var g=document.getElementById('prodGrid');var ps=tp.p.slice().sort();g.innerHTML=ps.map(function(p){return'<div class="pitem"><div class="pdot"></div>'+p+'</div>';}).join('');}
-function voltarTipo(){tipoAtual=null;document.getElementById('tipoList').style.display='block';document.getElementById('listaBox').style.display='none';}
+function abrirTipo(t){tipoAtual=t;var tp=TIPOS[t];if(!tp)return;document.getElementById('tipoList').style.display='none';document.getElementById('listaBox').style.display='block';document.getElementById('listaTitulo').textContent=tp.n;cotSelecionados=[];cotDados={};document.getElementById('cotBadge').textContent='0';cotTab('prod');renderProdGrid();}
+function renderProdGrid(){var tp=TIPOS[tipoAtual];if(!tp)return;var g=document.getElementById('prodGrid');var ps=tp.p.slice().sort();g.innerHTML=ps.map(function(p){var sel=cotSelecionados.indexOf(p)>=0;return'<div class="pitem" style="'+(sel?'background:rgba(59,130,246,.08);border-left:3px solid #3B82F6;':'')+'" onclick="toggleCotProd(''+p+'')"><div class="pdot" style="'+(sel?'background:#3B82F6':'')+'"></div><span style="flex:1">'+p+'</span>'+(sel?'<span style="font-size:10px;color:#60A5FA;font-weight:700">✓</span>':'')+'</div>';}).join('');}
+function cotTab(t){
+  document.getElementById('tabProd').style.display=t==='prod'?'block':'none';
+  document.getElementById('tabCot').style.display=t==='cot'?'block':'none';
+  document.getElementById('tabPrev').style.display=t==='prev'?'block':'none';
+  ['Prod','Cot','Prev'].forEach(function(id){
+    var btn=document.getElementById('tab'+id+'Btn');
+    if(btn){btn.style.background=t===id.toLowerCase()?'var(--s2)':'transparent';btn.style.color=t===id.toLowerCase()?'var(--t)':'var(--t2)';}
+  });
+  if(t==='cot')renderCotItens();
+  if(t==='prev'){atualizaCotPreview();renderCotItens();}
+}
+
+var cotSelecionados=[];
+var cotDados={};
+
+function toggleCotProd(nome){
+  var idx=cotSelecionados.indexOf(nome);
+  if(idx>=0){cotSelecionados.splice(idx,1);}
+  else{cotSelecionados.push(nome);}
+  document.getElementById('cotBadge').textContent=cotSelecionados.length;
+  renderProdGrid();
+  renderCotItens();
+  atualizaCotPreview();
+}
+
+function renderCotItens(){
+  var el=document.getElementById('cotItens');
+  if(!el)return;
+  if(!cotSelecionados.length&&!cotDados._manual){el.innerHTML='<div style="color:var(--t2);font-size:11px;text-align:center;padding:16px 0">Selecione produtos na aba Produtos</div>';atualizaTotal();return;}
+  var todos=cotSelecionados.slice();
+  if(cotDados._manual)cotDados._manual.forEach(function(m){if(todos.indexOf(m)<0)todos.push(m);});
+  var h='';
+  todos.forEach(function(nome){
+    var d=cotDados[nome]||{};
+    var sub='';
+    if(d.preco&&d.qtd){var s=parseFloat(d.preco)*parseFloat(d.qtd);sub='<div style="font-size:10px;color:#10B981;text-align:right;margin-top:4px;font-weight:600">Subtotal: R$ '+s.toFixed(2).replace('.',',')+'</div>';}
+    h+='<div style="background:var(--s1);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:11px 12px;margin-bottom:6px">';
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">';
+    h+='<input value="'+nome+'" style="background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.1);color:var(--t);font-size:12px;font-weight:700;flex:1;outline:none;padding-bottom:2px" oninput="renameCotProd(\''+nome+'\',this.value)">';
+    h+='<button onclick="removeCotProd(\''+nome+'\')" style="background:transparent;border:none;color:#EF4444;font-size:16px;cursor:pointer;padding:0 0 0 8px">×</button>';
+    h+='</div>';
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px">';
+    h+='<div><div style="font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t2);margin-bottom:3px">Qtd</div><input class="inp" style="font-size:11px;padding:6px 8px" placeholder="—" value="'+(d.qtd||'')+'" oninput="setCotDado(\''+nome+'\',\'qtd\',this.value)"></div>';
+    h+='<div><div style="font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t2);margin-bottom:3px">Unidade</div><input class="inp" style="font-size:11px;padding:6px 8px" placeholder="cx/un/kg" value="'+(d.unid||'')+'" oninput="setCotDado(\''+nome+'\',\'unid\',this.value)"></div>';
+    h+='<div><div style="font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t2);margin-bottom:3px">Preco R$</div><input class="inp" style="font-size:11px;padding:6px 8px" placeholder="0,00" value="'+(d.preco||'')+'" oninput="setCotDado(\''+nome+'\',\'preco\',this.value)"></div>';
+    h+='</div>';
+    h+='<div><div style="font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t2);margin-bottom:3px">Obs</div><input class="inp" style="font-size:11px;padding:6px 8px" placeholder="opcional" value="'+(d.obs||'')+'" oninput="setCotDado(\''+nome+'\',\'obs\',this.value)"></div>';
+    h+=sub+'</div>';
+  });
+  el.innerHTML=h;
+  atualizaTotal();
+}
+
+function setCotDado(nome,campo,val){
+  if(!cotDados[nome])cotDados[nome]={};
+  cotDados[nome][campo]=val;
+  atualizaTotal();
+  atualizaCotPreview();
+}
+
+function renameCotProd(nomeAntigo,nomeNovo){
+  var idx=cotSelecionados.indexOf(nomeAntigo);
+  if(idx>=0)cotSelecionados[idx]=nomeNovo;
+  if(cotDados._manual){var mi=cotDados._manual.indexOf(nomeAntigo);if(mi>=0)cotDados._manual[mi]=nomeNovo;}
+  if(cotDados[nomeAntigo]){cotDados[nomeNovo]=cotDados[nomeAntigo];delete cotDados[nomeAntigo];}
+}
+
+function removeCotProd(nome){
+  cotSelecionados=cotSelecionados.filter(function(s){return s!==nome;});
+  if(cotDados._manual)cotDados._manual=cotDados._manual.filter(function(s){return s!==nome;});
+  delete cotDados[nome];
+  document.getElementById('cotBadge').textContent=cotSelecionados.length;
+  renderCotItens();
+  atualizaCotPreview();
+}
+
+function addProdManual(){
+  var nome='Produto '+(cotSelecionados.length+1);
+  if(!cotDados._manual)cotDados._manual=[];
+  cotDados._manual.push(nome);
+  cotSelecionados.push(nome);
+  document.getElementById('cotBadge').textContent=cotSelecionados.length;
+  renderCotItens();
+}
+
+function atualizaTotal(){
+  var total=0;var tem=false;
+  cotSelecionados.forEach(function(nome){
+    var d=cotDados[nome]||{};
+    if(d.preco&&d.qtd){total+=parseFloat(d.preco)*parseFloat(d.qtd);tem=true;}
+  });
+  var tb=document.getElementById('cotTotalBox');
+  var tv=document.getElementById('cotTotalVal');
+  if(tb&&tv){tb.style.display=tem?'flex':'none';tv.textContent='R$ '+total.toFixed(2).replace('.',',');}
+}
+
+function atualizaCotPreview(){
+  var d=new Date();
+  var m=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  var pd=document.getElementById('prevData');if(pd)pd.textContent=d.getDate()+' de '+m[d.getMonth()]+' de '+d.getFullYear()+' - Arcofoods - Norte Fluminense';
+  var pv=document.getElementById('prevVend');if(pv)pv.textContent=(eu?eu.cd+' - '+eu.n:'—');
+  var pc=document.getElementById('prevCliente');var cotCli=document.getElementById('cotCliente');if(pc)pc.textContent=(cotCli&&cotCli.value?cotCli.value:'—');
+  var pb=document.getElementById('prevSegBadge');if(pb)pb.textContent=tipoAtual&&TIPOS[tipoAtual]?TIPOS[tipoAtual].n:'';
+  var h='';
+  cotSelecionados.forEach(function(nome){
+    var dd=cotDados[nome]||{};
+    h+='<div style="background:#152035;border-radius:10px;padding:12px;margin-bottom:8px">';
+    h+='<div style="font-size:12px;font-weight:700;color:#F0F6FF;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.06)">'+nome+'</div>';
+    if(dd.preco||dd.qtd||dd.unid){
+      h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">';
+      if(dd.qtd)h+='<div style="background:#0D1B2E;border-radius:6px;padding:7px 8px;text-align:center"><div style="font-size:8px;color:#475569;font-weight:600;margin-bottom:3px">QTD</div><div style="font-size:11px;font-weight:700;color:#F0F6FF">'+(dd.qtd+(dd.unid?' '+dd.unid:''))+'</div></div>';
+      if(dd.preco)h+='<div style="background:#0D1B2E;border-radius:6px;padding:7px 8px;text-align:center"><div style="font-size:8px;color:#475569;font-weight:600;margin-bottom:3px">PRECO</div><div style="font-size:11px;font-weight:700;color:#F0F6FF">R$ '+parseFloat(dd.preco).toFixed(2).replace('.',',')+'</div></div>';
+      if(dd.preco&&dd.qtd)h+='<div style="background:#0D1B2E;border-radius:6px;padding:7px 8px;text-align:center"><div style="font-size:8px;color:#475569;font-weight:600;margin-bottom:3px">SUBTOTAL</div><div style="font-size:11px;font-weight:700;color:#10B981">R$ '+(parseFloat(dd.preco)*parseFloat(dd.qtd)).toFixed(2).replace('.',',')+'</div></div>';
+      h+='</div>';
+    }
+    if(dd.obs)h+='<div style="font-size:10px;color:#64748B;margin-top:6px;font-style:italic">'+dd.obs+'</div>';
+    h+='</div>';
+  });
+  if(!cotSelecionados.length)h='<div style="color:#475569;font-size:10px;padding:8px 0">Nenhum produto adicionado</div>';
+  var pp=document.getElementById('prevProdutos');if(pp)pp.innerHTML=h;
+  var total=0;var tem=false;
+  cotSelecionados.forEach(function(nome){var dd=cotDados[nome]||{};if(dd.preco&&dd.qtd){total+=parseFloat(dd.preco)*parseFloat(dd.qtd);tem=true;}});
+  var pta=document.getElementById('prevTotalArea');
+  if(pta)pta.innerHTML=tem?'<div style="background:#152035;border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:4px"><span style="font-size:10px;color:#64748B;font-weight:600">TOTAL GERAL</span><span style="font-size:15px;font-weight:800;color:#10B981">R$ '+total.toFixed(2).replace('.',',')+'</span></div>':'';
+  var cotObs=document.getElementById('cotObs');
+  var poa=document.getElementById('prevObsArea');
+  if(poa)poa.innerHTML=(cotObs&&cotObs.value)?'<div style="background:#152035;border-radius:8px;padding:10px;margin-top:8px;font-size:10px;color:#94A3B8;font-style:italic">'+cotObs.value+'</div>':'';
+}
+
+function gerarCotImagem(tipo){
+  var el=document.getElementById('cotPreviewBox');
+  if(!el){toast('Abra o Preview primeiro.');cotTab('prev');return;}
+  atualizaCotPreview();
+  if(typeof html2canvas==='undefined'){toast('Aguarde e tente novamente.');return;}
+  toast('Gerando imagem...');
+  setTimeout(function(){
+    html2canvas(el,{backgroundColor:'#0D1B2E',scale:2,useCORS:true,logging:false}).then(function(canvas){
+      var link=document.createElement('a');
+      link.download='Cotacao.png';
+      link.href=canvas.toDataURL('image/png');
+      link.click();
+      toast('Imagem salva! Agora compartilhe pelo '+( tipo==='wa'?'WhatsApp':'E-mail')+'.');
+      setTimeout(function(){
+        if(tipo==='wa')window.open('https://wa.me/','_blank');
+        else window.open('mailto:?subject=Cotacao Comercial - Arcofoods','_blank');
+      },800);
+    }).catch(function(){toast('Erro ao gerar imagem.');});
+  },300);
+}
+
+function voltarTipo(){
+  document.getElementById('listaBox').style.display='none';
+  document.getElementById('tipoGrid').style.display='block';
+  cotSelecionados=[];cotDados={};
+  document.getElementById('cotBadge').textContent='0';
+  cotTab('prod');
+}
+
 function compartilhar(){if(!tipoAtual)return;var t=TIPOS[tipoAtual];var ps=t.p.slice().sort();var ls=[t.n+' - Lista Basica de Produtos - Arcofoods',''];ps.forEach(function(p,i){ls.push((i+1)+'. '+p);});ls.push('');ls.push('GERENCION QG - Norte Fluminense');window.open('https://wa.me/?text='+encodeURIComponent(ls.join('\n')),'_blank');}
 
 function gerarIA(){var cli=document.getElementById('negCli').value.trim();var conc=document.getElementById('negConc').value.trim();var itens=prods.map(function(p){return p.n||'produto';}).join(', ');var prompt='Escreva uma justificativa comercial CURTA (2 linhas no maximo) para aprovacao de preco especial. Seja objetivo e profissional. Cliente: '+(cli||'a definir')+'. Produtos: '+(itens||'a definir')+'.';navigator.clipboard&&navigator.clipboard.writeText(prompt).then(function(){var hint=document.getElementById('iaHint');if(hint)hint.style.display='block';toast('Prompt copiado! Cole no ChatGPT.');});window.open('https://chatgpt.com','_blank');}

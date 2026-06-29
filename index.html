@@ -175,6 +175,7 @@ textarea.inp{resize:vertical;min-height:80px;}
   </div>
   <div id="menuBar">
     <button class="mb on" onclick="ir('home',this)">Inicio</button>
+    <button class="mb" onclick="ir('qgdia',this);carregarQGDia()">&#9889; QG do Dia</button>
     <button class="mb" onclick="ir('negociacao',this)">Negociacao</button>
     <button class="mb" onclick="ir('tipologia',this)">Mix por Segmento</button>
     <button class="mb" onclick="ir('catalogos',this)">Catalogos</button>
@@ -193,6 +194,7 @@ textarea.inp{resize:vertical;min-height:80px;}
         <div class="wsub" id="wSub">Bem-vindo ao GERENCION QG &middot; Norte Fluminense</div>
       </div>
       <div class="mgrid">
+        <div class="mcard" onclick="irM('qgdia');carregarQGDia()" style="grid-column:1/-1;background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(239,68,68,0.1));border:2px solid rgba(245,158,11,0.4)"><div class="micon">&#9889;</div><div class="mname">QG do Dia</div><div class="mdesc">Metas, dica e motivacao do dia</div></div>
         <div class="mcard" onclick="irM('negociacao')"><div class="micon">&#129309;</div><div class="mname">Negociacao</div><div class="mdesc">Solicitar aprovacao de preco</div></div>
         <div class="mcard" onclick="irM('tipologia')"><div class="micon">&#128203;</div><div class="mname">Mix por Segmento</div><div class="mdesc">Lista por tipo de cliente</div></div>
         <div class="mcard" onclick="irM('catalogos')"><div class="micon">&#128218;</div><div class="mname">Catalogos</div><div class="mdesc">Arcofoods e fornecedores</div></div>
@@ -411,6 +413,33 @@ textarea.inp{resize:vertical;min-height:80px;}
       <div id="mixLista"></div>
     </div>
 
+    <!-- MÓDULO QG DO DIA -->
+    <div id="qgdia" class="pg">
+      <div class="ph">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:44px;height:44px;background:linear-gradient(135deg,#F59E0B,#EF4444);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">&#9889;</div>
+          <div><div class="pt">QG do Dia</div><div class="ps">Foco, metas e energia para hoje</div></div>
+        </div>
+      </div>
+      <div id="adminQGDia" style="display:none">
+        <div class="admin-box">
+          <div class="admin-title">&#128274; Coordenador — Publicar Comunicado do Dia</div>
+          <div class="fg"><label class="fl">Foco do Dia</label><input id="qgFoco" class="inp" placeholder="ex: Prospecção! / Positivação! / Mix Rentável!"></div>
+          <div class="fg"><label class="fl">Metas (cole aqui — um vendedor por linha)</label><textarea id="qgMetas" class="inp" rows="10" placeholder="017 - EDIMAR BARBOSA             R$ 13.479&#10;081 - ADSON BRUNO                  R$ 5.483&#10;118 - EDUARDO REZENDE          R$ 17.820"></textarea></div>
+          <div style="display:flex;gap:8px">
+            <button onclick="gerarQGIA()" style="flex:1;padding:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#10024; Gerar Frase + Dica com IA</button>
+          </div>
+          <div id="qgIABox" style="display:none;margin-top:10px">
+            <div id="qgIAHint" style="background:var(--pu2);border:1px solid rgba(99,102,241,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#818cf8;margin-bottom:8px">Prompt copiado! Abra o ChatGPT, cole (Ctrl+V), copie a resposta e cole nos campos abaixo.</div>
+            <div class="fg"><label class="fl">Frase Motivacional (curta — gerada pela IA)</label><input id="qgFrase" class="inp" placeholder='ex: "Cada não te aproxima do sim."'></div>
+            <div class="fg"><label class="fl">Dica de Vendas (curta — no mesmo contexto)</label><textarea id="qgDica" class="inp" rows="2" placeholder="ex: No primeiro contato, ouça 80% do tempo. Identifique a dor antes de oferecer."></textarea></div>
+          </div>
+          <button onclick="publicarQGDia()" style="width:100%;margin-top:10px;padding:14px;background:var(--am);border:none;border-radius:10px;color:#0A0A0A;font-weight:800;font-size:14px;cursor:pointer;font-family:Inter,sans-serif;letter-spacing:.5px">&#128228; Publicar QG do Dia</button>
+        </div>
+      </div>
+      <div id="qgDiaBox"><div class="loading">Carregando...</div></div>
+    </div>
+
     <!-- MÓDULO PREMIAÇÃO -->
     <div id="premiacao" class="pg">
       <div class="ph">
@@ -612,6 +641,7 @@ function entrar(u){
     document.getElementById('adminMix').style.display='block';
     document.getElementById('adminCatalogos').style.display='block';
     document.getElementById('adminBI').style.display='block';
+    document.getElementById('adminQGDia').style.display='block';
     carregarCatalogosAdmin();
   }
 }
@@ -659,6 +689,188 @@ function voltarTipo(){
 
 function compartilhar(){if(!tipoAtual)return;var t=TIPOS[tipoAtual];var ps=t.p.slice().sort();var ls=[t.n+' - Lista Basica de Produtos - Arcofoods',''];ps.forEach(function(p,i){ls.push((i+1)+'. '+p);});ls.push('');ls.push('GERENCION QG - Norte Fluminense');window.open('https://wa.me/?text='+encodeURIComponent(ls.join('\n')),'_blank');}
 
+function gerarQGIA(){
+  var foco=document.getElementById('qgFoco').value.trim();
+  var metas=document.getElementById('qgMetas').value.trim();
+  var prompt='Crie UMA frase motivacional CURTÍSSIMA (máximo 12 palavras, impactante, para vendedores de alimentos) sobre o tema "'+( foco||'vendas')+'" e UMA dica de vendas CURTÍSSIMA (máximo 20 palavras, prática, no mesmo contexto da frase). Responda SOMENTE neste formato:\nFRASE: [frase aqui]\nDICA: [dica aqui]';
+  if(navigator.clipboard){navigator.clipboard.writeText(prompt).then(function(){document.getElementById('qgIABox').style.display='block';document.getElementById('qgIAHint').style.display='block';toast('Prompt copiado! Abra o ChatGPT e cole.');});} 
+  window.open('https://chatgpt.com','_blank');
+}
+
+function publicarQGDia(){
+  var foco=document.getElementById('qgFoco').value.trim();
+  var metas=document.getElementById('qgMetas').value.trim();
+  var frase=document.getElementById('qgFrase').value.trim();
+  var dica=document.getElementById('qgDica').value.trim();
+  if(!foco){toast('Informe o foco do dia.');return;}
+  if(!metas){toast('Informe as metas.');return;}
+  var hoje=new Date();
+  var data=hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+  data=data.charAt(0).toUpperCase()+data.slice(1);
+  var dados={foco:foco,metas:metas,frase:frase||'',dica:dica||'',data:data,publicado_em:hoje.toISOString()};
+  supaFetch('qg_dia?id=eq.1',{method:'DELETE'}).then(function(){
+    return supaFetch('qg_dia',{method:'POST',body:JSON.stringify({id:1,dados:JSON.stringify(dados)})});
+  }).then(function(){
+    toast('QG do Dia publicado para toda a equipe!');
+    renderQGDia(dados);
+  }).catch(function(){
+    // fallback localStorage
+    localStorage.setItem('QG_DIA',JSON.stringify(dados));
+    toast('QG do Dia publicado!');
+    renderQGDia(dados);
+  });
+}
+
+function carregarQGDia(){
+  var el=document.getElementById('qgDiaBox');
+  if(el)el.innerHTML='<div class="loading">Carregando...</div>';
+  supaFetch('qg_dia?id=eq.1').then(function(r){return r.json();}).then(function(data){
+    if(data&&data[0]&&data[0].dados){
+      try{renderQGDia(JSON.parse(data[0].dados));return;}catch(e){}
+    }
+    var local=localStorage.getItem('QG_DIA');
+    if(local){try{renderQGDia(JSON.parse(local));return;}catch(e){}}
+    if(el)el.innerHTML=renderQGVazio();
+  }).catch(function(){
+    var local=localStorage.getItem('QG_DIA');
+    if(local){try{renderQGDia(JSON.parse(local));return;}catch(e){}}
+    if(el)el.innerHTML=renderQGVazio();
+  });
+}
+
+function parseMetas(txt){
+  var linhas=txt.split(/\r?\n/).filter(function(l){return l.trim();});
+  return linhas.map(function(l){
+    // formato: "017 - EDIMAR BARBOSA    R$ 13.479" ou "017 - NOME   13479"
+    var m=l.match(/^(\d{3})\s*[-–]\s*(.+?)\s+(R\$\s*[\d.,]+|[\d.,]+)\s*$/);
+    if(m){
+      var val=m[3].replace('R$','').replace(/\./g,'').replace(',','.').trim();
+      return{cod:m[1],nome:m[2].trim(),meta:parseFloat(val)||0,metaFmt:m[3].trim()};
+    }
+    return{cod:'',nome:l.trim(),meta:0,metaFmt:''};
+  });
+}
+
+function renderQGDia(d){
+  var el=document.getElementById('qgDiaBox');
+  if(!el)return;
+  var metas=parseMetas(d.metas||'');
+  var total=metas.reduce(function(s,m){return s+(m.meta||0);},0);
+
+  var html='<div id="qgCard" style="background:linear-gradient(135deg,#0A1628,#060E1E);border:2px solid rgba(245,158,11,0.4);border-radius:20px;padding:24px 20px">';
+
+  // Cabeçalho
+  html+='<div style="text-align:center;margin-bottom:20px">';
+  html+='<div style="font-size:10px;font-weight:800;letter-spacing:3px;color:var(--am);text-transform:uppercase;margin-bottom:6px">COMUNICADO DIÁRIO — GERENCION QG</div>';
+  html+='<div style="font-size:12px;color:var(--t2);margin-bottom:14px">'+d.data+'</div>';
+  html+='<div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:10px;display:inline-block;padding:4px 16px;font-size:13px;font-weight:700;color:var(--am);margin-bottom:4px">&#127919; Foco do dia: '+d.foco+'</div>';
+  html+='<div style="font-size:12px;color:var(--t2);margin-top:8px">Bom dia, time! &#128640;</div>';
+  html+='</div>';
+
+  // Frase motivacional
+  if(d.frase){
+    html+='<div style="background:rgba(245,158,11,0.06);border-left:4px solid var(--am);border-radius:0 10px 10px 0;padding:14px 16px;margin-bottom:20px">';
+    html+='<div style="font-size:15px;font-weight:700;color:var(--t);font-style:italic;line-height:1.5">"'+d.frase+'"</div>';
+    html+='</div>';
+  }
+
+  // Metas
+  html+='<div style="margin-bottom:20px">';
+  html+='<div style="font-size:10px;font-weight:800;letter-spacing:2px;color:var(--t2);text-transform:uppercase;margin-bottom:12px">&#127919; Metas para hoje</div>';
+  metas.forEach(function(m){
+    if(!m.nome)return;
+    var pct=Math.min(100,total>0?(m.meta/total)*100:0);
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.03);border-radius:10px;margin-bottom:6px;border:1px solid rgba(255,255,255,0.06)">';
+    if(m.cod)html+='<span style="font-size:10px;color:var(--t3);min-width:32px">'+m.cod+'</span>';
+    html+='<span style="flex:1;font-size:13px;font-weight:600;color:var(--t);padding:0 8px">'+m.nome+'</span>';
+    if(m.metaFmt)html+='<span style="font-size:14px;font-weight:800;color:var(--am)">'+m.metaFmt+'</span>';
+    html+='</div>';
+  });
+  if(total>0){
+    html+='<div style="margin-top:10px;padding:10px 14px;background:rgba(245,158,11,0.08);border-radius:10px;display:flex;justify-content:space-between;align-items:center">';
+    html+='<span style="font-size:11px;color:var(--t2);font-weight:600">META TOTAL DA EQUIPE</span>';
+    html+='<span style="font-size:18px;font-weight:800;color:var(--am)">R$ '+total.toLocaleString('pt-BR')+'</span>';
+    html+='</div>';
+  }
+  html+='</div>';
+
+  // Dica
+  if(d.dica){
+    html+='<div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:12px;padding:14px 16px;margin-bottom:20px">';
+    html+='<div style="font-size:10px;font-weight:800;letter-spacing:1.5px;color:#10B981;text-transform:uppercase;margin-bottom:6px">&#128161; Dica do Dia</div>';
+    html+='<div style="font-size:13px;color:var(--t2);line-height:1.7">'+d.dica+'</div>';
+    html+='</div>';
+  }
+
+  // Rodapé
+  html+='<div style="text-align:center;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07)">';
+  html+='<div style="font-size:12px;color:var(--t2);margin-bottom:4px">Vamos juntos bater essas metas hoje! &#128074;</div>';
+  html+='<div style="font-size:10px;font-weight:800;letter-spacing:3px;color:var(--am)">GERENCION QG</div>';
+  html+='</div>';
+
+  html+='</div>';
+
+  // Botões de ação
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">';
+  html+='<button onclick="salvarQGImagem()" style="padding:14px;background:var(--am);border:none;border-radius:12px;color:#0A0A0A;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#128247; Salvar Imagem</button>';
+  html+='<button onclick="compartilharQGWpp()" style="padding:14px;background:var(--gn);border:none;border-radius:12px;color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#128172; WhatsApp</button>';
+  html+='</div>';
+
+  el.innerHTML=html;
+}
+
+function renderQGVazio(){
+  return '<div style="text-align:center;padding:48px 24px">'
+    +'<div style="font-size:56px;margin-bottom:16px">&#9889;</div>'
+    +'<div style="font-size:18px;font-weight:700;color:var(--am);margin-bottom:8px">Nenhum comunicado hoje</div>'
+    +'<div style="font-size:13px;color:var(--t2);line-height:1.8">O coordenador ainda não publicou<br>o QG do Dia de hoje.</div>'
+    +'</div>';
+}
+
+function salvarQGImagem(){
+  var el=document.getElementById('qgCard');
+  if(!el||typeof html2canvas==='undefined'){toast('Aguarde...');return;}
+  var btns=el.nextElementSibling;
+  if(btns)btns.style.display='none';
+  setTimeout(function(){
+    html2canvas(el,{backgroundColor:'#060E1E',scale:2,useCORS:true,logging:false}).then(function(canvas){
+      if(btns)btns.style.display='grid';
+      var a=document.createElement('a');a.download='QG-do-Dia.png';a.href=canvas.toDataURL('image/png');a.click();
+      toast('Imagem salva! Compartilhe no grupo.');
+    }).catch(function(){if(btns)btns.style.display='grid';toast('Erro ao gerar imagem.');});
+  },200);
+}
+
+function compartilharQGWpp(){
+  var el=document.getElementById('qgDiaBox');
+  if(!el)return;
+  var d=null;
+  try{var s=localStorage.getItem('QG_DIA');if(s)d=JSON.parse(s);}catch(e){}
+  if(!d){toast('Nenhum comunicado para compartilhar.');return;}
+  var metas=parseMetas(d.metas||'');
+  var linhas=['📋 *COMUNICADO DIÁRIO — GERENCION QG*','','📅 '+d.data,'','🎯 *Foco do dia: '+d.foco+'*',''];
+  if(d.frase)linhas.push('"'+d.frase+'"','');
+  linhas.push('🏆 *Metas para hoje:*');
+  metas.forEach(function(m){if(m.nome)linhas.push((m.cod?m.cod+' - ':'')+m.nome+(m.metaFmt?'   '+m.metaFmt:''));});
+  if(d.dica)linhas.push('','💡 *Dica do dia:*',d.dica);
+  linhas.push('','Vamos juntos! 👊','_GERENCION QG_');
+  window.open('https://wa.me/?text='+encodeURIComponent(linhas.join('\n')),'_blank');
+}
+
+function carregarQGDia(){
+  var el=document.getElementById('qgDiaBox');
+  if(el)el.innerHTML='<div class="loading">Carregando...</div>';
+  supaFetch('qg_dia?id=eq.1').then(function(r){return r.json();}).then(function(data){
+    if(data&&data[0]&&data[0].dados){try{renderQGDia(JSON.parse(data[0].dados));return;}catch(e){}}
+    var local=localStorage.getItem('QG_DIA');
+    if(local){try{renderQGDia(JSON.parse(local));return;}catch(e){}}
+    if(el)el.innerHTML=renderQGVazio();
+  }).catch(function(){
+    var local=localStorage.getItem('QG_DIA');
+    if(local){try{renderQGDia(JSON.parse(local));return;}catch(e){}}
+    if(el)el.innerHTML=renderQGVazio();
+  });
+}
 function gerarIA(){var cli=document.getElementById('negCli').value.trim();var conc=document.getElementById('negConc').value.trim();var itens=prods.map(function(p){return p.n||'produto';}).join(', ');var prompt='Escreva uma justificativa comercial CURTA (2 linhas no maximo) para aprovacao de preco especial. Seja objetivo e profissional. Cliente: '+(cli||'a definir')+'. Produtos: '+(itens||'a definir')+'.';navigator.clipboard&&navigator.clipboard.writeText(prompt).then(function(){var hint=document.getElementById('iaHint');if(hint)hint.style.display='block';toast('Prompt copiado! Cole no ChatGPT.');});window.open('https://chatgpt.com','_blank');}
 
 function addProd(){prods.push({n:'',q:'',u:'kg',t:0,v:0,i:0});renderProds();}

@@ -978,32 +978,20 @@ function compartilharCotWA(){
   ];
   if(cli)ls.push('\uD83C\uDFEA *Cliente:* '+cli,'');
   
-function padR(str,len){str=String(str);return str.length>=len?str.substring(0,len):str+' '.repeat(len-str.length);}
-  function padL(str,len){str=String(str);return str.length>=len?str.substring(0,len):' '.repeat(len-str.length)+str;}
-  var COL_NOME=27,COL_QTD=7,COL_PRECO=10;
-  ls.push('```');
-  ls.push(padR('PRODUTO',COL_NOME)+padL('QTD',COL_QTD)+padL('R$',COL_PRECO));
-  ls.push('-'.repeat(COL_NOME+COL_QTD+COL_PRECO));
-  cotSel.forEach(function(s){
+cotSel.forEach(function(s,i){
     var nome=s.nome.toUpperCase();
     var qtd=parseQtdBR(s.qtd);
     var qtdTxt=qtd?String(qtd):'-';
     var preco=parseValorBR(s.preco);
     var prTxt=preco?preco.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
     if(qtd&&preco)totalGeral+=qtd*preco;
-    if(nome.length>COL_NOME){
-      ls.push(nome);
-      ls.push(padL(qtdTxt,COL_QTD)+padL(prTxt,COL_PRECO));
-    }else{
-      ls.push(padR(nome,COL_NOME)+padL(qtdTxt,COL_QTD)+padL(prTxt,COL_PRECO));
-    }
+    ls.push((i+1)+'. *'+nome+'*');
+    if(qtd||preco)ls.push('     Qtd: '+qtdTxt+'   \u2502   R$ '+prTxt);
   });
   if(totalGeral>0){
-    ls.push('-'.repeat(COL_NOME+COL_QTD+COL_PRECO));
-    var totTxt='R$ '+totalGeral.toLocaleString('pt-BR',{minimumFractionDigits:2});
-    ls.push(padR('TOTAL',COL_NOME)+padL(totTxt,COL_QTD+COL_PRECO));
+    ls.push('');
+    ls.push('\uD83D\uDCB0 *TOTAL: R$ '+totalGeral.toLocaleString('pt-BR',{minimumFractionDigits:2})+'*');
   }
-  ls.push('```');
 
   ls.push('');
   ls.push('_GERENCION QG \u2014 Todos os direitos reservados_');

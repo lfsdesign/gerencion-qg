@@ -162,17 +162,29 @@ textarea.inp{resize:vertical;min-height:80px;}
 /* Preview imagem */
 #cotImgBox{display:none;margin-top:14px;}
 #cotImgBox img{width:100%;border-radius:10px;border:1px solid var(--b);}
-/* Painel gerado para captura */
-#cotCapture{position:fixed;left:-9999px;top:-9999px;width:760px;background:#060E1E;padding:28px;font-family:'Inter',sans-serif;}
-.cap-logo{font-size:18px;font-weight:800;letter-spacing:5px;color:#F59E0B;margin-bottom:4px;}
-.cap-sub{font-size:11px;color:#94A3B8;margin-bottom:20px;}
-.cap-title{font-size:17px;font-weight:700;color:#F0F6FF;margin-bottom:6px;}
-.cap-date{font-size:11px;color:#64748B;margin-bottom:16px;}
-.cap-head{display:grid;grid-template-columns:1fr 90px 110px;gap:8px;padding:8px 14px;background:#0A1628;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#64748B;margin-bottom:8px;}
-.cap-row{display:grid;grid-template-columns:1fr 90px 110px;gap:8px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.06);}
-.cap-rn{font-size:13px;color:#F0F6FF;}
-.cap-rv{font-size:13px;color:#94A3B8;text-align:center;}
-.cap-foot{margin-top:16px;font-size:10px;color:#475569;text-align:center;}
+/* Painel gerado para captura — novo layout profissional */
+#cotCapture{position:fixed;left:-9999px;top:-9999px;width:600px;background:#060E1E;padding:0;font-family:'Inter',sans-serif;}
+.cap-topo{background:#060E1E;padding:20px 24px 14px;border-bottom:2px solid #F59E0B;text-align:center;}
+.cap-logo{font-size:13px;font-weight:800;letter-spacing:3px;color:#F59E0B;text-transform:uppercase;margin-bottom:2px;}
+.cap-vend{font-size:11px;color:#94A3B8;margin-bottom:10px;}
+.cap-titulo{font-size:26px;font-weight:900;color:#F59E0B;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.cap-cli-row{display:flex;align-items:center;gap:8px;justify-content:flex-start;padding:0 4px;}
+.cap-cli-label{font-size:13px;font-weight:800;color:#F59E0B;letter-spacing:1px;text-transform:uppercase;}
+.cap-cli-valor{font-size:13px;color:#F0F6FF;font-weight:600;border-bottom:1px dashed rgba(245,158,11,0.5);padding-bottom:1px;min-width:200px;}
+.cap-body{padding:0 0 20px;}
+.cap-head{display:grid;grid-template-columns:1fr 80px 110px;background:#E07B00;padding:10px 24px;}
+.cap-head span{font-size:11px;font-weight:800;color:#fff;letter-spacing:1.5px;text-transform:uppercase;}
+.cap-head span:nth-child(2){text-align:center;}
+.cap-head span:nth-child(3){text-align:right;}
+.cap-row{display:grid;grid-template-columns:1fr 80px 110px;padding:11px 24px;border-bottom:1px solid rgba(255,255,255,0.06);}
+.cap-row:nth-child(even){background:rgba(255,255,255,0.03);}
+.cap-rn{font-size:12px;color:#F0F6FF;font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
+.cap-rv{font-size:12px;color:#CBD5E1;text-align:center;}
+.cap-rv-r{font-size:12px;color:#F0F6FF;text-align:right;font-weight:700;}
+.cap-foot{padding:14px 24px;text-align:center;border-top:1px solid rgba(245,158,11,0.3);}
+.cap-foot-txt{font-size:10px;color:#475569;letter-spacing:1px;}
+.cap-seg{font-size:10px;color:#94A3B8;margin-top:4px;}
+
 </style>
 </head>
 <body>
@@ -311,9 +323,16 @@ textarea.inp{resize:vertical;min-height:80px;}
             </div>
             <div id="cotList"></div>
 
+ <!-- Campo Cliente -->
+            <div class="card" style="margin-top:12px;padding:14px;background:linear-gradient(135deg,rgba(245,158,11,0.08),var(--s1));border-color:rgba(245,158,11,0.3)">
+              <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--am);margin-bottom:8px">Cliente</div>
+              <input id="cotCliente" class="inp" placeholder="Nome do cliente (aparece na cotação)" style="border-color:rgba(245,158,11,0.4)">
+            </div>
+
             <!-- Adicionar manual -->
-            <div class="card" style="margin-top:12px;padding:14px">
+            <div class="card" style="margin-top:8px;padding:14px">
               <div class="ct">Adicionar Produto Manual</div>
+            
               <div style="display:flex;gap:8px;align-items:center">
                 <input id="cotManualNome" class="inp" placeholder="Nome do produto" style="flex:1;padding:9px 11px">
                 <button class="btn bp" onclick="addProdManual()" style="padding:9px 14px;white-space:nowrap">+ Add</button>
@@ -795,31 +814,46 @@ function gerarImagemCot(){
   var tp=TIPOS[tipoAtual]||{n:'Cotação'};
   var hoje=new Date().toLocaleDateString('pt-BR');
   var vend=eu?eu.n:'';
+  var cod=eu?eu.cd:'';
+  var cli=(document.getElementById('cotCliente')||{value:''}).value.trim()||'';
   var rows=cotSel.map(function(s){
+    var nome=s.nome.toUpperCase();
     var qtd=s.qtd||'-';
-    var pr=s.preco?'R$ '+parseFloat(s.preco).toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
-    return '<div class="cap-row"><div class="cap-rn">'+s.nome+'</div><div class="cap-rv">'+qtd+'</div><div class="cap-rv">'+pr+'</div></div>';
+    var pr=s.preco?parseFloat(s.preco).toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
+    return '<div class="cap-row"><div class="cap-rn">'+nome+'</div><div class="cap-rv">'+qtd+'</div><div class="cap-rv-r">'+pr+'</div></div>';
   }).join('');
+  var cliRow=cli
+    ?'<div class="cap-cli-row"><div class="cap-cli-label">Cliente:&nbsp;</div><div class="cap-cli-valor">'+cli+'</div></div>'
+    :'';
   document.getElementById('cotCapture').innerHTML=
-    '<div style="background:#060E1E;padding:28px;font-family:Inter,sans-serif;color:#F0F6FF">'
-    +'<div class="cap-logo">GERENCION QG</div>'
-    +'<div class="cap-sub">Norte Fluminense \u00b7 '+vend+'</div>'
-    +'<div class="cap-title">Cotação — '+tp.n+'</div>'
-    +'<div class="cap-date">'+hoje+'</div>'
-    +'<div class="cap-head"><span>Produto</span><span>Qtd</span><span>R$ Unit.</span></div>'
+    '<div style="background:#060E1E;font-family:Inter,sans-serif;">'
+    +'<div class="cap-topo">'
+    +'<div class="cap-logo">GERENCION QG &middot; ARCOFOODS &middot; NORTE FLUMINENSE</div>'
+    +'<div class="cap-vend">'+cod+' &mdash; '+vend+'</div>'
+    +'<div class="cap-titulo">COTA&Ccedil;&Atilde;O</div>'
+    +cliRow
+    +'</div>'
+    +'<div class="cap-body">'
+    +'<div class="cap-head"><span>Produto</span><span>Qtd</span><span>R$</span></div>'
     +rows
-    +'<div class="cap-foot">GERENCION QG \u00b7 Arcofoods Norte Fluminense</div>'
+    +'</div>'
+    +'<div class="cap-foot">'
+    +'<div class="cap-foot-txt">GERENCION QG &mdash; Todos os direitos reservados &copy;</div>'
+    +'<div class="cap-seg">'+tp.n+' &middot; '+hoje+'</div>'
+    +'</div>'
     +'</div>';
   toast('Gerando imagem...');
-  html2canvas(document.getElementById('cotCapture'),{backgroundColor:'#060E1E',scale:2}).then(function(canvas){
-    var url=canvas.toDataURL('image/png');
-    document.getElementById('cotImgEl').src=url;
-    document.getElementById('cotImgBox').style.display='block';
-    toast('Imagem gerada!');
-    window._cotImageDataURL=url;
-  }).catch(function(){toast('Erro ao gerar imagem.');});
+  setTimeout(function(){
+    html2canvas(document.getElementById('cotCapture'),{backgroundColor:'#060E1E',scale:2,useCORS:true,logging:false}).then(function(canvas){
+      var url=canvas.toDataURL('image/png');
+      document.getElementById('cotImgEl').src=url;
+      document.getElementById('cotImgBox').style.display='block';
+      toast('Imagem gerada!');
+      window._cotImageDataURL=url;
+    }).catch(function(){toast('Erro ao gerar imagem.');});
+  },200);
 }
-
+  
 function salvarCotacao(){
   if(!cotSel.length){toast('Nenhum produto na cotação.');return;}
   var tp=TIPOS[tipoAtual]||{n:'Cotação'};
@@ -832,14 +866,27 @@ function salvarCotacao(){
 function compartilharCotWA(){
   var tp=TIPOS[tipoAtual]||{n:'Cotação'};
   var hoje=new Date().toLocaleDateString('pt-BR');
-  var ls=['\uD83D\uDCCB *Cotação — '+tp.n+'*','\uD83D\uDCC5 '+hoje,''];
+  var cod=eu?eu.cd:'';
+  var vend=eu?eu.n:'';
+  var cli=(document.getElementById('cotCliente')||{value:''}).value.trim();
+  var ls=[
+    '*GERENCION QG \u00b7 ARCOFOODS \u00b7 NORTE FLUMINENSE*',
+    '_'+cod+' \u2014 '+vend+'_',
+    '',
+    '\uD83D\uDCCB *COTA\u00c7\u00c3O \u2014 '+tp.n.toUpperCase()+'*',
+    '\uD83D\uDCC5 '+hoje,
+    ''
+  ];
+  if(cli)ls.push('\uD83C\uDFEA *Cliente:* '+cli,'');
+  ls.push('*PRODUTO*                    *QTD*    *R$*','');
   cotSel.forEach(function(s,i){
-    var l=(i+1)+'. '+s.nome;
-    if(s.qtd)l+=' | Qtd: '+s.qtd;
-    if(s.preco)l+=' | R$ '+parseFloat(s.preco).toLocaleString('pt-BR',{minimumFractionDigits:2});
-    ls.push(l);
+    var nome=s.nome.toUpperCase();
+    var qtd=s.qtd||'-';
+    var pr=s.preco?parseFloat(s.preco).toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
+    ls.push((i+1)+'. '+nome);
+    ls.push('    Qtd: *'+qtd+'*  |  R$ *'+pr+'*');
   });
-  ls.push('');ls.push('GERENCION QG \u00b7 Arcofoods Norte Fluminense');
+  ls.push('');ls.push('_GERENCION QG \u2014 Todos os direitos reservados_');
   window.open('https://wa.me/?text='+encodeURIComponent(ls.join('\n')),'_blank');
 }
 

@@ -152,15 +152,18 @@ textarea.inp{resize:vertical;min-height:80px;}
 .tab-badge.on{display:inline-block;}
 .pitem-sel{background:rgba(245,158,11,0.08);border-left:3px solid var(--am);}
 .pitem input[type=checkbox]{width:16px;height:16px;accent-color:var(--am);flex-shrink:0;cursor:pointer;}
-.cot-row{display:grid;grid-template-columns:1fr 64px 84px 80px 28px;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--b);background:var(--s2);border-radius:8px;margin-bottom:6px;}
+.cot-row{display:grid;grid-template-columns:minmax(0,2.2fr) 38px 58px 64px 24px;align-items:center;gap:6px;padding:10px 8px;border-bottom:1px solid var(--b);background:var(--s2);border-radius:8px;margin-bottom:6px;}
 .cot-inp::-webkit-outer-spin-button,.cot-inp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 .cot-inp[type=number]{-moz-appearance:textfield;}
 .cot-inp::-webkit-outer-spin-button,.cot-inp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 .cot-inp[type=number]{-moz-appearance:textfield;}
 .cot-nome{flex:1;font-size:13px;color:var(--t);font-weight:500;}
-.cot-nome-edit{width:100%;background:var(--s1);border:1px solid var(--b);border-radius:6px;color:var(--t);font-family:'Inter',sans-serif;font-size:13px;font-weight:500;outline:none;padding:8px 10px;min-width:0;box-sizing:border-box;}
+.cot-nome-edit{width:100%;background:var(--s1);border:1px solid var(--b);border-radius:6px;color:var(--t);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;outline:none;padding:8px 8px;min-width:0;box-sizing:border-box;}
 .cot-total{font-size:11px;color:var(--gn);font-weight:700;text-align:right;white-space:nowrap;}
-.cot-inp{width:76px;padding:7px 8px;background:var(--s1);border:1px solid var(--b);border-radius:7px;color:var(--t);font-family:'Inter',sans-serif;font-size:12px;text-align:center;outline:none;}
+.cot-inp{width:100%;padding:6px 3px;background:var(--s1);border:1px solid var(--b);border-radius:6px;color:var(--t);font-family:'Inter',sans-serif;font-size:10.5px;text-align:center;outline:none;box-sizing:border-box;}
+.cot-total{font-size:10.5px;color:var(--gn);font-weight:800;text-align:center;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:clip;}
+.cot-lbl{font-size:7.5px;}
+.cot-del{width:24px;height:24px;flex-shrink:0;}
 .cot-inp:focus{border-color:var(--am);}
 .cot-del{width:28px;height:28px;background:var(--rd2);border:none;border-radius:6px;color:var(--rd);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .cot-lbl{font-size:9px;color:var(--t3);text-align:center;margin-top:2px;letter-spacing:.5px;}
@@ -326,8 +329,8 @@ textarea.inp{resize:vertical;min-height:80px;}
           <div id="cotConteudo" style="display:none">
 
 <!-- Cabeçalho das colunas -->
-            <div style="display:grid;grid-template-columns:1fr 64px 84px 80px 28px;gap:8px;padding:6px 12px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3)">
-              <span>Produto</span><span style="text-align:center">Qtd</span><span style="text-align:center">R$ Unit</span><span style="text-align:right">Subtotal</span><span></span>
+            <div style="display:grid;grid-template-columns:minmax(0,2.2fr) 38px 58px 64px 24px;gap:6px;padding:0 8px 6px;font-size:8.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t3)">
+              <span>Produto</span><span style="text-align:center">Qtd</span><span style="text-align:center">R$</span><span style="text-align:center">Subt.</span><span></span>
             </div>
             
             <div id="cotList"></div>

@@ -152,10 +152,14 @@ textarea.inp{resize:vertical;min-height:80px;}
 .tab-badge.on{display:inline-block;}
 .pitem-sel{background:rgba(245,158,11,0.08);border-left:3px solid var(--am);}
 .pitem input[type=checkbox]{width:16px;height:16px;accent-color:var(--am);flex-shrink:0;cursor:pointer;}
-.cot-row{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--b);background:var(--s2);border-radius:8px;margin-bottom:6px;}
+.cot-row{display:grid;grid-template-columns:1fr 64px 84px 80px 28px;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--b);background:var(--s2);border-radius:8px;margin-bottom:6px;}
+.cot-inp::-webkit-outer-spin-button,.cot-inp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.cot-inp[type=number]{-moz-appearance:textfield;}
+.cot-inp::-webkit-outer-spin-button,.cot-inp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.cot-inp[type=number]{-moz-appearance:textfield;}
 .cot-nome{flex:1;font-size:13px;color:var(--t);font-weight:500;}
-.cot-nome-edit{flex:1;background:var(--s1);border:1px solid var(--b);border-radius:6px;color:var(--t);font-family:'Inter',sans-serif;font-size:13px;font-weight:500;outline:none;padding:6px 8px;min-width:0;}
-.cot-total{font-size:11px;color:var(--gn);font-weight:700;text-align:right;min-width:70px;}
+.cot-nome-edit{width:100%;background:var(--s1);border:1px solid var(--b);border-radius:6px;color:var(--t);font-family:'Inter',sans-serif;font-size:13px;font-weight:500;outline:none;padding:8px 10px;min-width:0;box-sizing:border-box;}
+.cot-total{font-size:11px;color:var(--gn);font-weight:700;text-align:right;white-space:nowrap;}
 .cot-inp{width:76px;padding:7px 8px;background:var(--s1);border:1px solid var(--b);border-radius:7px;color:var(--t);font-family:'Inter',sans-serif;font-size:12px;text-align:center;outline:none;}
 .cot-inp:focus{border-color:var(--am);}
 .cot-del{width:28px;height:28px;background:var(--rd2);border:none;border-radius:6px;color:var(--rd);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
@@ -318,10 +322,12 @@ textarea.inp{resize:vertical;min-height:80px;}
             Selecione produtos na aba Lista para montar a cotação.
           </div>
           <div id="cotConteudo" style="display:none">
-            <!-- Cabeçalho das colunas -->
-            <div style="display:grid;grid-template-columns:1fr 76px 76px 28px;gap:8px;padding:6px 14px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3)">
-              <span>Produto</span><span style="text-align:center">Qtd</span><span style="text-align:center">R$ Unit</span><span></span>
+
+<!-- Cabeçalho das colunas -->
+            <div style="display:grid;grid-template-columns:1fr 64px 84px 80px 28px;gap:8px;padding:6px 12px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3)">
+              <span>Produto</span><span style="text-align:center">Qtd</span><span style="text-align:center">R$ Unit</span><span style="text-align:right">Subtotal</span><span></span>
             </div>
+            
             <div id="cotList"></div>
 
  <!-- Campo Cliente -->
@@ -353,15 +359,19 @@ textarea.inp{resize:vertical;min-height:80px;}
               <button class="btn bs" onclick="salvarCotacao()">&#128190; Salvar</button>
             </div>
 
-            <!-- Preview da imagem -->
+<!-- Preview da imagem -->
             <div id="cotImgBox">
-              <div style="font-size:11px;color:var(--t2);margin-bottom:8px;text-align:center">Toque na imagem para salvar ou compartilhe abaixo</div>
+              <div style="font-size:11px;color:var(--t2);margin-bottom:8px;text-align:center">Salve a imagem e anexe no WhatsApp, ou envie o texto direto</div>
               <img id="cotImgEl" src="" alt="Cotação">
-              <div style="display:flex;gap:8px;margin-top:10px">
-                <button class="btn bg" onclick="compartilharCotWA()" style="flex:1">&#128172; WhatsApp</button>
+              <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+                <button class="btn bp" onclick="salvarImagemCot()" style="flex:1;min-width:140px">&#128247; Salvar Imagem</button>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button class="btn bg" onclick="compartilharCotWA()" style="flex:1">&#128172; WhatsApp (texto)</button>
                 <button class="btn bs" onclick="compartilharCotEmail()">&#9993; E-mail</button>
               </div>
             </div>
+            
           </div>
         </div>
       </div>
@@ -792,6 +802,16 @@ function atualizarBadge(){
   if(c)c.textContent=n;
 }
 
+function parseValorBR(v){
+  if(!v)return 0;
+  v=String(v).trim().replace(/\./g,'').replace(',','.');
+  return parseFloat(v)||0;
+}
+function parseQtdBR(v){
+  if(!v)return 0;
+  v=String(v).trim().replace(',','.');
+  return parseFloat(v)||0;
+}
 function renderCotacao(){
   atualizarBadge();
   var vazio=document.getElementById('cotVazio');var cont=document.getElementById('cotConteudo');
@@ -799,23 +819,20 @@ function renderCotacao(){
   vazio.style.display='none';cont.style.display='';
   var totalGeral=0;
   var rows=cotSel.map(function(s,i){
-    var qtd=parseFloat(s.qtd)||0;
-    var preco=parseFloat(s.preco)||0;
+    var qtd=parseQtdBR(s.qtd);
+    var preco=parseValorBR(s.preco);
     var subtotal=qtd&&preco?qtd*preco:0;
     if(subtotal)totalGeral+=subtotal;
-    var subTxt=subtotal?'= R$ '+subtotal.toLocaleString('pt-BR',{minimumFractionDigits:2}):'';
-    return '<div class="cot-row" style="flex-wrap:wrap;gap:6px">'
-      +'<input class="cot-nome-edit" value="'+s.nome.replace(/"/g,'&quot;')+'" onchange="cotSel['+i+'].nome=this.value" title="Editar nome" style="flex:1;min-width:140px">'
-      +'<div style="display:flex;align-items:center;gap:4px">'
-      +'<div><input class="cot-inp" type="number" min="0" placeholder="Qtd" value="'+s.qtd+'" oninput="cotSel['+i+'].qtd=this.value;renderCotacao()"><div class="cot-lbl">Qtd</div></div>'
-      +'<div><input class="cot-inp" type="number" min="0" step="0.01" placeholder="R$" value="'+s.preco+'" oninput="cotSel['+i+'].preco=this.value;renderCotacao()"><div class="cot-lbl">R$ Unit</div></div>'
-      +(subTxt?'<div class="cot-total">'+subTxt+'</div>':'')
+    var subTxt=subtotal?subtotal.toLocaleString('pt-BR',{minimumFractionDigits:2}):'';
+    return '<div class="cot-row">'
+      +'<input class="cot-nome-edit" value="'+s.nome.replace(/"/g,'&quot;')+'" onchange="cotSel['+i+'].nome=this.value" title="Editar nome">'
+      +'<div><input class="cot-inp" type="text" inputmode="decimal" placeholder="Qtd" value="'+s.qtd+'" oninput="cotSel['+i+'].qtd=this.value.replace(/[^0-9,]/g,\'\');renderCotacao()"><div class="cot-lbl">Qtd</div></div>'
+      +'<div><input class="cot-inp" type="text" inputmode="decimal" placeholder="0,00" value="'+s.preco+'" oninput="cotSel['+i+'].preco=this.value.replace(/[^0-9,]/g,\'\');renderCotacao()"><div class="cot-lbl">R$ Unit</div></div>'
+      +'<div class="cot-total">'+(subTxt?'R$ '+subTxt:'')+'</div>'
       +'<button class="cot-del" onclick="removerCotItem('+i+')">&times;</button>'
-      +'</div>'
       +'</div>';
   }).join('');
   document.getElementById('cotList').innerHTML=rows;
-  // Total geral
   var totEl=document.getElementById('cotTotalGeral');
   if(totEl){
     if(totalGeral>0){
@@ -824,6 +841,10 @@ function renderCotacao(){
     }else{
       totEl.style.display='none';
     }
+  }
+  document.getElementById('cotImgBox').style.display='none';
+}
+  
   }
   document.getElementById('cotImgBox').style.display='none';
 }
@@ -837,7 +858,7 @@ function addProdManual(){
   renderCotacao();atualizarBadge();toast('Produto adicionado!');
 }
 
-function gerarImagemCot(){
+  function gerarImagemCot(){
   if(!cotSel.length){toast('Nenhum produto na cotação.');return;}
   var tp=TIPOS[tipoAtual]||{n:'Cotação'};
   var hoje=new Date().toLocaleDateString('pt-BR');
@@ -848,12 +869,13 @@ function gerarImagemCot(){
   var rows=cotSel.map(function(s){
     var nome=s.nome.toUpperCase();
     var qtd=s.qtd||'-';
-    var preco=parseFloat(s.preco)||0;
+    var preco=parseValorBR(s.preco);
     var pr=preco?preco.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
-    var qtdNum=parseFloat(s.qtd)||0;
+    var qtdNum=parseQtdBR(s.qtd);
     if(qtdNum&&preco)totalGeral+=qtdNum*preco;
     return '<div class="cap-row"><div class="cap-rn">'+nome+'</div><div class="cap-rv">'+qtd+'</div><div class="cap-rv-r">'+pr+'</div></div>';
   }).join('');
+
   var totalRow=totalGeral>0
     ?'<div style="display:grid;grid-template-columns:1fr 80px 110px;padding:12px 24px;background:#1A2F4A;border-top:2px solid #F59E0B;margin-top:4px">'
      +'<div style="font-size:12px;font-weight:800;color:#F59E0B;text-transform:uppercase;letter-spacing:1px;grid-column:1/3">TOTAL</div>'
@@ -881,16 +903,37 @@ function gerarImagemCot(){
     +'<div class="cap-seg">'+tp.n+' &middot; '+hoje+'</div>'
     +'</div>'
     +'</div>';
-  toast('Gerando imagem...');
+
+    toast('Gerando imagem...');
+  var capEl=document.getElementById('cotCapture');
+  capEl.style.position='fixed';
+  capEl.style.left='-9999px';
+  capEl.style.top='0';
+  capEl.style.zIndex='-1';
+  capEl.style.display='block';
   setTimeout(function(){
-    html2canvas(document.getElementById('cotCapture'),{backgroundColor:'#060E1E',scale:2,useCORS:true,logging:false}).then(function(canvas){
+    html2canvas(capEl,{backgroundColor:'#060E1E',scale:2,useCORS:true,logging:false}).then(function(canvas){
       var url=canvas.toDataURL('image/png');
       document.getElementById('cotImgEl').src=url;
       document.getElementById('cotImgBox').style.display='block';
       toast('Imagem gerada! Toque para salvar.');
       window._cotImageDataURL=url;
-    }).catch(function(){toast('Erro ao gerar imagem.');});
-  },200);
+      capEl.style.display='none';
+    }).catch(function(e){
+      toast('Erro ao gerar imagem.');
+      capEl.style.display='none';
+    });
+  },300);
+}
+
+function salvarImagemCot(){
+  if(!window._cotImageDataURL){toast('Gere a imagem primeiro.');return;}
+  var tp=TIPOS[tipoAtual]||{n:'Cotacao'};
+  var link=document.createElement('a');
+  link.download='Cotacao-'+tp.n.replace(/[^a-zA-Z0-9]/g,'-')+'.png';
+  link.href=window._cotImageDataURL;
+  link.click();
+  toast('Imagem salva! Agora abra o WhatsApp e anexe a foto.');
 }
   
 function salvarCotacao(){

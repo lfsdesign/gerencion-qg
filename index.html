@@ -980,7 +980,7 @@ function compartilharCotWA(){
   
 function padR(str,len){str=String(str);return str.length>=len?str.substring(0,len):str+' '.repeat(len-str.length);}
   function padL(str,len){str=String(str);return str.length>=len?str.substring(0,len):' '.repeat(len-str.length)+str;}
-  var COL_NOME=22,COL_QTD=6,COL_PRECO=9;
+  var COL_NOME=27,COL_QTD=7,COL_PRECO=10;
   ls.push('```');
   ls.push(padR('PRODUTO',COL_NOME)+padL('QTD',COL_QTD)+padL('R$',COL_PRECO));
   ls.push('-'.repeat(COL_NOME+COL_QTD+COL_PRECO));
@@ -993,7 +993,7 @@ function padR(str,len){str=String(str);return str.length>=len?str.substring(0,le
     if(qtd&&preco)totalGeral+=qtd*preco;
     if(nome.length>COL_NOME){
       ls.push(nome);
-      ls.push(padR('',COL_NOME)+padL(qtdTxt,COL_QTD)+padL(prTxt,COL_PRECO));
+      ls.push(padL(qtdTxt,COL_QTD)+padL(prTxt,COL_PRECO));
     }else{
       ls.push(padR(nome,COL_NOME)+padL(qtdTxt,COL_QTD)+padL(prTxt,COL_PRECO));
     }
@@ -1004,7 +1004,7 @@ function padR(str,len){str=String(str);return str.length>=len?str.substring(0,le
     ls.push(padR('TOTAL',COL_NOME)+padL(totTxt,COL_QTD+COL_PRECO));
   }
   ls.push('```');
-  
+
   ls.push('');
   ls.push('_GERENCION QG \u2014 Todos os direitos reservados_');
   window.open('https://wa.me/?text='+encodeURIComponent(ls.join('\n')),'_blank');

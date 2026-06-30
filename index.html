@@ -340,8 +340,15 @@ textarea.inp{resize:vertical;min-height:80px;}
               </div>
             </div>
 
+<!-- Total Geral -->
+            <div id="cotTotalGeral" style="display:none;justify-content:space-between;align-items:center;background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(6,14,30,0.9));border:1px solid rgba(16,185,129,0.4);border-radius:10px;padding:12px 16px;margin-top:8px">
+              <span style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:1px">Total da Cotação</span>
+              <span class="cot-total-val" style="font-size:20px;font-weight:800;color:var(--gn)"></span>
+            </div>
+
             <!-- Ações -->
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+            
               <button class="btn bp" onclick="gerarImagemCot()" style="flex:1">&#128247; Gerar Imagem</button>
               <button class="btn bs" onclick="salvarCotacao()">&#128190; Salvar</button>
             </div>
@@ -790,14 +797,34 @@ function renderCotacao(){
   var vazio=document.getElementById('cotVazio');var cont=document.getElementById('cotConteudo');
   if(!cotSel.length){vazio.style.display='';cont.style.display='none';return;}
   vazio.style.display='none';cont.style.display='';
-  document.getElementById('cotList').innerHTML=cotSel.map(function(s,i){
-    return '<div class="cot-row">'
-      +'<div style="flex:1"><input class="cot-nome-edit" value="'+s.nome.replace(/"/g,'&quot;')+'" onchange="cotSel['+i+'].nome=this.value" title="Editar nome do produto"></div>'
-      +'<div><input class="cot-inp" type="number" min="0" placeholder="Qtd" value="'+s.qtd+'" onchange="cotSel['+i+'].qtd=this.value"><div class="cot-lbl">Qtd</div></div>'
-      +'<div><input class="cot-inp" type="number" min="0" step="0.01" placeholder="R$" value="'+s.preco+'" onchange="cotSel['+i+'].preco=this.value"><div class="cot-lbl">R$ Unit</div></div>'
+  var totalGeral=0;
+  var rows=cotSel.map(function(s,i){
+    var qtd=parseFloat(s.qtd)||0;
+    var preco=parseFloat(s.preco)||0;
+    var subtotal=qtd&&preco?qtd*preco:0;
+    if(subtotal)totalGeral+=subtotal;
+    var subTxt=subtotal?'= R$ '+subtotal.toLocaleString('pt-BR',{minimumFractionDigits:2}):'';
+    return '<div class="cot-row" style="flex-wrap:wrap;gap:6px">'
+      +'<input class="cot-nome-edit" value="'+s.nome.replace(/"/g,'&quot;')+'" onchange="cotSel['+i+'].nome=this.value" title="Editar nome" style="flex:1;min-width:140px">'
+      +'<div style="display:flex;align-items:center;gap:4px">'
+      +'<div><input class="cot-inp" type="number" min="0" placeholder="Qtd" value="'+s.qtd+'" oninput="cotSel['+i+'].qtd=this.value;renderCotacao()"><div class="cot-lbl">Qtd</div></div>'
+      +'<div><input class="cot-inp" type="number" min="0" step="0.01" placeholder="R$" value="'+s.preco+'" oninput="cotSel['+i+'].preco=this.value;renderCotacao()"><div class="cot-lbl">R$ Unit</div></div>'
+      +(subTxt?'<div class="cot-total">'+subTxt+'</div>':'')
       +'<button class="cot-del" onclick="removerCotItem('+i+')">&times;</button>'
+      +'</div>'
       +'</div>';
   }).join('');
+  document.getElementById('cotList').innerHTML=rows;
+  // Total geral
+  var totEl=document.getElementById('cotTotalGeral');
+  if(totEl){
+    if(totalGeral>0){
+      totEl.style.display='flex';
+      totEl.querySelector('.cot-total-val').textContent='R$ '+totalGeral.toLocaleString('pt-BR',{minimumFractionDigits:2});
+    }else{
+      totEl.style.display='none';
+    }
+  }
   document.getElementById('cotImgBox').style.display='none';
 }
 
@@ -817,12 +844,22 @@ function gerarImagemCot(){
   var vend=eu?eu.n:'';
   var cod=eu?eu.cd:'';
   var cli=(document.getElementById('cotCliente')||{value:''}).value.trim()||'';
+  var totalGeral=0;
   var rows=cotSel.map(function(s){
     var nome=s.nome.toUpperCase();
     var qtd=s.qtd||'-';
-    var pr=s.preco?parseFloat(s.preco).toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
+    var preco=parseFloat(s.preco)||0;
+    var pr=preco?preco.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
+    var qtdNum=parseFloat(s.qtd)||0;
+    if(qtdNum&&preco)totalGeral+=qtdNum*preco;
     return '<div class="cap-row"><div class="cap-rn">'+nome+'</div><div class="cap-rv">'+qtd+'</div><div class="cap-rv-r">'+pr+'</div></div>';
   }).join('');
+  var totalRow=totalGeral>0
+    ?'<div style="display:grid;grid-template-columns:1fr 80px 110px;padding:12px 24px;background:#1A2F4A;border-top:2px solid #F59E0B;margin-top:4px">'
+     +'<div style="font-size:12px;font-weight:800;color:#F59E0B;text-transform:uppercase;letter-spacing:1px;grid-column:1/3">TOTAL</div>'
+     +'<div style="font-size:16px;font-weight:900;color:#10B981;text-align:right">'+totalGeral.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div>'
+     +'</div>'
+    :'';
   var cliRow=cli
     ?'<div class="cap-cli-row"><div class="cap-cli-label">Cliente:&nbsp;</div><div class="cap-cli-valor">'+cli+'</div></div>'
     :'';
@@ -835,8 +872,9 @@ function gerarImagemCot(){
     +cliRow
     +'</div>'
     +'<div class="cap-body">'
-    +'<div class="cap-head"><span>Produto</span><span>Qtd</span><span>R$</span></div>'
+    +'<div class="cap-head"><span>Produto</span><span style="text-align:center">Qtd</span><span style="text-align:right">R$</span></div>'
     +rows
+    +totalRow
     +'</div>'
     +'<div class="cap-foot">'
     +'<div class="cap-foot-txt">GERENCION QG &mdash; Todos os direitos reservados &copy;</div>'
@@ -849,7 +887,7 @@ function gerarImagemCot(){
       var url=canvas.toDataURL('image/png');
       document.getElementById('cotImgEl').src=url;
       document.getElementById('cotImgBox').style.display='block';
-      toast('Imagem gerada!');
+      toast('Imagem gerada! Toque para salvar.');
       window._cotImageDataURL=url;
     }).catch(function(){toast('Erro ao gerar imagem.');});
   },200);
@@ -870,6 +908,7 @@ function compartilharCotWA(){
   var cod=eu?eu.cd:'';
   var vend=eu?eu.n:'';
   var cli=(document.getElementById('cotCliente')||{value:''}).value.trim();
+  var totalGeral=0;
   var ls=[
     '*GERENCION QG \u00b7 ARCOFOODS \u00b7 NORTE FLUMINENSE*',
     '_'+cod+' \u2014 '+vend+'_',
@@ -879,18 +918,33 @@ function compartilharCotWA(){
     ''
   ];
   if(cli)ls.push('\uD83C\uDFEA *Cliente:* '+cli,'');
-  ls.push('*PRODUTO*                    *QTD*    *R$*','');
+  ls.push('```');
+  ls.push('N  PRODUTO                QTD    R$');
+  ls.push('─'.repeat(38));
   cotSel.forEach(function(s,i){
-    var nome=s.nome.toUpperCase();
-    var qtd=s.qtd||'-';
-    var pr=s.preco?parseFloat(s.preco).toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
-    ls.push((i+1)+'. '+nome);
-    ls.push('    Qtd: *'+qtd+'*  |  R$ *'+pr+'*');
+    var nome=s.nome.toUpperCase().substring(0,20);
+    var pad=nome+' '.repeat(Math.max(0,21-nome.length));
+    var qtd=(s.qtd||'-');
+    var qtdPad=String(qtd)+' '.repeat(Math.max(0,6-String(qtd).length));
+    var preco=parseFloat(s.preco)||0;
+    var pr=preco?preco.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
+    var num=String(i+1)+'.';
+    var numPad=num+' '.repeat(Math.max(0,3-num.length));
+    ls.push(numPad+pad+qtdPad+pr);
+    var qtdNum=parseFloat(s.qtd)||0;
+    if(qtdNum&&preco)totalGeral+=qtdNum*preco;
   });
-  ls.push('');ls.push('_GERENCION QG \u2014 Todos os direitos reservados_');
+  if(totalGeral>0){
+    ls.push('─'.repeat(38));
+    var totStr='TOTAL: R$ '+totalGeral.toLocaleString('pt-BR',{minimumFractionDigits:2});
+    ls.push(' '.repeat(Math.max(0,38-totStr.length))+totStr);
+  }
+  ls.push('```');
+  ls.push('');
+  ls.push('_GERENCION QG \u2014 Todos os direitos reservados_');
   window.open('https://wa.me/?text='+encodeURIComponent(ls.join('\n')),'_blank');
 }
-
+  
 function compartilharCotEmail(){
   var tp=TIPOS[tipoAtual]||{n:'Cotação'};
   var hoje=new Date().toLocaleDateString('pt-BR');

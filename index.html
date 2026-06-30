@@ -718,16 +718,19 @@ function entrar(u){
   document.getElementById('negVend').textContent=u.cd+' - '+u.n;
   renderCatalogos();
   renderBI();
-  if(u.t==='coord'){
+
+if(u.t==='coord'){
     document.getElementById('adminContatos').style.display='block';
     document.getElementById('adminCampanhas').style.display='block';
     document.getElementById('adminMix').style.display='block';
     document.getElementById('adminCatalogos').style.display='block';
     document.getElementById('adminBI').style.display='block';
-    document.getElementById('adminQGDia').style.display='block';
+    var menuQG=document.getElementById('menuQGDia');
+    if(menuQG)menuQG.style.display='inline-block';
     carregarCatalogosAdmin();
     iniciarMetasGrid();
   }
+  
 }
 
 function fazerLogin(){
@@ -1031,6 +1034,153 @@ function voltarTipo(){
   document.getElementById('listaBox').style.display='none';
   document.getElementById('tipoList').style.display='block';
   cotSel=[];
+}
+
+/* ===== QG DO DIA ===== */
+var qgdiaLista=[];
+var FRASES_PARABENS_DIA={
+  1:'Quem come\u00e7ou a semana batendo a meta j\u00e1 deu o tom. Parab\u00e9ns!',
+  2:'Resultado de ontem mostra quem n\u00e3o tira o p\u00e9. Aplausos!',
+  3:'Meio de semana e voc\u00eas continuam entregando. Orgulho da equipe!',
+  4:'A meta de ontem caiu pra esses craques. Sigam assim!',
+  5:'Fechando a semana com resultado de quem joga pra ganhar. Parab\u00e9ns!'
+};
+
+function rankingDisponivelHoje(){var d=new Date().getDay();return d>=1&&d<=5;}
+function getFraseParabensHoje(){return FRASES_PARABENS_DIA[new Date().getDay()]||'';}
+
+function parseLinhasCodNome(texto){
+  return texto.split('\n').map(function(l){return l.trim();}).filter(Boolean).map(function(l){
+    var m=l.match(/^(\d+)\s*[-\u2013\u2014.]?\s*(.+)$/);
+    if(m)return{cod:m[1],nome:m[2].trim()};
+    return{cod:'',nome:l};
+  });
+}
+function parseLinhasMetas(texto){
+  return texto.split('\n').map(function(l){return l.trim();}).filter(Boolean).map(function(l){
+    var v=l.replace(/[^\d,\.]/g,'').replace(/\./g,'').replace(',','.');
+    return parseFloat(v)||0;
+  });
+}
+function parseLinhasRanking(texto){
+  return texto.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+}
+
+function montarListaQGDia(){
+  var codNomeTxt=document.getElementById('qgdiaCodNome').value;
+  var metasTxt=document.getElementById('qgdiaMetas').value;
+  if(!codNomeTxt.trim()){toast('Cole a lista de c\u00f3digo e nome primeiro.');return;}
+  var lista=parseLinhasCodNome(codNomeTxt);
+  var metas=parseLinhasMetas(metasTxt);
+  if(!lista.length){toast('N\u00e3o consegui identificar nenhum vendedor.');return;}
+  qgdiaLista=lista.map(function(v,i){return{cod:v.cod,nome:v.nome,meta:metas[i]||0};});
+  renderQGDiaPreview();
+  toast(qgdiaLista.length+' vendedor(es) carregado(s)!');
+}
+
+function renderQGDiaPreview(){
+  var box=document.getElementById('qgdiaListaBox');
+  var prev=document.getElementById('qgdiaListaPreview');
+  if(!qgdiaLista.length){box.style.display='none';return;}
+  box.style.display='block';
+  prev.innerHTML=qgdiaLista.map(function(v,i){
+    var metaTxt=v.meta?'R$ '+v.meta.toLocaleString('pt-BR',{minimumFractionDigits:2}):'<span style="color:var(--rd)">sem meta</span>';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--s2);border-radius:8px;margin-bottom:6px">'
+      +'<span style="font-size:11px;color:var(--t3);width:34px">'+(v.cod||'-')+'</span>'
+      +'<span style="flex:1;font-size:13px;color:var(--t)">'+v.nome+'</span>'
+      +'<span style="font-size:13px;font-weight:700;color:var(--am)">'+metaTxt+'</span>'
+      +'</div>';
+  }).join('');
+}
+
+function gerarImagemQGDia(){
+  if(!qgdiaLista.length){toast('Monte a lista de vendedores primeiro (Etapa 1 e 2).');return;}
+  var hoje=new Date();
+  var dataTxt=hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  dataTxt=dataTxt.charAt(0).toUpperCase()+dataTxt.slice(1);
+  var vend=eu?eu.n:'';
+  var cod=eu?eu.cd:'';
+
+  var metasRows=qgdiaLista.map(function(v){
+    var metaTxt=v.meta?v.meta.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
+    return '<div style="display:flex;align-items:center;padding:9px 14px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:5px">'
+      +'<span style="font-size:9px;color:rgba(255,255,255,0.35);width:30px">'+(v.cod||'-')+'</span>'
+      +'<span style="flex:1;font-size:12px;font-weight:600;color:#F0F6FF">'+v.nome.toUpperCase()+'</span>'
+      +'<span style="font-size:12px;font-weight:800;color:#F59E0B">R$ '+metaTxt+'</span>'
+      +'</div>';
+  }).join('');
+
+  var rankingTxt=(document.getElementById('qgdiaRanking')||{value:''}).value;
+  var rankingLista=parseLinhasRanking(rankingTxt);
+  var rankingBlock='';
+  if(rankingDisponivelHoje()&&rankingLista.length){
+    var frase=getFraseParabensHoje();
+    var nomesHtml=rankingLista.map(function(n){
+      return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
+        +'<span style="font-size:14px">\uD83C\uDFC6</span>'
+        +'<span style="font-size:13px;font-weight:700;color:#F0F6FF">'+n+'</span>'
+        +'</div>';
+    }).join('');
+    rankingBlock='<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:10px;padding:12px 14px;margin-bottom:16px">'
+      +'<div style="font-size:12px;font-weight:700;color:#F0F6FF;line-height:1.5;margin-bottom:10px">'+frase+'</div>'
+      +nomesHtml
+      +'</div>';
+  }
+
+  var dicaTxt=(document.getElementById('qgdiaDica')||{value:''}).value.trim();
+  var dicaBlock=dicaTxt
+    ?'<div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:12px 14px;margin-bottom:16px">'
+     +'<div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#10B981;text-transform:uppercase;margin-bottom:6px">Dica do dia</div>'
+     +'<div style="font-size:13px;color:#F0F6FF;line-height:1.5">'+dicaTxt+'</div>'
+     +'</div>'
+    :'';
+
+  document.getElementById('qgdiaCapture').innerHTML=
+    '<div style="background:#0B1929;border:2px solid rgba(245,158,11,0.5);border-radius:16px;padding:26px;width:480px;font-family:Inter,sans-serif">'
+    +'<div style="text-align:center;margin-bottom:18px">'
+    +'<div style="font-size:10px;font-weight:800;letter-spacing:2.5px;color:#F59E0B;text-transform:uppercase;margin-bottom:4px">GERENCION QG &middot; ARCOFOODS &middot; NORTE FLUMINENSE</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,0.7);margin-bottom:10px">'+cod+' &mdash; '+vend+'</div>'
+    +'<div style="font-size:22px;font-weight:900;color:#F59E0B;letter-spacing:1.5px">METAS DO DIA</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:4px">'+dataTxt+'</div>'
+    +'</div>'
+    +'<div style="margin-bottom:16px">'+metasRows+'</div>'
+    +rankingBlock
+    +dicaBlock
+    +'<div style="text-align:center;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08)">'
+    +'<div style="font-size:9px;font-weight:800;letter-spacing:2px;color:rgba(255,255,255,0.7)">GERENCION QG &mdash; TODOS OS DIREITOS RESERVADOS</div>'
+    +'</div>'
+    +'</div>';
+
+  toast('Gerando imagem...');
+  var capEl=document.getElementById('qgdiaCapture');
+  capEl.style.position='fixed';
+  capEl.style.left='-9999px';
+  capEl.style.top='0';
+  capEl.style.zIndex='-1';
+  capEl.style.display='block';
+  setTimeout(function(){
+    html2canvas(capEl,{backgroundColor:'#060E1E',scale:2,useCORS:true,logging:false}).then(function(canvas){
+      var url=canvas.toDataURL('image/png');
+      document.getElementById('qgdiaImgEl').src=url;
+      document.getElementById('qgdiaImgBox').style.display='block';
+      toast('Imagem gerada! Toque para salvar.');
+      window._qgdiaImageDataURL=url;
+      capEl.style.display='none';
+    }).catch(function(){
+      toast('Erro ao gerar imagem.');
+      capEl.style.display='none';
+    });
+  },300);
+}
+
+function salvarImagemQGDia(){
+  if(!window._qgdiaImageDataURL){toast('Gere a imagem primeiro.');return;}
+  var hoje=new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+  var link=document.createElement('a');
+  link.download='QG-do-Dia-'+hoje+'.png';
+  link.href=window._qgdiaImageDataURL;
+  link.click();
+  toast('Imagem salva! Agora abra o WhatsApp do grupo e anexe a foto.');
 }
 
 function compartilhar(){

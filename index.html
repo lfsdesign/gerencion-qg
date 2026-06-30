@@ -177,11 +177,13 @@ textarea.inp{resize:vertical;min-height:80px;}
 .cap-cli-label{font-size:13px;font-weight:800;color:#F59E0B;letter-spacing:1px;text-transform:uppercase;}
 .cap-cli-valor{font-size:13px;color:#F0F6FF;font-weight:600;border-bottom:1px dashed rgba(245,158,11,0.5);padding-bottom:1px;min-width:200px;}
 .cap-body{padding:0 0 20px;}
-.cap-head{display:grid;grid-template-columns:1fr 70px 100px;column-gap:12px;background:#1A2F4A;border-top:2px solid #F59E0B;border-bottom:2px solid #F59E0B;padding:10px 24px;box-sizing:border-box;}
-.cap-head span{font-size:11px;font-weight:800;color:#fff;letter-spacing:1.5px;text-transform:uppercase;}
+.cap-head{display:grid;grid-template-columns:1fr 56px 80px 96px;column-gap:10px;background:#1A2F4A;border-top:2px solid #F59E0B;border-bottom:2px solid #F59E0B;padding:10px 24px;box-sizing:border-box;}
+.cap-head span{font-size:10px;font-weight:800;color:#fff;letter-spacing:1px;text-transform:uppercase;}
 .cap-head span:nth-child(2){text-align:center;}
 .cap-head span:nth-child(3){text-align:right;}
-.cap-row{display:grid;grid-template-columns:1fr 70px 100px;column-gap:12px;padding:11px 24px;border-bottom:1px solid rgba(255,255,255,0.06);box-sizing:border-box;}
+.cap-head span:nth-child(4){text-align:right;}
+.cap-row{display:grid;grid-template-columns:1fr 56px 80px 96px;column-gap:10px;padding:11px 24px;border-bottom:1px solid rgba(255,255,255,0.06);box-sizing:border-box;}
+.cap-rv-sub{font-size:12px;color:#10B981;text-align:right;font-weight:800;white-space:nowrap;}
 .cap-row:nth-child(even){background:rgba(255,255,255,0.03);}
 .cap-rn{font-size:12px;color:#F0F6FF;font-weight:600;text-transform:uppercase;letter-spacing:.3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .cap-rv{font-size:12px;color:#CBD5E1;text-align:center;white-space:nowrap;}
@@ -882,23 +884,27 @@ function addProdManual(){
   var cod=eu?eu.cd:'';
   var cli=(document.getElementById('cotCliente')||{value:''}).value.trim()||'';
   var totalGeral=0;
-  var rows=cotSel.map(function(s){
+ 
+var rows=cotSel.map(function(s){
     var nome=s.nome.toUpperCase();
     var qtd=s.qtd||'-';
     var preco=parseValorBR(s.preco);
     var pr=preco?preco.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
     var qtdNum=parseQtdBR(s.qtd);
-    if(qtdNum&&preco)totalGeral+=qtdNum*preco;
-    return '<div class="cap-row"><div class="cap-rn">'+nome+'</div><div class="cap-rv">'+qtd+'</div><div class="cap-rv-r">'+pr+'</div></div>';
+    var subtotal=qtdNum&&preco?qtdNum*preco:0;
+    var subTxt=subtotal?subtotal.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
+    if(subtotal)totalGeral+=subtotal;
+    return '<div class="cap-row"><div class="cap-rn">'+nome+'</div><div class="cap-rv">'+qtd+'</div><div class="cap-rv-r">'+pr+'</div><div class="cap-rv-sub">'+subTxt+'</div></div>';
   }).join('');
-
-  var totalRow=totalGeral>0
-    ?'<div style="display:grid;grid-template-columns:1fr 80px 110px;padding:12px 24px;background:#1A2F4A;border-top:2px solid #F59E0B;margin-top:4px">'
-     +'<div style="font-size:12px;font-weight:800;color:#F59E0B;text-transform:uppercase;letter-spacing:1px;grid-column:1/3">TOTAL</div>'
-     +'<div style="font-size:16px;font-weight:900;color:#10B981;text-align:right">'+totalGeral.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div>'
+    
+var totalRow=totalGeral>0
+    ?'<div style="display:grid;grid-template-columns:1fr 56px 80px 96px;column-gap:10px;padding:12px 24px;background:#1A2F4A;border-top:2px solid #F59E0B;margin-top:4px;box-sizing:border-box">'
+     +'<div style="font-size:12px;font-weight:800;color:#F59E0B;text-transform:uppercase;letter-spacing:1px;grid-column:1/4">TOTAL</div>'
+     +'<div style="font-size:15px;font-weight:900;color:#10B981;text-align:right">'+totalGeral.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div>'
      +'</div>'
     :'';
-  var cliRow=cli
+    
+    var cliRow=cli
     ?'<div class="cap-cli-row"><div class="cap-cli-label">Cliente:&nbsp;</div><div class="cap-cli-valor">'+cli+'</div></div>'
     :'';
   document.getElementById('cotCapture').innerHTML=
@@ -910,7 +916,7 @@ function addProdManual(){
     +cliRow
     +'</div>'
     +'<div class="cap-body">'
-    +'<div class="cap-head"><span>Produto</span><span style="text-align:center">Qtd</span><span style="text-align:right">R$</span></div>'
+    +'<div class="cap-head"><span>Produto</span><span style="text-align:center">Qtd</span><span style="text-align:right">R$</span><span style="text-align:right">Subtot.</span></div>'
     +rows
     +totalRow
     +'</div>'
@@ -984,10 +990,16 @@ cotSel.forEach(function(s,i){
     var qtdTxt=qtd?String(qtd):'-';
     var preco=parseValorBR(s.preco);
     var prTxt=preco?preco.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
-    if(qtd&&preco)totalGeral+=qtd*preco;
+    var subtotal=qtd&&preco?qtd*preco:0;
+    if(subtotal)totalGeral+=subtotal;
     ls.push((i+1)+'. *'+nome+'*');
-    if(qtd||preco)ls.push('     Qtd: '+qtdTxt+'   \u2502   R$ '+prTxt);
+    if(qtd||preco){
+      var linha='     Qtd: '+qtdTxt+'   \u2502   R$ '+prTxt;
+      if(subtotal)linha+='   \u2502   Subt: R$ '+subtotal.toLocaleString('pt-BR',{minimumFractionDigits:2});
+      ls.push(linha);
+    }
   });
+  
   if(totalGeral>0){
     ls.push('');
     ls.push('\uD83D\uDCB0 *TOTAL: R$ '+totalGeral.toLocaleString('pt-BR',{minimumFractionDigits:2})+'*');

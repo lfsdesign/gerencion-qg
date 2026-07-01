@@ -236,7 +236,7 @@ textarea.inp{resize:vertical;min-height:80px;}
     <button class="mb" onclick="ir('bivendas',this)">BI'S</button>
     <button class="mb" onclick="ir('mixestrategico',this);carregarMix()">Mix Estrat&#233;gico</button>
     <button class="mb" onclick="ir('premiacao',this);carregarPremiacao()">&#128176; Premia&#231;&#227;o</button>
-    <button class="mb" id="menuQGDia" onclick="ir('qgdia',this)" style="display:none">&#128227; QG do Dia</button>
+   <button class="mb" id="menuQGDia" onclick="ir('qgdia',this);setTimeout(preencherDicaAutomatica,100)" style="display:none">&#128227; QG do Dia</button>
   </div>
 
   <div id="main">
@@ -423,8 +423,8 @@ textarea.inp{resize:vertical;min-height:80px;}
         <input id="qgdiaDica" class="inp" placeholder="Ex: foco em mix rent&#225;vel hoje">
       </div>
 
-      <button class="btn bp" onclick="gerarImagemQGDia()" style="width:100%;margin-bottom:10px">&#128247; Gerar Imagem</button>
-
+    <button class="btn bp" onclick="gerarImagemQGDia()" style="width:100%;margin-bottom:10px">&#128247; Gerar Imagem</button>
+      
       <div id="qgdiaImgBox" style="display:none">
         <div style="font-size:11px;color:var(--t2);margin-bottom:8px;text-align:center">Salve a imagem e anexe no WhatsApp do grupo</div>
         <img id="qgdiaImgEl" src="" alt="QG do Dia" style="width:100%;border-radius:10px;border:1px solid var(--b)">
@@ -1101,6 +1101,49 @@ var FRASES_PARABENS_DIA={
 function rankingDisponivelHoje(){var d=new Date().getDay();return d>=1&&d<=5;}
 function getFraseParabensHoje(){return FRASES_PARABENS_DIA[new Date().getDay()]||'';}
 
+var DICAS_MES=[
+  'Cliente fiel não compra preço, compra confiança. Uma visita a mais por semana vale mais que qualquer desconto.',
+  'Pedido pequeno de hoje é pedido grande amanhã. Não negligencie o cliente que compra pouco — ele está te avaliando.',
+  'Antes de entrar no cliente, saiba o que ele comprou da última vez. Chegar preparado fecha mais pedido.',
+  'Mix completo protege sua comissão. Um produto de alto giro com outro de alta margem no mesmo pedido é a jogada certa.',
+  'Cliente parado é cliente do concorrente. Se ficou 15 dias sem comprar, hoje é o dia de ligar.',
+  'Não venda produto, venda reposição. "Seu estoque de arroz vai até quando?" abre mais pedido que qualquer argumento.',
+  'A visita que não fecha pedido ainda tem valor — deixou relacionamento. Relacionamento vira pedido na próxima.',
+  'Ofereça sempre um produto a mais no fechamento. "Aproveita e leva o café também?" custa zero e aumenta o ticket.',
+  'Cliente que reclama ainda é cliente. O perigoso é o que para de reclamar e some.',
+  'Organize sua rota para visitar os melhores clientes nos melhores horários. Energia certa no lugar certo.',
+  'Nunca saia do cliente sem saber a data da próxima visita. Agenda combinada não cai.',
+  'O cliente que compara preço com o concorrente quer ser convencido por você. Mostre o valor, não brigue pelo número.',
+  'Produto parado na gôndola do cliente é problema seu também. Ajude a girar e ele vai pedir mais.',
+  'Pergunte antes de oferecer. "O que está faltando mais aqui esta semana?" abre a venda sem forçar.',
+  'Equipe unida vende mais. Compartilhe o que está funcionando — o sucesso de um fortalece todos.',
+  'Cliente novo merece atenção dobrada nas primeiras três visitas. É nelas que você conquista ou perde.',
+  'Não empurre o que você quer vender — ofereça o que o cliente precisa. A diferença aparece na recompra.',
+  'Pontualidade é argumento de venda. Vendedor que cumpre o que promete tem crédito para pedir o pedido.',
+  'Anote tudo que o cliente falar. Na próxima visita, lembrar dos detalhes vale mais que qualquer promoção.',
+  'Venda solução, não produto. "Esse item reduz sua perda de estoque" fecha mais que "esse item está em promoção".',
+  'O cliente difícil que você conquistar vai ser o mais fiel. Vale o esforço.',
+  'Visita sem objetivo é passeio. Antes de entrar, defina o que quer sair com ele.',
+  'Quanto mais você conhece o negócio do cliente, mais ele confia em você. Pergunte, observe, aprenda.',
+  'Não fale mal do concorrente. Fale bem do que você tem. É mais elegante e mais eficiente.',
+  'Pedido de qualidade vale mais que pedido de quantidade. Mix certo no cliente certo é o caminho.',
+  'O "não" de hoje pode ser o "sim" de amanhã. Persistência com respeito é a combinação que vence.',
+  'Cuide da sua carteira como se fosse o seu negócio — porque é. Cada cliente perdido sai do seu bolso.',
+  'Início de semana é oportunidade. Cliente que não comprou na semana passada está com estoque baixo agora.',
+  'Sorriso e energia custam zero e vendem muito. O estado de espírito do vendedor contamina a negociação.',
+  'Feche o mês forte. Os últimos dias são onde os melhores vendedores se separam dos demais.'
+];
+
+function getDicaHoje(){
+  var dia=new Date().getDate();
+  return DICAS_MES[(dia-1)%30]||'';
+}
+
+function preencherDicaAutomatica(){
+  var el=document.getElementById('qgdiaDica');
+  if(el&&!el.value.trim())el.value=getDicaHoje();
+}
+  
 function parseLinhasCodNome(texto){
   return texto.split('\n').map(function(l){return l.trim();}).filter(Boolean).map(function(l){
     var m=l.match(/^(\d+)\s*[-\u2013\u2014.]?\s*(.+)$/);

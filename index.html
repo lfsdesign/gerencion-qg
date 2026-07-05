@@ -1776,8 +1776,22 @@ function processarPremRegional(){
     if(prev) prev.innerHTML='<div style="background:var(--rd2);border:1px solid var(--rd3);border-radius:8px;padding:10px 12px;color:var(--rd);font-size:12px">⚠️ Só '+v.length+' campo(s) detectado(s). Cole a linha completa (pode incluir o cabeçalho).</div>';
     return;
   }
-  _premRegTemp = {objFat:v[0]||'',fat:v[1]||'',proj:v[2]||'',objMarg:v[3]||'',marg:v[4]||'',objPos:v[5]||'',realPos:v[6]||'',saldoPos:v[7]||'',devR:v[8]||'',devPct:v[9]||'',sku:v[10]||'',vendaMedia:v[11]||'',precoKg:v[12]||'',data:new Date().toISOString()};
-  if(prev) prev.innerHTML='<div style="background:var(--gn2);border:1px solid var(--gn3);border-radius:8px;padding:12px 14px"><strong style="color:var(--gn);display:block;margin-bottom:8px;font-size:11px;letter-spacing:1px;text-transform:uppercase">✓ Regional processada — confira:</strong><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">'+premPrevBox('%OBJ FAT',_premRegTemp.objFat)+premPrevBox('%FAT',_premRegTemp.fat)+premPrevBox('%PROJ',_premRegTemp.proj)+premPrevBox('MARGEM',_premRegTemp.marg)+premPrevBox('OBJ POSIT',_premRegTemp.objPos)+premPrevBox('REAL POSIT',_premRegTemp.realPos)+premPrevBox('SKU/CLI',_premRegTemp.sku)+premPrevBox('VENDA MÉD',_premRegTemp.vendaMedia)+premPrevBox('PREÇO/KG',_premRegTemp.precoKg)+'</div></div>';
+  // Detecta tela de desempenho (imagem 2) — tem % nas colunas 4, 7, 13
+  var pareceDesempenho = v.length>=13 && /%/.test((v[3]||'')+(v[6]||'')+(v[12]||''));
+  if(pareceDesempenho){
+    _premRegTemp = {
+      pctFat: v[0]||'', pctPos: v[3]||'', pctSku: v[6]||'', pctMix: v[9]||'', pctChurn: v[12]||'',
+      metaPos:v[1]||'', pos:v[2]||'', sku:v[5]||'', mix:v[8]||'', churn:v[11]||'',
+      origem:'desempenho', data:new Date().toISOString()
+    };
+  } else {
+    _premRegTemp = {objFat:v[0]||'',fat:v[1]||'',proj:v[2]||'',objMarg:v[3]||'',marg:v[4]||'',objPos:v[5]||'',realPos:v[6]||'',saldoPos:v[7]||'',devR:v[8]||'',devPct:v[9]||'',sku:v[10]||'',vendaMedia:v[11]||'',precoKg:v[12]||'',origem:'pagina1',data:new Date().toISOString()};
+    // deriva % onde possível
+    _premRegTemp.pctFat = _premRegTemp.proj || '';
+    _premRegTemp.pctPos = _premRegTemp.objPos ? (qgParse(_premRegTemp.realPos)/qgParse(_premRegTemp.objPos)*100).toFixed(2) : '';
+    _premRegTemp.pctMix = (_premRegTemp.objMarg && qgParse(_premRegTemp.objMarg)) ? (qgParse(_premRegTemp.marg)/qgParse(_premRegTemp.objMarg)*100).toFixed(2) : '';
+  }
+  if(prev) prev.innerHTML='<div style="background:var(--gn2);border:1px solid var(--gn3);border-radius:8px;padding:12px 14px"><strong style="color:var(--gn);display:block;margin-bottom:8px;font-size:11px;letter-spacing:1px;text-transform:uppercase">✓ Regional processada — confira:</strong><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">'+premPrevBox('%Fat',_premRegTemp.pctFat)+premPrevBox('%Pos',_premRegTemp.pctPos)+premPrevBox('%Sku',_premRegTemp.pctSku)+premPrevBox('%Mix',_premRegTemp.pctMix)+premPrevBox('%Churn',_premRegTemp.pctChurn)+'</div></div>';
   atualizarPremStatus();
   toast('✓ Regional processada!');
 }
@@ -1870,6 +1884,36 @@ function limparPremVendLista(){
   renderPremVendLista();
   atualizarPremStatus();
   toast('Lista de vendedores limpa.');
+}
+
+// Processa a linha da ARCOFOODS (empresa) — mesma ordem de colunas dos vendedores
+function processarPremArcofoods(){
+  var el = document.getElementById('premArcColar');
+  var txt = el ? el.value.trim() : '';
+  if(!txt){ toast('Cole os dados da Arcofoods primeiro.'); return; }
+  var linhas = txt.split('\n').map(function(l){return l.trim();}).filter(function(l){return l!=='';});
+  var linhaDados = null;
+  // pega a linha que tem % (dados), ignora cabeçalho
+  for(var i=linhas.length-1;i>=0;i--){
+    if(/%/.test(linhas[i]) && linhas[i].split('\t').length>=6){ linhaDados = linhas[i]; break; }
+  }
+  if(!linhaDados) linhaDados = linhas[linhas.length-1];
+  var cols = linhaDados.split('\t').map(function(c){return c.trim();});
+  // remove o rótulo "ARCOFOODS" ou "Emp." do início se não for número/%
+  var inicio = 0;
+  if(cols[0] && !/[\d%]/.test(cols[0])) inicio = 1;
+  var v = cols.slice(inicio);
+  // Ordem: %Fat, MetaPos, Pos, %Pos, MetaSku, Sku, %Sku, MetaMix, Mix, %Mix, MetaChurn, Churn, %Churn
+  _premArcofoods = {
+    pctFat: v[0]||'', pctPos: v[3]||'', pctSku: v[6]||'', pctMix: v[9]||'', pctChurn: v[12]||''
+  };
+  var prev = document.getElementById('premArcPreview');
+  if(prev){
+    var box = function(l,x){return '<div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:6px 8px"><div style="font-size:9px;color:var(--t3);text-transform:uppercase">'+l+'</div><div style="font-size:13px;font-weight:700;color:'+(qgParse(x)>=100?'var(--gn)':'var(--t)')+'">'+(x||'—')+'</div></div>';};
+    prev.innerHTML = '<div style="background:var(--am2);border:1px solid var(--am3);border-radius:8px;padding:12px 14px"><strong style="color:var(--am);display:block;margin-bottom:8px;font-size:11px;text-transform:uppercase">✓ Arcofoods processada:</strong><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">'+box('Fat',_premArcofoods.pctFat)+box('Pos',_premArcofoods.pctPos)+box('Sku',_premArcofoods.pctSku)+box('Mix',_premArcofoods.pctMix)+box('Churn',_premArcofoods.pctChurn)+'</div></div>';
+  }
+  atualizarPremStatus();
+  toast('✓ Arcofoods processada!');
 }
 
 // ── ESTRUTURA DA PREMIAÇÃO ───────────────────────────────────
@@ -2049,26 +2093,38 @@ function carregarPremiacaoSupabase(callback) {
 // Salva tudo que o coordenador processou (regional + vendedores + arcofoods)
 function salvarPremiacaoCompleta(){
   if(_premVendTemp.length === 0){ toast('Adicione pelo menos um vendedor antes de salvar.'); return; }
+  // Regional e Arcofoods por indicador (>= 100% em cada %)
+  var regPorInd = _premRegTemp ? bateuPorIndicadorDe(_premRegTemp) : {};
+  var arcPorInd = _premArcofoods ? bateuPorIndicadorDe(_premArcofoods) : {};
   premiacaoData = {
     regional: _premRegTemp,
-    regional_bateu: null,      // regional por indicador — pode evoluir depois
+    regionalPorInd: regPorInd,
     vendedores: _premVendTemp.slice(),
     arcofoods: _premArcofoods,
+    arcofoodsPorInd: arcPorInd,
     atualizado: new Date().toLocaleString('pt-BR')
   };
-  // Regra: se a regional foi processada e bateu os KPIs dela, considera regional=true por indicador.
-  // (Ajustável quando o BI de metas estiver completo.)
-  premiacaoData.regional_bateu = _premRegTemp ? regionalBateuGeral(_premRegTemp) : false;
   salvarPremiacaoSupabase();
   renderPremiacao();
   toast('💾 Premiação salva! ' + _premVendTemp.length + ' vendedores processados.');
 }
 
-// Avalia se a regional bateu (geral) — placeholder ajustável quando vier o BI completo
+// Recebe um objeto com pctFat/pctPos/pctSku/pctMix/pctChurn e diz o que bateu (>=100%)
+function bateuPorIndicadorDe(o){
+  var n = qgParse;
+  return {
+    faturamento: n(o.pctFat) >= 100,
+    positivacao: n(o.pctPos) >= 100,
+    sku:         n(o.pctSku) >= 100,
+    mix:         n(o.pctMix) >= 100,
+    churn:       n(o.pctChurn) >= 100
+  };
+}
+
+// (mantida por compatibilidade)
 function regionalBateuGeral(reg){
   if(!reg) return false;
   var n = qgParse;
-  // Exemplo: regional "bate" se margem >= objetivo e projeção de faturamento >= 100
   var margOk = n(reg.marg) >= n(reg.objMarg);
   var projOk = n(reg.proj) >= 100 || reg.proj === '';
   return margOk;
@@ -2331,7 +2387,7 @@ function renderPainelCoordenador(regional, arcofoods) {
 
   // ── BLOCO 1: REGIONAL ──
   html += '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.25);border-radius:12px;padding:14px;margin-bottom:12px">';
-  html += '<div style="font-size:11px;font-weight:700;color:#3B82F6;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">1 · Regional Norte Fluminense</div>';
+  html += '<div style="font-size:11px;font-weight:700;color:#3B82F6;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">2 · Regional Norte Fluminense</div>';
   html += '<div style="font-size:11px;color:var(--t2);margin-bottom:8px">Copie a linha NORTE FLUMINENSE completa do BI e cole abaixo.</div>';
   html += '<textarea id="premRegColar" placeholder="Cole aqui a linha da regional (Página 1)" style="width:100%;min-height:56px;background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:10px;color:var(--t);font-size:12px;font-family:Inter,sans-serif;resize:vertical"></textarea>';
   html += '<button onclick="processarPremRegional()" style="margin-top:8px;padding:9px 16px;background:var(--cy,#00E5C3);border:none;border-radius:8px;color:#0A0A0A;font-weight:800;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">⚡ Processar Regional</button>';
@@ -2340,7 +2396,7 @@ function renderPainelCoordenador(regional, arcofoods) {
 
   // ── BLOCO 2: VENDEDORES ──
   html += '<div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.25);border-radius:12px;padding:14px;margin-bottom:12px">';
-  html += '<div style="font-size:11px;font-weight:700;color:var(--gn);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">2 · Vendedores — cole um por vez</div>';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--gn);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">3 · Vendedores — cole um por vez</div>';
   html += '<div style="font-size:11px;color:var(--t2);margin-bottom:8px">Cole um vendedor por vez (pode incluir o cabeçalho) e clique em Adicionar. Faça para os 9.</div>';
   html += '<textarea id="premVendColar" placeholder="Cole aqui o cabeçalho + linha do vendedor" style="width:100%;min-height:56px;background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:10px;color:var(--t);font-size:12px;font-family:Inter,sans-serif;resize:vertical"></textarea>';
   html += '<div style="display:flex;gap:8px;margin-top:8px">';
@@ -2350,14 +2406,14 @@ function renderPainelCoordenador(regional, arcofoods) {
   html += '<div id="premVendLista" style="margin-top:12px"></div>';
   html += '</div>';
 
-  // ── BLOCO 3: ARCOFOODS (performance da empresa) ──
+  // ── BLOCO 3: ARCOFOODS (cola a linha da empresa do BI) ──
   html += '<div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:12px;padding:14px;margin-bottom:12px">';
-  html += '<div style="font-size:11px;font-weight:700;color:var(--am);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">3 · Performance Arcofoods (empresa)</div>';
-  html += '<div style="font-size:11px;color:var(--t2);margin-bottom:10px">A Arcofoods bateu a meta do mês? (entra na premiação — parte dos 20%)</div>';
-  html += '<div style="display:flex;gap:8px">';
-  html += '<button onclick="setPremArcofoods(true)" style="flex:1;padding:10px;border-radius:8px;border:none;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif;background:' + (_premArcofoods===true?'#10B981':'rgba(16,185,129,0.15)') + ';color:' + (_premArcofoods===true?'#fff':'#10B981') + '">✅ SIM, bateu</button>';
-  html += '<button onclick="setPremArcofoods(false)" style="flex:1;padding:10px;border-radius:8px;border:none;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif;background:' + (_premArcofoods===false?'#EF4444':'rgba(239,68,68,0.15)') + ';color:' + (_premArcofoods===false?'#fff':'#EF4444') + '">❌ NÃO bateu</button>';
-  html += '</div></div>';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--am);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">1 · Performance Arcofoods (empresa)</div>';
+  html += '<div style="font-size:11px;color:var(--t2);margin-bottom:8px">Cole a linha da ARCOFOODS do BI (a que tem %Fat, %Pos, %SkuCli, %Mix, %Churn dela). Entra na premiação por indicador.</div>';
+  html += '<textarea id="premArcColar" placeholder="Cole aqui a linha da Arcofoods (empresa)" style="width:100%;min-height:56px;background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:10px;color:var(--t);font-size:12px;font-family:Inter,sans-serif;resize:vertical"></textarea>';
+  html += '<button onclick="processarPremArcofoods()" style="margin-top:8px;padding:9px 16px;background:var(--am);border:none;border-radius:8px;color:#0A0A0A;font-weight:800;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">⚡ Processar Arcofoods</button>';
+  html += '<div id="premArcPreview" style="margin-top:10px"></div>';
+  html += '</div>';
 
   // ── STATUS + SALVAR ──
   html += '<div id="premStatus" style="margin-bottom:10px"></div>';

@@ -1737,73 +1737,226 @@ function excluirCampanha(btn){var id=btn.getAttribute('data-id');if(!id)return;i
 // Importa dados do Supervisão e calcula premiação em tempo real
 // ============================================================
 
+// ═══════════════════════════════════════════════════════════════
+// PARSER DO BI — copiado da mecânica do Gerencion Supervisão
+// Lê as linhas coladas do Power BI (separadas por TAB) e extrai os campos.
+// ═══════════════════════════════════════════════════════════════
+var _premRegTemp = null;      // dados da regional processados
+var _premVendTemp = [];       // dados dos vendedores acumulados
+var _premArcofoods = null;    // performance da Arcofoods (marcada pelo coordenador)
+
+// Caixa de preview de um campo
+function premPrevBox(label, val){
+  return '<div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:6px 8px">'+
+    '<div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">'+label+'</div>'+
+    '<div style="font-size:13px;font-weight:700;color:var(--t)">'+(val||'—')+'</div></div>';
+}
+
+// Processa a linha da REGIONAL colada do BI
+function processarPremRegional(){
+  var el = document.getElementById('premRegColar');
+  var txt = el ? el.value.trim() : '';
+  if(!txt){ toast('Cole os dados da regional primeiro.'); return; }
+  var linhas = txt.split('\n').map(function(l){return l.trim();}).filter(function(l){return l!=='';});
+  var linhaDados = null;
+  if(linhas.length>=2){
+    for(var i=linhas.length-1;i>=0;i--){
+      var c = linhas[i].split('\t');
+      var temNum = c.some(function(x){return /\d/.test(x)&&!/^(%|OBJ|REAL|SALDO|DEV|SKU|VENDA|PREÇO|REGIONAL|VENDEDOR)/i.test(x.trim());});
+      if(temNum){ linhaDados = linhas[i]; break; }
+    }
+  }
+  if(!linhaDados) linhaDados = linhas[0];
+  var cols = linhaDados.split('\t').map(function(c){return c.trim();}).filter(function(c){return c!=='';});
+  var inicio = 0;
+  if(cols[0] && !/^[-\d]/.test(cols[0].replace(/R\$\s?/,'').trim())) inicio = 1;
+  var v = cols.slice(inicio);
+  var prev = document.getElementById('premRegPreview');
+  if(v.length<10){
+    if(prev) prev.innerHTML='<div style="background:var(--rd2);border:1px solid var(--rd3);border-radius:8px;padding:10px 12px;color:var(--rd);font-size:12px">⚠️ Só '+v.length+' campo(s) detectado(s). Cole a linha completa (pode incluir o cabeçalho).</div>';
+    return;
+  }
+  _premRegTemp = {objFat:v[0]||'',fat:v[1]||'',proj:v[2]||'',objMarg:v[3]||'',marg:v[4]||'',objPos:v[5]||'',realPos:v[6]||'',saldoPos:v[7]||'',devR:v[8]||'',devPct:v[9]||'',sku:v[10]||'',vendaMedia:v[11]||'',precoKg:v[12]||'',data:new Date().toISOString()};
+  if(prev) prev.innerHTML='<div style="background:var(--gn2);border:1px solid var(--gn3);border-radius:8px;padding:12px 14px"><strong style="color:var(--gn);display:block;margin-bottom:8px;font-size:11px;letter-spacing:1px;text-transform:uppercase">✓ Regional processada — confira:</strong><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">'+premPrevBox('%OBJ FAT',_premRegTemp.objFat)+premPrevBox('%FAT',_premRegTemp.fat)+premPrevBox('%PROJ',_premRegTemp.proj)+premPrevBox('MARGEM',_premRegTemp.marg)+premPrevBox('OBJ POSIT',_premRegTemp.objPos)+premPrevBox('REAL POSIT',_premRegTemp.realPos)+premPrevBox('SKU/CLI',_premRegTemp.sku)+premPrevBox('VENDA MÉD',_premRegTemp.vendaMedia)+premPrevBox('PREÇO/KG',_premRegTemp.precoKg)+'</div></div>';
+  atualizarPremStatus();
+  toast('✓ Regional processada!');
+}
+
+// Adiciona UM vendedor (colado do BI)
+// Detecta automaticamente se a linha é da PÁGINA 1 (faturamento/margem)
+// ou da TELA DE DESEMPENHO (imagem 2, com os % de cada indicador).
+function adicionarPremVendedor(){
+  var el = document.getElementById('premVendColar');
+  var txt = el ? el.value.trim() : '';
+  if(!txt){ toast('Cole os dados do vendedor primeiro.'); return; }
+  var linhas = txt.split('\n').map(function(l){return l.trim();}).filter(function(l){return l!=='';});
+  var linhaDados = null;
+  for(var i=linhas.length-1;i>=0;i--){
+    var c = linhas[i].split('\t');
+    if(c[0] && /^\d+/.test(c[0].trim())){ linhaDados = linhas[i]; break; }
+  }
+  if(!linhaDados){ toast('Não encontrei linha de vendedor. Formato: 017 - NOME ...'); return; }
+  var cols = linhaDados.split('\t').map(function(c){return c.trim();});
+  var nomeCompleto = cols[0];
+  var codMatch = nomeCompleto.match(/^(\d+)\s*[-–]\s*(.+)$/);
+  var cod = codMatch ? codMatch[1].trim() : '';
+  var nome = codMatch ? codMatch[2].trim() : nomeCompleto;
+  var vendRef = null;
+  if(cod) vendRef = QG_VENDS.find(function(vv){return vv[0]===cod;});
+  if(!vendRef) vendRef = QG_VENDS.find(function(vv){return vv[1].toUpperCase()===nome.toUpperCase();});
+  var v = cols.slice(1); // valores após o nome
+
+  // Detecta o tipo de tela pela quantidade de colunas:
+  // Tela de DESEMPENHO (imagem 2): ~13 colunas -> %Fat,MetaPos,Pos,%Pos,MetaSku,Sku,%Sku,MetaMix,Mix,%Mix,MetaChurn,Churn,%Churn
+  // Página 1 (faturamento): ObjFat,%Fat,%Proj,ObjMarg,%Marg,ObjPos,RealPos,SaldoPos,DevR,%Dev,Sku,VendaMed,PrecoKg
+  var vend = { cod: cod || (vendRef?vendRef[0]:''), nome: vendRef ? vendRef[1] : nome };
+
+  // Heurística: se a coluna 4 (índice 3) parece um % de positivação (tem % e valor 0-200), é a tela de desempenho
+  var pareceDesempenho = v.length>=13 && /%/.test((v[3]||'')+ (v[6]||'') + (v[12]||''));
+
+  if(pareceDesempenho){
+    // TELA DE DESEMPENHO (imagem 2)
+    vend.pctFat   = v[0]||'';   // %Fat
+    vend.metaPos  = v[1]||'';   vend.pos = v[2]||'';   vend.pctPos = v[3]||'';
+    vend.metaSku  = v[4]||'';   vend.skuVal = v[5]||''; vend.pctSku = v[6]||'';
+    vend.metaMix  = v[7]||'';   vend.mixVal = v[8]||''; vend.pctMix = v[9]||'';
+    vend.metaChurn= v[10]||'';  vend.churnVal = v[11]||''; vend.pctChurn = v[12]||'';
+    vend.origem = 'desempenho';
+  } else {
+    // PÁGINA 1 (faturamento/margem) — guarda cru e calcula % onde dá
+    vend.objFat=v[0]||''; vend.fat=v[1]||''; vend.proj=v[2]||'';
+    vend.objMarg=v[3]||''; vend.marg=v[4]||'';
+    vend.objPos=v[5]||''; vend.realPos=v[6]||''; vend.saldoPos=v[7]||'';
+    vend.sku=v[10]||''; vend.vendaMedia=v[11]||''; vend.precoKg=v[12]||'';
+    // deriva percentuais possíveis
+    vend.pctFat = vend.proj || '';                                   // %Proj como atingimento
+    vend.pctPos = vend.objPos ? (qgParse(vend.realPos)/qgParse(vend.objPos)*100).toFixed(2) : '';
+    vend.pctMix = (vend.objMarg && qgParse(vend.objMarg)) ? (qgParse(vend.marg)/qgParse(vend.objMarg)*100).toFixed(2) : '';
+    vend.origem = 'pagina1';
+  }
+
+  var idx = _premVendTemp.findIndex(function(vt){return vt.cod===vend.cod;});
+  if(idx>=0){
+    // mescla (mantém campos já existentes de outra tela)
+    _premVendTemp[idx] = Object.assign({}, _premVendTemp[idx], vend);
+    toast('✓ '+vend.nome+' atualizado!');
+  } else {
+    _premVendTemp.push(vend);
+    toast('✓ '+vend.nome+' adicionado!');
+  }
+  if(el) el.value='';
+  renderPremVendLista();
+  atualizarPremStatus();
+}
+
+// Lista dos vendedores já adicionados + quem falta
+function renderPremVendLista(){
+  var box = document.getElementById('premVendLista');
+  if(!box) return;
+  var addedCods = _premVendTemp.map(function(v){return v.cod;});
+  var html = '<div style="font-size:11px;color:var(--t2);margin-bottom:8px">'+_premVendTemp.length+' de '+QG_VENDS.length+' vendedores adicionados:</div>';
+  html += '<div style="display:flex;flex-direction:column;gap:4px">';
+  QG_VENDS.forEach(function(v){
+    var ok = addedCods.indexOf(v[0])>=0;
+    html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:'+(ok?'var(--gn2)':'rgba(255,255,255,0.03)')+';border-radius:8px;font-size:12px">'+
+      '<span>'+(ok?'✅':'⭕')+'</span><span style="color:'+(ok?'var(--t)':'var(--t3)')+'">'+v[0]+' - '+v[1]+'</span></div>';
+  });
+  html += '</div>';
+  box.innerHTML = html;
+}
+
+function limparPremVendLista(){
+  _premVendTemp = [];
+  renderPremVendLista();
+  atualizarPremStatus();
+  toast('Lista de vendedores limpa.');
+}
+
 // ── ESTRUTURA DA PREMIAÇÃO ───────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// MÁQUINA DE CÁLCULO DA PREMIAÇÃO — regras oficiais (PowerPoint Arcofoods 2026)
+// ───────────────────────────────────────────────────────────────
+// Faixa por faturamento mensal do vendedor. Cada faixa tem um prêmio-teto.
+// O prêmio se divide em 5 indicadores (20% cada). Cada indicador se
+// reparte em 3 áreas: Vendedor 50%, Regional 30%, Arcofoods 20%.
+// Cada pedaço (indicador × área) é conquistado de forma INDEPENDENTE.
+// ═══════════════════════════════════════════════════════════════
 var FAIXAS_PREM = [
-  {nome:'< 100 mil',   fat_min:0,      fat_max:100000,  max:500,  ind:250, reg:150, arc:100},
-  {nome:'100-250 mil', fat_min:100000, fat_max:250000,  max:1000, ind:500, reg:300, arc:200},
-  {nome:'250-500 mil', fat_min:250000, fat_max:500000,  max:1500, ind:750, reg:450, arc:300},
-  {nome:'> 500 mil',   fat_min:500000, fat_max:99999999,max:2000, ind:1000,reg:600, arc:400},
+  {nome:'< 100 mil',   fat_min:0,      fat_max:100000,   premio:500},
+  {nome:'100 a 250 mil', fat_min:100000, fat_max:250000,   premio:1000},
+  {nome:'250 a 500 mil', fat_min:250000, fat_max:500000,   premio:1500},
+  {nome:'> 500 mil',   fat_min:500000, fat_max:99999999, premio:2000},
 ];
 
-var KPIS_PREM = [
-  {id:'faturamento', nome:'Faturamento',  icone:'📈', desc:'Projeção ≥ 100%'},
-  {id:'positivacao', nome:'Positivação',  icone:'👥', desc:'Clientes ativos ≥ objetivo'},
-  {id:'sku',         nome:'SKU/Cliente',  icone:'📦', desc:'SKU/CLI ≥ 19'},
-  {id:'mix',         nome:'Mix Rentável', icone:'⭐', desc:'Margem MC ≥ 17,5%'},
-  {id:'churn',       nome:'Churn',        icone:'🔒', desc:'Churn ≤ 9%'},
+// Os 5 indicadores da premiação (cada um vale 20% do prêmio da faixa)
+var INDICADORES_PREM = [
+  {id:'faturamento', nome:'Faturamento',  icone:'📈'},
+  {id:'positivacao', nome:'Positivação',  icone:'👥'},
+  {id:'sku',         nome:'SKU/Cliente',  icone:'📦'},
+  {id:'mix',         nome:'Mix Rentável', icone:'⭐'},
+  {id:'churn',       nome:'Churn',        icone:'🔒'},
 ];
 
-// ── DADOS IMPORTADOS DO SUPERVISÃO ──────────────────────────
-// Estrutura: premiacaoData = { vendedores: [...], regional: bool, arcofoods: bool, atualizado: date }
-var premiacaoData = null;
+// Participação de cada área dentro de um indicador
+var AREAS_PREM = [
+  {id:'vendedor',  nome:'Vendedor',  pct:0.50},
+  {id:'regional',  nome:'Regional',  pct:0.30},
+  {id:'arcofoods', nome:'Arcofoods', pct:0.20},
+];
 
-function getFaixaPrem(fat_anual) {
+// Retorna a faixa de premiação pelo faturamento mensal
+function getFaixaPrem(fat_mensal) {
   for(var i = FAIXAS_PREM.length-1; i >= 0; i--) {
-    if(fat_anual >= FAIXAS_PREM[i].fat_min) return FAIXAS_PREM[i];
+    if(fat_mensal >= FAIXAS_PREM[i].fat_min) return FAIXAS_PREM[i];
   }
   return FAIXAS_PREM[0];
 }
 
-function calcularKPIs(v) {
-  var n = function(val) {
-    if(val === undefined || val === null) return 0;
-    if(typeof val === 'number') return val;
-    var s = String(val).replace(',','.').replace('%','').replace(/[^\d.\-]/g,'');
-    return parseFloat(s) || 0;
-  };
-  return {
-    faturamento: n(v.proj) >= 100,
-    positivacao: n(v.realPos) >= n(v.objPos),
-    sku:         n(v.sku) >= 19,
-    mix:         n(v.marg) >= 17.5,
-    churn:       n(v.churn) <= 9,
-  };
-}
+// Valor de cada indicador (20% do prêmio da faixa)
+function valorPorIndicador(faixa){ return faixa.premio * 0.20; }
 
-function calcularPremiacao(v, regional_bateu, arcofoods_bateu) {
-  var fat_anual = v.fat2026 || 0;
-  var faixa = getFaixaPrem(fat_anual);
-  var kpis = calcularKPIs(v);
-  var kpis_batidos = Object.values(kpis).filter(Boolean).length;
-  var val_por_kpi = faixa.ind / 5;
-  var ind_ganho = kpis_batidos * val_por_kpi;
-  var reg_ganho = regional_bateu ? faixa.reg : 0;
-  var arc_ganho = arcofoods_bateu ? faixa.arc : 0;
-  var total_ganho = ind_ganho + reg_ganho + arc_ganho;
-  var total_potencial = faixa.max;
-  var faltando = total_potencial - total_ganho;
+// Valor de um pedaço específico (indicador × área)
+// Ex.: faixa 1500 → indicador vale 300 → vendedor(50%)=150, regional(30%)=90, arcofoods(20%)=60
+function valorPedaco(faixa, areaPct){ return valorPorIndicador(faixa) * areaPct; }
+
+// ── CÁLCULO PRINCIPAL ─────────────────────────────────────────
+// marcacoes = objeto no formato:
+//   { faturamento:{vendedor:true, regional:false, arcofoods:true}, positivacao:{...}, ... }
+// Cada true = aquele pedaço foi batido (o BI apura isso).
+function calcularPremiacao(fat_mensal, marcacoes) {
+  var faixa = getFaixaPrem(fat_mensal || 0);
+  var val_ind = valorPorIndicador(faixa);          // valor cheio de 1 indicador
+  var vVend = valorPedaco(faixa, 0.50);
+  var vReg  = valorPedaco(faixa, 0.30);
+  var vArc  = valorPedaco(faixa, 0.20);
+
+  var detalhe = {};   // por indicador: quanto ganhou em cada área e o subtotal
+  var total_ganho = 0;
+
+  INDICADORES_PREM.forEach(function(ind){
+    var m = (marcacoes && marcacoes[ind.id]) || {};
+    var gVend = m.vendedor  ? vVend : 0;
+    var gReg  = m.regional  ? vReg  : 0;
+    var gArc  = m.arcofoods ? vArc  : 0;
+    var sub = gVend + gReg + gArc;
+    detalhe[ind.id] = {
+      vendedor: gVend, regional: gReg, arcofoods: gArc,
+      subtotal: sub, teto: val_ind
+    };
+    total_ganho += sub;
+  });
+
   return {
     faixa: faixa,
-    kpis: kpis,
-    kpis_batidos: kpis_batidos,
-    val_por_kpi: val_por_kpi,
-    ind_ganho: ind_ganho,
-    reg_ganho: reg_ganho,
-    arc_ganho: arc_ganho,
+    valor_indicador: val_ind,
+    valor_vendedor: vVend,
+    valor_regional: vReg,
+    valor_arcofoods: vArc,
+    detalhe: detalhe,
     total_ganho: total_ganho,
-    total_potencial: total_potencial,
-    faltando: faltando,
-    pct_premiacao: total_potencial > 0 ? (total_ganho/total_potencial*100) : 0,
+    total_potencial: faixa.premio,
+    faltando: faixa.premio - total_ganho,
+    pct_premiacao: faixa.premio > 0 ? (total_ganho/faixa.premio*100) : 0,
   };
 }
 
@@ -1891,6 +2044,60 @@ function carregarPremiacaoSupabase(callback) {
       if(callback) callback();
     }
   }).catch(function() { if(callback) callback(); });
+}
+
+// Salva tudo que o coordenador processou (regional + vendedores + arcofoods)
+function salvarPremiacaoCompleta(){
+  if(_premVendTemp.length === 0){ toast('Adicione pelo menos um vendedor antes de salvar.'); return; }
+  premiacaoData = {
+    regional: _premRegTemp,
+    regional_bateu: null,      // regional por indicador — pode evoluir depois
+    vendedores: _premVendTemp.slice(),
+    arcofoods: _premArcofoods,
+    atualizado: new Date().toLocaleString('pt-BR')
+  };
+  // Regra: se a regional foi processada e bateu os KPIs dela, considera regional=true por indicador.
+  // (Ajustável quando o BI de metas estiver completo.)
+  premiacaoData.regional_bateu = _premRegTemp ? regionalBateuGeral(_premRegTemp) : false;
+  salvarPremiacaoSupabase();
+  renderPremiacao();
+  toast('💾 Premiação salva! ' + _premVendTemp.length + ' vendedores processados.');
+}
+
+// Avalia se a regional bateu (geral) — placeholder ajustável quando vier o BI completo
+function regionalBateuGeral(reg){
+  if(!reg) return false;
+  var n = qgParse;
+  // Exemplo: regional "bate" se margem >= objetivo e projeção de faturamento >= 100
+  var margOk = n(reg.marg) >= n(reg.objMarg);
+  var projOk = n(reg.proj) >= 100 || reg.proj === '';
+  return margOk;
+}
+
+// Card de vendedor com o cálculo novo (por indicador × área)
+function renderCardVendedorNovo(v, calc){
+  var html = '<div style="background:var(--s1);border:1px solid var(--b);border-radius:14px;padding:16px;margin-bottom:12px">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
+  html += '<div><div style="font-size:14px;font-weight:800;color:var(--t)">'+(v.cod||'')+' · '+(v.nome||'')+'</div>';
+  html += '<div style="font-size:10px;color:var(--t3)">Faixa: '+calc.faixa.nome+' · Potencial '+fBRL(calc.total_potencial)+'</div></div>';
+  html += '<div style="text-align:right"><div style="font-size:20px;font-weight:900;color:var(--gn)">'+fBRL(calc.total_ganho)+'</div>';
+  html += '<div style="font-size:9px;color:var(--t3)">'+calc.pct_premiacao.toFixed(0)+'% do prêmio</div></div></div>';
+  // Detalhe por indicador
+  html += '<div style="display:flex;flex-direction:column;gap:4px">';
+  INDICADORES_PREM.forEach(function(ind){
+    var d = calc.detalhe[ind.id];
+    var pedacos = [];
+    if(d.vendedor>0) pedacos.push('V');
+    if(d.regional>0) pedacos.push('R');
+    if(d.arcofoods>0) pedacos.push('A');
+    var cor = d.subtotal>0 ? 'var(--gn)' : 'var(--t3)';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px">';
+    html += '<span style="color:var(--t2)">'+ind.icone+' '+ind.nome+'</span>';
+    html += '<span style="color:'+cor+';font-weight:700">'+fBRL(d.subtotal)+(pedacos.length?' <span style="font-size:9px;color:var(--t3)">('+pedacos.join('+')+')</span>':'')+'</span>';
+    html += '</div>';
+  });
+  html += '</div></div>';
+  return html;
 }
 
 function toggleRegional(val) {
@@ -2116,71 +2323,142 @@ function renderRankingEquipe(regional, arcofoods) {
 
 function renderPainelCoordenador(regional, arcofoods) {
   var html = '';
-  var atualizado = premiacaoData && premiacaoData.atualizado ? premiacaoData.atualizado : null;
 
   // Cabeçalho coordenador
   html += '<div style="background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(6,14,30,0.9));border:2px solid rgba(99,102,241,0.4);border-radius:16px;padding:18px;margin-bottom:16px">';
-  html += '<div style="font-size:11px;letter-spacing:2px;color:var(--pu);text-transform:uppercase;margin-bottom:8px">Painel do Coordenador</div>';
+  html += '<div style="font-size:11px;letter-spacing:2px;color:var(--pu);text-transform:uppercase;margin-bottom:4px">Painel do Coordenador · Lançar BI</div>';
+  html += '<div style="font-size:12px;color:var(--t2);margin-bottom:14px">Cole os dados do Power BI — Regional e Vendedores. Depois marque a performance da Arcofoods.</div>';
 
-  // Importar dados
-  html += '<button onclick="importarDoSupervisao()" style="width:100%;padding:16px;background:linear-gradient(135deg,#F59E0B,#EF4444);border:none;border-radius:12px;color:#0A0A0A;font-weight:800;font-size:15px;cursor:pointer;font-family:Inter,sans-serif;margin-bottom:12px;letter-spacing:.5px">&#128229; Importar Dados do Supervisão</button>';
-  html += '<div style="font-size:12px;color:var(--t2);text-align:center;margin-bottom:12px">Clique para selecionar o arquivo .json exportado do Supervisão</div>';
-
-  if(atualizado) {
-    html += '<div style="font-size:11px;color:var(--t2);text-align:center;margin-bottom:12px">&#128197; Última atualização: ' + atualizado + '</div>';
-  }
-
-  // Regional e Arcofoods
-  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
-
-  // Regional
-  html += '<div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:12px;padding:14px">';
-  html += '<div style="font-size:11px;font-weight:700;color:#3B82F6;margin-bottom:8px">Regional bateu os KPIs?</div>';
-  html += '<div style="display:flex;gap:6px">';
-  html += '<button onclick="toggleRegional(true)" style="flex:1;padding:8px;border-radius:8px;border:none;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif;background:' + (regional===true?'#10B981':'rgba(16,185,129,0.15)') + ';color:' + (regional===true?'#fff':'#10B981') + '">✅ SIM</button>';
-  html += '<button onclick="toggleRegional(false)" style="flex:1;padding:8px;border-radius:8px;border:none;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif;background:' + (regional===false?'#EF4444':'rgba(239,68,68,0.15)') + ';color:' + (regional===false?'#fff':'#EF4444') + '">❌ NÃO</button>';
-  html += '</div></div>';
-
-  // Arcofoods
-  html += '<div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);border-radius:12px;padding:14px">';
-  html += '<div style="font-size:11px;font-weight:700;color:var(--pu);margin-bottom:8px">Arcofoods bateu os KPIs?</div>';
-  html += '<div style="display:flex;gap:6px">';
-  html += '<button onclick="toggleArcofoods(true)" style="flex:1;padding:8px;border-radius:8px;border:none;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif;background:' + (arcofoods===true?'#10B981':'rgba(16,185,129,0.15)') + ';color:' + (arcofoods===true?'#fff':'#10B981') + '">✅ SIM</button>';
-  html += '<button onclick="toggleArcofoods(false)" style="flex:1;padding:8px;border-radius:8px;border:none;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif;background:' + (arcofoods===false?'#EF4444':'rgba(239,68,68,0.15)') + ';color:' + (arcofoods===false?'#fff':'#EF4444') + '">❌ NÃO</button>';
-  html += '</div></div>';
-
-  html += '</div></div>';
-
-  if(!premiacaoData || !premiacaoData.vendedores) {
-    html += renderPremiacaoVazia();
-    return html;
-  }
-
-  // Resumo da equipe
-  var todos = premiacaoData.vendedores.map(function(v) {
-    return calcularPremiacao(v, regional === true, arcofoods === true);
-  });
-  var total_equipe = todos.reduce(function(s,p){ return s + p.total_ganho; }, 0);
-  var media_kpis = todos.reduce(function(s,p){ return s + p.kpis_batidos; }, 0) / todos.length;
-
-  html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">';
-  html += '<div style="background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px;text-align:center">';
-  html += '<div style="font-size:10px;color:var(--t2);margin-bottom:4px">💰 Total Equipe</div>';
-  html += '<div style="font-size:20px;font-weight:800;color:var(--am)">' + fBRL(total_equipe) + '</div></div>';
-  html += '<div style="background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px;text-align:center">';
-  html += '<div style="font-size:10px;color:var(--t2);margin-bottom:4px">📊 Média KPIs</div>';
-  html += '<div style="font-size:20px;font-weight:800;color:var(--cy)">' + media_kpis.toFixed(1) + '/5</div></div>';
-  html += '<div style="background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px;text-align:center">';
-  html += '<div style="font-size:10px;color:var(--t2);margin-bottom:4px">👥 Vendedores</div>';
-  html += '<div style="font-size:20px;font-weight:800;color:var(--gn)">' + todos.length + '</div></div>';
+  // ── BLOCO 1: REGIONAL ──
+  html += '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.25);border-radius:12px;padding:14px;margin-bottom:12px">';
+  html += '<div style="font-size:11px;font-weight:700;color:#3B82F6;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">1 · Regional Norte Fluminense</div>';
+  html += '<div style="font-size:11px;color:var(--t2);margin-bottom:8px">Copie a linha NORTE FLUMINENSE completa do BI e cole abaixo.</div>';
+  html += '<textarea id="premRegColar" placeholder="Cole aqui a linha da regional (Página 1)" style="width:100%;min-height:56px;background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:10px;color:var(--t);font-size:12px;font-family:Inter,sans-serif;resize:vertical"></textarea>';
+  html += '<button onclick="processarPremRegional()" style="margin-top:8px;padding:9px 16px;background:var(--cy,#00E5C3);border:none;border-radius:8px;color:#0A0A0A;font-weight:800;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">⚡ Processar Regional</button>';
+  html += '<div id="premRegPreview" style="margin-top:10px"></div>';
   html += '</div>';
 
-  // Card de cada vendedor
-  premiacaoData.vendedores.forEach(function(v) {
-    html += renderCardVendedor(v, regional, arcofoods, false);
-  });
+  // ── BLOCO 2: VENDEDORES ──
+  html += '<div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.25);border-radius:12px;padding:14px;margin-bottom:12px">';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--gn);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">2 · Vendedores — cole um por vez</div>';
+  html += '<div style="font-size:11px;color:var(--t2);margin-bottom:8px">Cole um vendedor por vez (pode incluir o cabeçalho) e clique em Adicionar. Faça para os 9.</div>';
+  html += '<textarea id="premVendColar" placeholder="Cole aqui o cabeçalho + linha do vendedor" style="width:100%;min-height:56px;background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:10px;color:var(--t);font-size:12px;font-family:Inter,sans-serif;resize:vertical"></textarea>';
+  html += '<div style="display:flex;gap:8px;margin-top:8px">';
+  html += '<button onclick="adicionarPremVendedor()" style="padding:9px 16px;background:var(--cy,#00E5C3);border:none;border-radius:8px;color:#0A0A0A;font-weight:800;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">➕ Adicionar Vendedor</button>';
+  html += '<button onclick="limparPremVendLista()" style="padding:9px 16px;background:rgba(255,255,255,0.08);border:1px solid var(--b);border-radius:8px;color:var(--t2);font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">🗑 Limpar Lista</button>';
+  html += '</div>';
+  html += '<div id="premVendLista" style="margin-top:12px"></div>';
+  html += '</div>';
+
+  // ── BLOCO 3: ARCOFOODS (performance da empresa) ──
+  html += '<div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:12px;padding:14px;margin-bottom:12px">';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--am);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">3 · Performance Arcofoods (empresa)</div>';
+  html += '<div style="font-size:11px;color:var(--t2);margin-bottom:10px">A Arcofoods bateu a meta do mês? (entra na premiação — parte dos 20%)</div>';
+  html += '<div style="display:flex;gap:8px">';
+  html += '<button onclick="setPremArcofoods(true)" style="flex:1;padding:10px;border-radius:8px;border:none;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif;background:' + (_premArcofoods===true?'#10B981':'rgba(16,185,129,0.15)') + ';color:' + (_premArcofoods===true?'#fff':'#10B981') + '">✅ SIM, bateu</button>';
+  html += '<button onclick="setPremArcofoods(false)" style="flex:1;padding:10px;border-radius:8px;border:none;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif;background:' + (_premArcofoods===false?'#EF4444':'rgba(239,68,68,0.15)') + ';color:' + (_premArcofoods===false?'#fff':'#EF4444') + '">❌ NÃO bateu</button>';
+  html += '</div></div>';
+
+  // ── STATUS + SALVAR ──
+  html += '<div id="premStatus" style="margin-bottom:10px"></div>';
+  html += '<button onclick="salvarPremiacaoCompleta()" style="width:100%;padding:14px;background:linear-gradient(135deg,#F59E0B,#EF4444);border:none;border-radius:12px;color:#0A0A0A;font-weight:800;font-size:15px;cursor:pointer;font-family:Inter,sans-serif;letter-spacing:.5px">💾 Salvar Premiação</button>';
+
+  html += '</div>'; // fim do painel
+
+  // ── RESULTADO (se já tem dados salvos) ──
+  if(premiacaoData && premiacaoData.vendedores && premiacaoData.vendedores.length) {
+    html += renderResultadoEquipe();
+  }
 
   return html;
+}
+
+// Marca a performance da Arcofoods
+function setPremArcofoods(val){
+  _premArcofoods = val;
+  atualizarPremStatus();
+  renderPremiacao();
+  toast(val ? '✅ Arcofoods marcada como BATEU' : '❌ Arcofoods marcada como NÃO bateu');
+}
+
+// Atualiza o status do que já foi processado
+function atualizarPremStatus(){
+  var el = document.getElementById('premStatus');
+  if(!el) return;
+  var itens = [];
+  itens.push((_premRegTemp?'✅':'⭕')+' Regional');
+  itens.push((_premVendTemp.length>0?'✅':'⭕')+' Vendedores ('+_premVendTemp.length+'/'+QG_VENDS.length+')');
+  itens.push((_premArcofoods!==null?'✅':'⭕')+' Arcofoods');
+  el.innerHTML = '<div style="display:flex;gap:12px;justify-content:center;font-size:12px;color:var(--t2);padding:8px;background:var(--s1);border-radius:8px">'+itens.join(' &nbsp;·&nbsp; ')+'</div>';
+}
+
+// Resumo da equipe (resultado calculado)
+function renderResultadoEquipe(){
+  var html = '';
+  var vends = premiacaoData.vendedores;
+  var arco = premiacaoData.arcofoods === true;
+  var total_equipe = 0;
+  var calcs = vends.map(function(v){
+    var marc = montarMarcacoes(v, premiacaoData.regional_bateu, arco);
+    var fatMensal = qgParse(v.fat) || 0;
+    var c = calcularPremiacao(fatMensal, marc);
+    total_equipe += c.total_ganho;
+    return {v:v, c:c};
+  });
+  html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px">';
+  html += '<div style="background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px;text-align:center"><div style="font-size:10px;color:var(--t2);margin-bottom:4px">💰 Total Equipe</div><div style="font-size:20px;font-weight:800;color:var(--am)">'+fBRL(total_equipe)+'</div></div>';
+  html += '<div style="background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px;text-align:center"><div style="font-size:10px;color:var(--t2);margin-bottom:4px">👥 Vendedores</div><div style="font-size:20px;font-weight:800;color:var(--gn)">'+vends.length+'</div></div>';
+  html += '</div>';
+  calcs.forEach(function(item){
+    html += renderCardVendedorNovo(item.v, item.c);
+  });
+  return html;
+}
+
+// Monta as marcações (o que bateu) de um vendedor.
+// REGRA VALIDADA contra o gabarito de junho:
+// - Vendedor bate o indicador quando seu % de atingimento >= 100%.
+// - Regional/Arcofoods só somam NAQUELE indicador se o vendedor também bateu ele (gatilho).
+function montarMarcacoes(v, regionalPorInd, arcofoodsPorInd){
+  var m = {};
+  INDICADORES_PREM.forEach(function(ind){
+    var vendBateu = bateuIndicadorVendedor(v, ind.id);
+    var regBateu = regionalPorInd && regionalPorInd[ind.id] === true;
+    var arcBateu = arcofoodsPorInd && arcofoodsPorInd[ind.id] === true;
+    m[ind.id] = {
+      vendedor: vendBateu,
+      regional: vendBateu && regBateu,   // gatilho: só conta se o vendedor bateu
+      arcofoods: vendBateu && arcBateu
+    };
+  });
+  return m;
+}
+
+// Avalia por indicador se a Regional bateu (>= 100% em cada %)
+function regionalBateuPorIndicador(reg){
+  if(!reg) return {};
+  var n = qgParse;
+  return {
+    faturamento: n(reg.proj||reg.fat) >= 100,
+    positivacao: reg.pctPos !== undefined ? n(reg.pctPos) >= 100 : (n(reg.realPos) >= n(reg.objPos)),
+    sku:         n(reg.pctSku) >= 100,
+    mix:         n(reg.pctMix||reg.marg) >= 100,
+    churn:       n(reg.pctChurn) >= 100
+  };
+}
+
+// Critério de "bateu" cada indicador para o vendedor.
+// DESCOBERTO no teste com o gabarito de junho: cada indicador é batido
+// quando o % de atingimento da meta (que o próprio BI calcula) é >= 100%.
+// O BI traz colunas de %: %Fat/%Proj, %Pos, %SkuCli, %MixRentavel, %Churn.
+function bateuIndicadorVendedor(v, indId){
+  var n = qgParse;
+  if(indId==='faturamento') return n(v.pctFat) >= 100;   // % de atingimento do faturamento
+  if(indId==='positivacao') return n(v.pctPos) >= 100;   // % de positivação
+  if(indId==='sku')         return n(v.pctSku) >= 100;   // % de SKU/Cliente
+  if(indId==='mix')         return n(v.pctMix) >= 100;   // % de Mix Rentável
+  if(indId==='churn')       return n(v.pctChurn) >= 100; // % de Churn
+  return false;
 }
 
 function carregarPremiacao() {
@@ -2192,19 +2470,137 @@ function carregarPremiacao() {
 }
 
 function renderPremiacaoEmBreve() {
-  return '<div style="text-align:center;padding:48px 24px">'
+  // Se ainda não há dados carregados, mostra tela de espera
+  if(!premiacaoData || !premiacaoData.vendedores || !premiacaoData.vendedores.length){
+    return '<div style="text-align:center;padding:48px 24px">'
     + '<div style="font-size:56px;margin-bottom:16px">&#128176;</div>'
     + '<div style="font-size:20px;font-weight:700;color:var(--am);margin-bottom:10px">Premia&#231;&#227;o</div>'
-    + '<div style="font-size:13px;color:var(--t2);line-height:1.8;margin-bottom:24px">'
-    + 'O coordenador est&#225; configurando<br>os detalhes da premia&#231;&#227;o.<br>'
-    + 'Em breve voc&#234; ver&#225; seus resultados aqui!'
-    + '</div>'
+    + '<div style="font-size:13px;color:var(--t2);line-height:1.8;margin-bottom:24px">O coordenador est&#225; carregando<br>os dados do m&#234;s.<br>Em breve voc&#234; acompanha sua corrida aqui!</div>'
     + '<div style="background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(6,14,30,0.9));border:1.5px solid rgba(245,158,11,0.3);border-radius:14px;padding:18px 20px;max-width:320px;margin:0 auto">'
-    + '<div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--am);margin-bottom:8px">Sabia que voc&#234; pode ganhar at&#233;</div>'
+    + '<div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--am);margin-bottom:8px">Voc&#234; pode ganhar at&#233;</div>'
     + '<div style="font-size:42px;font-weight:800;color:var(--am);line-height:1">R$ 2.000</div>'
     + '<div style="font-size:11px;color:var(--t2);margin-top:6px">por m&#234;s batendo todos os indicadores</div>'
-    + '</div>'
-    + '</div>';
+    + '</div></div>';
+  }
+
+  // Achar o vendedor logado pelos dados
+  var meuCod = eu ? String(eu.cd||'').replace(/^0+/,'') : '';
+  var v = premiacaoData.vendedores.find(function(x){
+    return String(x.cod||'').replace(/^0+/,'') === meuCod;
+  });
+  if(!v){
+    return '<div style="text-align:center;padding:48px 24px"><div style="font-size:48px;margin-bottom:12px">🔍</div><div style="font-size:15px;color:var(--t2)">Seus dados ainda n&#227;o foram lan&#231;ados este m&#234;s.<br>Fale com seu coordenador.</div></div>';
+  }
+
+  return renderMinhaPremiacao(v);
+}
+
+// ── A FERRAMENTA DE CONQUISTA (tela do vendedor) ──
+function renderMinhaPremiacao(v){
+  var regPorInd = premiacaoData.regionalPorInd || {};
+  var arcPorInd = premiacaoData.arcofoodsPorInd || {};
+  var marc = montarMarcacoes(v, regPorInd, arcPorInd);
+  var fatMensal = qgParse(v.fat) || 0;
+  var calc = calcularPremiacao(fatMensal, marc);
+
+  var n = qgParse;
+  // Percentuais de cada indicador do vendedor
+  var pcts = {
+    faturamento: n(v.pctFat),
+    positivacao: n(v.pctPos),
+    sku: n(v.pctSku),
+    mix: n(v.pctMix),
+    churn: n(v.pctChurn)
+  };
+
+  var html = '';
+
+  // ── CABEÇALHO: quanto já garantiu ──
+  html += '<div style="background:linear-gradient(135deg,rgba(34,197,94,0.18),rgba(6,14,30,0.9));border:2px solid var(--gn3);border-radius:18px;padding:20px;margin-bottom:16px;text-align:center">';
+  html += '<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gn);margin-bottom:6px">💰 Você já garantiu</div>';
+  html += '<div style="font-size:44px;font-weight:900;color:var(--gn);line-height:1">'+fBRL(calc.total_ganho)+'</div>';
+  html += '<div style="font-size:12px;color:var(--t2);margin-top:6px">de '+fBRL(calc.total_potencial)+' possíveis · faixa '+calc.faixa.nome+'</div>';
+  // barra de progresso
+  var pctBar = Math.min(100, calc.pct_premiacao);
+  html += '<div style="margin-top:12px;height:10px;background:rgba(255,255,255,0.1);border-radius:20px;overflow:hidden"><div style="height:100%;width:'+pctBar+'%;background:linear-gradient(90deg,var(--gn),#10B981);border-radius:20px;transition:width .6s"></div></div>';
+  html += '<div style="font-size:10px;color:var(--t3);margin-top:4px">'+pctBar.toFixed(0)+'% do seu prêmio conquistado</div>';
+  html += '</div>';
+
+  // ── OS 5 INDICADORES ──
+  html += '<div style="font-size:12px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">📊 Seus indicadores</div>';
+
+  var faltamPouco = []; // guarda os que faltam pouco pra motivar
+  INDICADORES_PREM.forEach(function(ind){
+    var pct = pcts[ind.id];
+    var bateu = pct >= 100;
+    var d = calc.detalhe[ind.id];
+    var falta = 100 - pct;
+
+    var cor = bateu ? 'var(--gn)' : (falta<=10 && falta>0 ? 'var(--am)' : 'var(--t3)');
+    var bg = bateu ? 'rgba(34,197,94,0.10)' : (falta<=10 && falta>0 ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.03)');
+    var borda = bateu ? 'var(--gn3)' : (falta<=10 && falta>0 ? 'var(--am3)' : 'var(--b)');
+
+    html += '<div style="background:'+bg+';border:1px solid '+borda+';border-radius:12px;padding:13px 15px;margin-bottom:8px">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center">';
+    html += '<div style="font-size:13px;font-weight:700;color:var(--t)">'+ind.icone+' '+ind.nome+'</div>';
+    if(bateu){
+      html += '<div style="font-size:12px;font-weight:800;color:var(--gn)">✅ BATEU · '+fBRL(d.subtotal)+'</div>';
+    } else if(falta<=10 && falta>0){
+      html += '<div style="font-size:12px;font-weight:800;color:var(--am)">🔥 falta '+falta.toFixed(2).replace('.',',')+'%</div>';
+      faltamPouco.push({ind:ind, falta:falta, valor:calc.valor_indicador});
+    } else {
+      html += '<div style="font-size:12px;font-weight:700;color:var(--t3)">'+(isNaN(pct)?'—':pct.toFixed(1).replace('.',',')+'%')+'</div>';
+    }
+    html += '</div>';
+    // mini barra do indicador
+    if(!isNaN(pct)){
+      var barPct = Math.max(0, Math.min(100, pct));
+      html += '<div style="margin-top:8px;height:6px;background:rgba(255,255,255,0.08);border-radius:10px;overflow:hidden"><div style="height:100%;width:'+barPct+'%;background:'+cor+';border-radius:10px"></div></div>';
+    }
+    html += '</div>';
+  });
+
+  // ── TEXTO MOTIVADOR INTELIGENTE ──
+  html += renderTextoMotivador(faltamPouco, calc, pcts);
+
+  return html;
+}
+
+// Gera o texto de orientação/motivação baseado no que falta pouco
+function renderTextoMotivador(faltamPouco, calc, pcts){
+  var msg = '';
+  var dicasPorInd = {
+    faturamento: 'aumente o ticket das próximas visitas e feche os pedidos maiores que estão em aberto',
+    positivacao: 'visite os clientes inativos da sua carteira — cada cliente novo positivado conta',
+    sku: 'ofereça mais itens por cliente, puxe o mix nas próximas vendas',
+    mix: 'priorize os produtos de maior margem no seu mix de vendas',
+    churn: 'recupere os clientes que pararam de comprar antes que o mês feche'
+  };
+
+  if(faltamPouco.length > 0){
+    // ordena pelo que falta menos (mais fácil de bater)
+    faltamPouco.sort(function(a,b){return a.falta-b.falta;});
+    var alvo = faltamPouco[0];
+    msg += '<div style="background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(6,14,30,0.9));border:2px solid var(--am3);border-radius:16px;padding:18px;margin-top:16px">';
+    msg += '<div style="font-size:13px;font-weight:900;color:var(--am);margin-bottom:8px">🔥 CORRE QUE DÁ TEMPO!</div>';
+    msg += '<div style="font-size:13px;color:var(--t);line-height:1.7">Você está a <strong style="color:var(--am)">'+alvo.falta.toFixed(2).replace('.',',')+'%</strong> de bater o <strong>'+alvo.ind.nome+'</strong> — isso garante mais <strong style="color:var(--gn)">'+fBRL(alvo.valor*0.5)+'</strong> pra você!<br><br>👉 <strong>O que fazer:</strong> '+dicasPorInd[alvo.ind.id]+'.</div>';
+    if(faltamPouco.length > 1){
+      msg += '<div style="font-size:11px;color:var(--t2);margin-top:10px;padding-top:10px;border-top:1px solid var(--b)">E olha só: você também está pertinho de bater o <strong>'+faltamPouco[1].ind.nome+'</strong> (falta '+faltamPouco[1].falta.toFixed(2).replace('.',',')+'%). Dá pra buscar os dois!</div>';
+    }
+    msg += '</div>';
+  } else if(calc.pct_premiacao >= 100){
+    msg += '<div style="background:linear-gradient(135deg,rgba(34,197,94,0.2),rgba(6,14,30,0.9));border:2px solid var(--gn3);border-radius:16px;padding:18px;margin-top:16px;text-align:center">';
+    msg += '<div style="font-size:15px;font-weight:900;color:var(--gn)">🏆 FERA! Você bateu tudo!</div>';
+    msg += '<div style="font-size:12px;color:var(--t2);margin-top:6px">Prêmio máximo garantido. Continue nesse ritmo!</div>';
+    msg += '</div>';
+  } else {
+    // ninguém falta pouco, mas ainda dá pra melhorar
+    msg += '<div style="background:linear-gradient(135deg,rgba(59,130,246,0.12),rgba(6,14,30,0.9));border:2px solid var(--bl3);border-radius:16px;padding:18px;margin-top:16px">';
+    msg += '<div style="font-size:13px;font-weight:900;color:#3B82F6;margin-bottom:8px">💪 O jogo não acabou!</div>';
+    msg += '<div style="font-size:13px;color:var(--t);line-height:1.7">Ainda dá pra virar. Cada indicador que você buscar até o fim do mês vira dinheiro no seu bolso. Foque nas visitas, puxe o mix e recupere clientes parados. <strong>Bora pra cima!</strong></div>';
+    msg += '</div>';
+  }
+  return msg;
 }
 
 function salvarPix(){

@@ -1916,6 +1916,69 @@ function processarPremArcofoods(){
   toast('✓ Arcofoods processada!');
 }
 
+// Processa a tabela de Faturamento Base (nome + valor) e casa com os vendedores
+function processarFatBase(){
+  var el = document.getElementById('premFatBaseColar');
+  var txt = el ? el.value.trim() : '';
+  if(!txt){ toast('Cole a tabela de faturamento base primeiro.'); return; }
+  var linhas = txt.split('\n').map(function(l){return l.trim();}).filter(function(l){return l!=='';});
+  var _fatBase = {}; // nome normalizado -> valor
+  linhas.forEach(function(linha){
+    // separa nome (texto) do valor (números com R$)
+    var m = linha.match(/^(.+?)[\t]+(.*[\d.].*)$/) || linha.match(/^(.+?)\s{2,}(.*[\d.].*)$/) || linha.match(/^(.+?)\s+(R\$.*)$/);
+    if(!m){
+      // tenta: última "palavra" com número é o valor
+      var partes = linha.split(/\s+/);
+      var valTxt = partes[partes.length-1];
+      if(/\d/.test(valTxt)){
+        var nome = partes.slice(0, partes.length-1).join(' ');
+        _fatBase[normNome(nome)] = qgParse(valTxt.replace(/\./g,''));
+      }
+      return;
+    }
+    var nome = m[1].trim();
+    var val = qgParse(m[2].replace(/\./g,'')); // remove pontos de milhar
+    _fatBase[normNome(nome)] = val;
+  });
+
+  // casa com os vendedores já adicionados
+  var casados = 0;
+  _premVendTemp.forEach(function(v){
+    var chave = normNome(v.nome);
+    // tenta casar por nome completo ou parcial
+    var val = _fatBase[chave];
+    if(val === undefined){
+      // tenta casar por primeiro+último nome
+      Object.keys(_fatBase).forEach(function(k){
+        if(k.indexOf(chave.split(' ')[0])>=0 || chave.indexOf(k.split(' ')[0])>=0){ val = _fatBase[k]; }
+      });
+    }
+    if(val !== undefined && val > 0){ v.fatBase = String(val); casados++; }
+  });
+
+  var prev = document.getElementById('premFatBasePreview');
+  if(prev){
+    if(casados > 0){
+      var lista = _premVendTemp.filter(function(v){return v.fatBase;}).map(function(v){
+        return '<div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0"><span style="color:var(--t2)">'+v.nome+'</span><span style="color:var(--pu);font-weight:700">'+fBRL(qgParse(v.fatBase))+'</span></div>';
+      }).join('');
+      prev.innerHTML = '<div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);border-radius:8px;padding:12px"><strong style="color:var(--pu);font-size:11px;text-transform:uppercase;display:block;margin-bottom:8px">✓ '+casados+' vendedores com faturamento base:</strong>'+lista+'</div>';
+    } else {
+      prev.innerHTML = '<div style="background:var(--am2);border:1px solid var(--am3);border-radius:8px;padding:10px;color:var(--am);font-size:12px">⚠️ Não consegui casar os nomes. Adicione os vendedores primeiro (bloco 3), depois cole o faturamento base.</div>';
+    }
+  }
+  atualizarPremStatus();
+  toast(casados>0 ? '✓ '+casados+' faturamentos casados!' : 'Adicione os vendedores primeiro.');
+}
+
+// Normaliza nome para casar (sem acento, maiúsculo, sem código)
+function normNome(n){
+  return String(n||'').toUpperCase()
+    .replace(/^\d+\s*[-–]\s*/,'')  // tira código "017 - "
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // tira acentos
+    .replace(/[^A-Z\s]/g,'').trim();
+}
+
 // ── ESTRUTURA DA PREMIAÇÃO ───────────────────────────────────
 // ═══════════════════════════════════════════════════════════════
 // MÁQUINA DE CÁLCULO DA PREMIAÇÃO — regras oficiais (PowerPoint Arcofoods 2026)
@@ -2415,6 +2478,15 @@ function renderPainelCoordenador(regional, arcofoods) {
   html += '<div id="premVendLista" style="margin-top:12px"></div>';
   html += '</div>';
 
+  // ── BLOCO 4: FATURAMENTO BASE (define a faixa de cada vendedor) ──
+  html += '<div style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.25);border-radius:12px;padding:14px;margin-bottom:12px">';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--pu);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">4 · Faturamento Base (define a faixa)</div>';
+  html += '<div style="font-size:11px;color:var(--t2);margin-bottom:8px">Cole a tabela de Faturamento Base (nome do vendedor + valor). É o que define a faixa de prêmio de cada um. Muda mês a mês.</div>';
+  html += '<textarea id="premFatBaseColar" placeholder="Cole aqui: nome e faturamento base de cada vendedor\\nEx: Vinicius Barao   R$ 885.705" style="width:100%;min-height:70px;background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:10px;color:var(--t);font-size:12px;font-family:Inter,sans-serif;resize:vertical"></textarea>';
+  html += '<button onclick="processarFatBase()" style="margin-top:8px;padding:9px 16px;background:var(--pu);border:none;border-radius:8px;color:#fff;font-weight:800;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">⚡ Processar Faturamento Base</button>';
+  html += '<div id="premFatBasePreview" style="margin-top:10px"></div>';
+  html += '</div>';
+
   // ── STATUS + SALVAR ──
   html += '<div id="premStatus" style="margin-bottom:10px"></div>';
   html += '<button onclick="salvarPremiacaoCompleta()" style="width:100%;padding:14px;background:linear-gradient(135deg,#F59E0B,#EF4444);border:none;border-radius:12px;color:#0A0A0A;font-weight:800;font-size:15px;cursor:pointer;font-family:Inter,sans-serif;letter-spacing:.5px">💾 Salvar Premiação</button>';
@@ -2456,7 +2528,7 @@ function renderResultadoEquipe(){
   var total_equipe = 0;
   var calcs = vends.map(function(v){
     var marc = montarMarcacoes(v, premiacaoData.regional_bateu, arco);
-    var fatMensal = qgParse(v.fat) || 0;
+    var fatMensal = qgParse(v.fatBase) || qgParse(v.fat) || 0;
     var c = calcularPremiacao(fatMensal, marc);
     total_equipe += c.total_ganho;
     return {v:v, c:c};
@@ -2556,7 +2628,7 @@ function renderMinhaPremiacao(v){
   var regPorInd = premiacaoData.regionalPorInd || {};
   var arcPorInd = premiacaoData.arcofoodsPorInd || {};
   var marc = montarMarcacoes(v, regPorInd, arcPorInd);
-  var fatMensal = qgParse(v.fat) || 0;
+  var fatMensal = qgParse(v.fatBase) || qgParse(v.fat) || 0;
   var calc = calcularPremiacao(fatMensal, marc);
 
   var n = qgParse;

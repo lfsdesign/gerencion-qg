@@ -2524,10 +2524,11 @@ function atualizarPremStatus(){
 function renderResultadoEquipe(){
   var html = '';
   var vends = premiacaoData.vendedores;
-  var arco = premiacaoData.arcofoods === true;
+  var regPorInd = premiacaoData.regionalPorInd || {};
+  var arcPorInd = premiacaoData.arcofoodsPorInd || {};
   var total_equipe = 0;
   var calcs = vends.map(function(v){
-    var marc = montarMarcacoes(v, premiacaoData.regional_bateu, arco);
+    var marc = montarMarcacoes(v, regPorInd, arcPorInd);
     var fatMensal = qgParse(v.fatBase) || qgParse(v.fat) || 0;
     var c = calcularPremiacao(fatMensal, marc);
     total_equipe += c.total_ganho;

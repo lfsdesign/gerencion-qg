@@ -1744,6 +1744,7 @@ function excluirCampanha(btn){var id=btn.getAttribute('data-id');if(!id)return;i
 var _premRegTemp = null;      // dados da regional processados
 var _premVendTemp = [];       // dados dos vendedores acumulados
 var _premArcofoods = null;    // performance da Arcofoods (marcada pelo coordenador)
+var premiacaoData = null;     // dados salvos da premiação (o que aparece nos resultados)
 
 // Caixa de preview de um campo
 function premPrevBox(label, val){
@@ -2170,13 +2171,20 @@ function carregarPremiacaoSupabase(callback) {
   supaFetch('premiacao_dados?id=eq.1').then(function(r){ return r.json(); }).then(function(data) {
     if(data && data[0] && data[0].dados) {
       try {
-        premiacaoData = JSON.parse(data[0].dados);
-        if(callback) callback();
-      } catch(e) {}
+        var parsed = JSON.parse(data[0].dados);
+        // só usa se tiver vendedores de verdade; senão trata como vazio
+        premiacaoData = (parsed && parsed.vendedores && parsed.vendedores.length) ? parsed : null;
+      } catch(e) {
+        premiacaoData = null; // dado corrompido: ignora
+      }
     } else {
-      if(callback) callback();
+      premiacaoData = null;
     }
-  }).catch(function() { if(callback) callback(); });
+    if(callback) callback(); // SEMPRE continua, aconteça o que acontecer
+  }).catch(function() {
+    premiacaoData = null;
+    if(callback) callback();
+  });
 }
 
 // Salva tudo que o coordenador processou (regional + vendedores + arcofoods)

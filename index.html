@@ -1859,6 +1859,7 @@ function adicionarPremVendedor(){
     toast('✓ '+vend.nome+' adicionado!');
   }
   if(el) el.value='';
+  aplicarFatBase(); // aplica faturamento base se já foi colado antes
   renderPremVendLista();
   atualizarPremStatus();
 }
@@ -1917,65 +1918,63 @@ function processarPremArcofoods(){
 }
 
 // Processa a tabela de Faturamento Base (nome + valor) e casa com os vendedores
+var _premFatBaseMap = {}; // guarda global: nome normalizado -> valor (à prova de ordem)
 function processarFatBase(){
   var el = document.getElementById('premFatBaseColar');
   var txt = el ? el.value.trim() : '';
   if(!txt){ toast('Cole a tabela de faturamento base primeiro.'); return; }
   var linhas = txt.split('\n').map(function(l){return l.trim();}).filter(function(l){return l!=='';});
-  var _fatBase = {}; // nome normalizado -> valor
   linhas.forEach(function(linha){
-    // separa nome (texto) do valor (números com R$)
     var m = linha.match(/^(.+?)[\t]+(.*[\d.].*)$/) || linha.match(/^(.+?)\s{2,}(.*[\d.].*)$/) || linha.match(/^(.+?)\s+(R\$.*)$/);
     if(!m){
-      // tenta: última "palavra" com número é o valor
       var partes = linha.split(/\s+/);
       var valTxt = partes[partes.length-1];
       if(/\d/.test(valTxt)){
         var nome = partes.slice(0, partes.length-1).join(' ');
-        _fatBase[normNome(nome)] = qgParse(valTxt.replace(/\./g,''));
+        _premFatBaseMap[normNome(nome)] = qgParse(valTxt.replace(/\./g,''));
       }
       return;
     }
     var nome = m[1].trim();
-    var val = qgParse(m[2].replace(/\./g,'')); // remove pontos de milhar
-    _fatBase[normNome(nome)] = val;
+    var val = qgParse(m[2].replace(/\./g,''));
+    _premFatBaseMap[normNome(nome)] = val;
   });
-
-  // casa com os vendedores já adicionados
-  var casados = 0;
-  _premVendTemp.forEach(function(v){
-    var chave = normNome(v.nome);
-    // tenta casar por nome completo ou parcial
-    var val = _fatBase[chave];
-    if(val === undefined){
-      // tenta casar por primeiro+último nome
-      Object.keys(_fatBase).forEach(function(k){
-        if(k.indexOf(chave.split(' ')[0])>=0 || chave.indexOf(k.split(' ')[0])>=0){ val = _fatBase[k]; }
-      });
-    }
-    if(val !== undefined && val > 0){ v.fatBase = String(val); casados++; }
-  });
+  aplicarFatBase(); // aplica em quem já está na lista
+  var casados = _premVendTemp.filter(function(v){return v.fatBase;}).length;
 
   var prev = document.getElementById('premFatBasePreview');
   if(prev){
-    if(casados > 0){
-      var lista = _premVendTemp.filter(function(v){return v.fatBase;}).map(function(v){
-        return '<div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0"><span style="color:var(--t2)">'+v.nome+'</span><span style="color:var(--pu);font-weight:700">'+fBRL(qgParse(v.fatBase))+'</span></div>';
+    if(Object.keys(_premFatBaseMap).length > 0){
+      var lista = Object.keys(_premFatBaseMap).map(function(k){
+        return '<div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0"><span style="color:var(--t2)">'+k+'</span><span style="color:var(--pu);font-weight:700">'+fBRL(_premFatBaseMap[k])+'</span></div>';
       }).join('');
-      prev.innerHTML = '<div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);border-radius:8px;padding:12px"><strong style="color:var(--pu);font-size:11px;text-transform:uppercase;display:block;margin-bottom:8px">✓ '+casados+' vendedores com faturamento base:</strong>'+lista+'</div>';
-    } else {
-      prev.innerHTML = '<div style="background:var(--am2);border:1px solid var(--am3);border-radius:8px;padding:10px;color:var(--am);font-size:12px">⚠️ Não consegui casar os nomes. Adicione os vendedores primeiro (bloco 3), depois cole o faturamento base.</div>';
+      prev.innerHTML = '<div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);border-radius:8px;padding:12px"><strong style="color:var(--pu);font-size:11px;text-transform:uppercase;display:block;margin-bottom:8px">✓ '+Object.keys(_premFatBaseMap).length+' faturamentos lidos ('+casados+' casados com vendedores):</strong>'+lista+'</div>';
     }
   }
   atualizarPremStatus();
-  toast(casados>0 ? '✓ '+casados+' faturamentos casados!' : 'Adicione os vendedores primeiro.');
+  toast('✓ Faturamento base processado! '+casados+' casados.');
+}
+
+// Aplica o faturamento base guardado nos vendedores da lista (à prova de ordem)
+function aplicarFatBase(){
+  _premVendTemp.forEach(function(v){
+    var chave = normNome(v.nome);
+    var val = _premFatBaseMap[chave];
+    if(val === undefined){
+      Object.keys(_premFatBaseMap).forEach(function(k){
+        var pn = chave.split(' ')[0], pk = k.split(' ')[0];
+        if(k.indexOf(pn)>=0 || chave.indexOf(pk)>=0){ val = _premFatBaseMap[k]; }
+      });
+    }
+    if(val !== undefined && val > 0){ v.fatBase = String(val); }
+  });
 }
 
 // Normaliza nome para casar (sem acento, maiúsculo, sem código)
 function normNome(n){
   return String(n||'').toUpperCase()
-    .replace(/^\d+\s*[-–]\s*/,'')  // tira código "017 - "
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // tira acentos
+    .replace(/^\d+\s*[-–]\s*/,'')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/[^A-Z\s]/g,'').trim();
 }
 
@@ -2156,6 +2155,14 @@ function carregarPremiacaoSupabase(callback) {
 // Salva tudo que o coordenador processou (regional + vendedores + arcofoods)
 function salvarPremiacaoCompleta(){
   if(_premVendTemp.length === 0){ toast('Adicione pelo menos um vendedor antes de salvar.'); return; }
+  aplicarFatBase(); // garante que o faturamento base está aplicado
+  // Avisa se algum vendedor ficou sem faturamento base (cairia na faixa errada)
+  var semBase = _premVendTemp.filter(function(v){ return !v.fatBase; });
+  if(semBase.length > 0){
+    var nomes = semBase.map(function(v){return v.nome;}).join(', ');
+    toast('⚠️ Sem faturamento base: '+nomes+'. Cole o campo 4 antes de salvar!', 6000);
+    return;
+  }
   // Regional e Arcofoods por indicador (>= 100% em cada %)
   var regPorInd = _premRegTemp ? bateuPorIndicadorDe(_premRegTemp) : {};
   var arcPorInd = _premArcofoods ? bateuPorIndicadorDe(_premArcofoods) : {};

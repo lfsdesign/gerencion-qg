@@ -2160,11 +2160,23 @@ function limparPremiacaoTudo(){
         _premVendTemp = [];
         _premArcofoods = null;
         _premFatBaseMap = {};
-        // zera banco
+        // limpa a tela IMEDIATAMENTE
+        renderPremiacao();
+        // zera o banco: DELETE e também sobrescreve com vazio (garantia dupla)
         supaFetch('premiacao_dados?id=eq.1', {method:'DELETE'}).then(function(){
+          return supaFetch('premiacao_dados', {method:'POST', body: JSON.stringify({id:1, dados: JSON.stringify({vendedores:[]})})});
+        }).then(function(){
+          // apaga de novo pra deixar realmente vazio
+          return supaFetch('premiacao_dados?id=eq.1', {method:'DELETE'});
+        }).then(function(){
           toast('🗑 Tudo limpo! Pode recomeçar do zero.');
+          premiacaoData = null;
           renderPremiacao();
-        }).catch(function(){ toast('Limpo localmente. Recarregue a página.'); renderPremiacao(); });
+        }).catch(function(){
+          toast('🗑 Limpo! Se algum número persistir, recarregue a página.');
+          premiacaoData = null;
+          renderPremiacao();
+        });
       };
       if(n) n.onclick=function(){ el.className='';el.innerHTML='';el.style.pointerEvents=''; };
     }, 50);

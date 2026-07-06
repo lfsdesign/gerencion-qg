@@ -2139,6 +2139,38 @@ function salvarPremiacaoSupabase() {
   }).catch(function(e) { console.log('Supabase premiação:', e); });
 }
 
+// Limpa TODOS os dados da premiação (memória + banco) para recomeçar do zero
+function limparPremiacaoTudo(){
+  var el = document.getElementById('toast');
+  if(el){
+    el.innerHTML = '🗑 Limpar TODOS os dados da premiação e recomeçar?<br>'+
+      '<div style="margin-top:8px;display:flex;gap:8px;justify-content:center">'+
+      '<button id="limpSim" style="padding:6px 16px;background:#EF4444;border:none;border-radius:8px;color:#fff;font-weight:800;cursor:pointer;font-family:Inter,sans-serif">✓ Sim, limpar</button>'+
+      '<button id="limpNao" style="padding:6px 16px;background:rgba(255,255,255,0.15);border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">✗ Cancelar</button>'+
+      '</div>';
+    el.className = 'show warn'; el.style.pointerEvents='all';
+    clearTimeout(el._t);
+    setTimeout(function(){
+      var s=document.getElementById('limpSim'), n=document.getElementById('limpNao');
+      if(s) s.onclick=function(){
+        el.className='';el.innerHTML='';el.style.pointerEvents='';
+        // zera memória
+        premiacaoData = null;
+        _premRegTemp = null;
+        _premVendTemp = [];
+        _premArcofoods = null;
+        _premFatBaseMap = {};
+        // zera banco
+        supaFetch('premiacao_dados?id=eq.1', {method:'DELETE'}).then(function(){
+          toast('🗑 Tudo limpo! Pode recomeçar do zero.');
+          renderPremiacao();
+        }).catch(function(){ toast('Limpo localmente. Recarregue a página.'); renderPremiacao(); });
+      };
+      if(n) n.onclick=function(){ el.className='';el.innerHTML='';el.style.pointerEvents=''; };
+    }, 50);
+  }
+}
+
 function carregarPremiacaoSupabase(callback) {
   supaFetch('premiacao_dados?id=eq.1').then(function(r){ return r.json(); }).then(function(data) {
     if(data && data[0] && data[0].dados) {
@@ -2497,6 +2529,7 @@ function renderPainelCoordenador(regional, arcofoods) {
   // ── STATUS + SALVAR ──
   html += '<div id="premStatus" style="margin-bottom:10px"></div>';
   html += '<button onclick="salvarPremiacaoCompleta()" style="width:100%;padding:14px;background:linear-gradient(135deg,#F59E0B,#EF4444);border:none;border-radius:12px;color:#0A0A0A;font-weight:800;font-size:15px;cursor:pointer;font-family:Inter,sans-serif;letter-spacing:.5px">💾 Salvar Premiação</button>';
+  html += '<button onclick="limparPremiacaoTudo()" style="width:100%;margin-top:8px;padding:11px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:10px;color:#EF4444;font-weight:700;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">🗑 Limpar tudo e recomeçar</button>';
 
   html += '</div>'; // fim do painel
 

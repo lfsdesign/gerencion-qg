@@ -2581,9 +2581,57 @@ function renderResultadoEquipe(){
   html += '<div style="background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px;text-align:center"><div style="font-size:10px;color:var(--t2);margin-bottom:4px">💰 Total Equipe</div><div style="font-size:20px;font-weight:800;color:var(--am)">'+fBRL(total_equipe)+'</div></div>';
   html += '<div style="background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px;text-align:center"><div style="font-size:10px;color:var(--t2);margin-bottom:4px">👥 Vendedores</div><div style="font-size:20px;font-weight:800;color:var(--gn)">'+vends.length+'</div></div>';
   html += '</div>';
+  html += '<div style="font-size:12px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px">👁️ Visão de cada vendedor (o que eles veem)</div>';
   calcs.forEach(function(item){
-    html += renderCardVendedorNovo(item.v, item.c);
+    html += renderVisaoVendedorCoord(item.v, item.c);
   });
+  return html;
+}
+
+// Visão motivacional de um vendedor, vista pelo coordenador (mostra o que o vendedor vê)
+function renderVisaoVendedorCoord(v, calc){
+  var n = qgParse;
+  var pcts = {
+    faturamento: n(v.pctFat), positivacao: n(v.pctPos),
+    sku: n(v.pctSku), mix: n(v.pctMix), churn: n(v.pctChurn)
+  };
+  var html = '<div style="background:var(--s1);border:1px solid var(--b);border-radius:14px;padding:16px;margin-bottom:14px">';
+  // cabeçalho do vendedor
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--b)">';
+  html += '<div><div style="font-size:14px;font-weight:800;color:var(--t)">'+(v.cod||'')+' · '+(v.nome||'')+'</div>';
+  html += '<div style="font-size:10px;color:var(--t3)">Faixa '+calc.faixa.nome+' · potencial '+fBRL(calc.total_potencial)+'</div></div>';
+  html += '<div style="text-align:right"><div style="font-size:22px;font-weight:900;color:var(--gn)">'+fBRL(calc.total_ganho)+'</div>';
+  html += '<div style="font-size:9px;color:var(--t3)">'+calc.pct_premiacao.toFixed(0)+'% garantido</div></div></div>';
+  // barra de progresso
+  var pctBar = Math.min(100, calc.pct_premiacao);
+  html += '<div style="height:8px;background:rgba(255,255,255,0.1);border-radius:20px;overflow:hidden;margin-bottom:12px"><div style="height:100%;width:'+pctBar+'%;background:linear-gradient(90deg,var(--gn),#10B981);border-radius:20px"></div></div>';
+  // indicadores
+  var faltamPouco = [];
+  INDICADORES_PREM.forEach(function(ind){
+    var pct = pcts[ind.id];
+    var bateu = pct >= 100;
+    var d = calc.detalhe[ind.id];
+    var falta = 100 - pct;
+    var cor = bateu ? 'var(--gn)' : (falta<=10 && falta>0 ? 'var(--am)' : 'var(--t3)');
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:5px 0">';
+    html += '<span style="color:var(--t2)">'+ind.icone+' '+ind.nome+'</span>';
+    if(bateu){
+      html += '<span style="color:var(--gn);font-weight:700">✅ '+fBRL(d.subtotal)+'</span>';
+    } else if(falta<=10 && falta>0){
+      html += '<span style="color:var(--am);font-weight:700">🔥 falta '+falta.toFixed(2).replace('.',',')+'%</span>';
+      faltamPouco.push({ind:ind, falta:falta, valor:calc.valor_indicador});
+    } else {
+      html += '<span style="color:var(--t3)">'+(isNaN(pct)?'—':pct.toFixed(1).replace('.',',')+'%')+'</span>';
+    }
+    html += '</div>';
+  });
+  // dica motivacional resumida
+  if(faltamPouco.length > 0){
+    faltamPouco.sort(function(a,b){return a.falta-b.falta;});
+    var alvo = faltamPouco[0];
+    html += '<div style="margin-top:10px;padding:10px 12px;background:rgba(245,158,11,0.1);border:1px solid var(--am3);border-radius:10px;font-size:12px;color:var(--t)">🔥 A <strong style="color:var(--am)">'+alvo.falta.toFixed(2).replace('.',',')+'%</strong> de bater <strong>'+alvo.ind.nome+'</strong> (+'+fBRL(alvo.valor*0.5)+'). <span style="color:var(--t2)">Vale um empurrão!</span></div>';
+  }
+  html += '</div>';
   return html;
 }
 

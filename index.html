@@ -2704,9 +2704,11 @@ function renderPremiacaoEmBreve() {
   }
 
   // Achar o vendedor logado pelos dados
-  var meuCod = eu ? String(eu.cd||'').replace(/^0+/,'') : '';
+  // Normaliza para SÓ DÍGITOS: login usa "RCA 017", dados do BI usam "017".
+  // Sem isso, os dois nunca batem e o vendedor não vê a premiação dele.
+  var meuCod = eu ? String(eu.cd||'').replace(/\D/g,'').replace(/^0+/,'') : '';
   var v = premiacaoData.vendedores.find(function(x){
-    return String(x.cod||'').replace(/^0+/,'') === meuCod;
+    return String(x.cod||'').replace(/\D/g,'').replace(/^0+/,'') === meuCod;
   });
   if(!v){
     return '<div style="text-align:center;padding:48px 24px"><div style="font-size:48px;margin-bottom:12px">🔍</div><div style="font-size:15px;color:var(--t2)">Seus dados ainda n&#227;o foram lan&#231;ados este m&#234;s.<br>Fale com seu coordenador.</div></div>';

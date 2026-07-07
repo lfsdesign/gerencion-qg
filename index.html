@@ -2627,42 +2627,19 @@ function renderVisaoVendedorCoord(v, calc){
     faturamento: n(v.pctFat), positivacao: n(v.pctPos),
     sku: n(v.pctSku), mix: n(v.pctMix), churn: n(v.pctChurn)
   };
+  var regPorInd = (premiacaoData && premiacaoData.regionalPorInd) || {};
+  var arcPorInd = (premiacaoData && premiacaoData.arcofoodsPorInd) || {};
+  var kpis = prepKPIs(v, calc, pcts, regPorInd, arcPorInd);
+
   var html = '<div style="background:var(--s1);border:1px solid var(--b);border-radius:14px;padding:16px;margin-bottom:14px">';
-  // cabeçalho do vendedor
   html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--b)">';
-  html += '<div><div style="font-size:14px;font-weight:800;color:var(--t)">'+(v.cod||'')+' · '+(v.nome||'')+'</div>';
+  html += '<div><div style="font-size:14px;font-weight:800;color:var(--t)">'+(v.cod||'')+' · '+nomeCurto(v.nome||'')+'</div>';
   html += '<div style="font-size:10px;color:var(--t3)">Faixa '+calc.faixa.nome+' · potencial '+fBRL(calc.total_potencial)+'</div></div>';
   html += '<div style="text-align:right"><div style="font-size:22px;font-weight:900;color:var(--gn)">'+fBRL(calc.total_ganho)+'</div>';
   html += '<div style="font-size:9px;color:var(--t3)">'+calc.pct_premiacao.toFixed(0)+'% garantido</div></div></div>';
-  // barra de progresso
   var pctBar = Math.min(100, calc.pct_premiacao);
   html += '<div style="height:8px;background:rgba(255,255,255,0.1);border-radius:20px;overflow:hidden;margin-bottom:12px"><div style="height:100%;width:'+pctBar+'%;background:linear-gradient(90deg,var(--gn),#10B981);border-radius:20px"></div></div>';
-  // indicadores
-  var faltamPouco = [];
-  INDICADORES_PREM.forEach(function(ind){
-    var pct = pcts[ind.id];
-    var bateu = pct >= 100;
-    var d = calc.detalhe[ind.id];
-    var falta = 100 - pct;
-    var cor = bateu ? 'var(--gn)' : (falta<=10 && falta>0 ? 'var(--am)' : 'var(--t3)');
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:5px 0">';
-    html += '<span style="color:var(--t2)">'+ind.icone+' '+ind.nome+'</span>';
-    if(bateu){
-      html += '<span style="color:var(--gn);font-weight:700">✅ '+fBRL(d.subtotal)+'</span>';
-    } else if(falta<=10 && falta>0){
-      html += '<span style="color:var(--am);font-weight:700">🔥 falta '+falta.toFixed(2).replace('.',',')+'%</span>';
-      faltamPouco.push({ind:ind, falta:falta, valor:calc.valor_indicador});
-    } else {
-      html += '<span style="color:var(--t3)">'+(isNaN(pct)?'—':pct.toFixed(1).replace('.',',')+'%')+'</span>';
-    }
-    html += '</div>';
-  });
-  // dica motivacional resumida
-  if(faltamPouco.length > 0){
-    faltamPouco.sort(function(a,b){return a.falta-b.falta;});
-    var alvo = faltamPouco[0];
-    html += '<div style="margin-top:10px;padding:10px 12px;background:rgba(245,158,11,0.1);border:1px solid var(--am3);border-radius:10px;font-size:12px;color:var(--t)">🔥 A <strong style="color:var(--am)">'+alvo.falta.toFixed(2).replace('.',',')+'%</strong> de bater <strong>'+alvo.ind.nome+'</strong> (+'+fBRL(alvo.valor*0.5)+'). <span style="color:var(--t2)">Vale um empurrão!</span></div>';
-  }
+  html += renderKPIsCoord(kpis);
   html += '</div>';
   return html;
 }
@@ -2750,6 +2727,191 @@ function renderPremiacaoEmBreve() {
 }
 
 // ── A FERRAMENTA DE CONQUISTA (tela do vendedor) ──
+// ══════════════════════════════════════════════════════════════════
+//  NOVO — Visão dos 5 KPIs (todos falam: parabéns quando bate,
+//  orientação quando falta). Usado pela tela do vendedor E pela
+//  visão do coordenador. Não altera nenhum cálculo.
+// ══════════════════════════════════════════════════════════════════
+
+// Nome curto pra onde falta espaço: "Eduardo Britto" -> "Eduardo B"
+function nomeCurto(nome){
+  if(!nome) return '';
+  var p = String(nome).trim().split(/\s+/);
+  if(p.length < 2) return nome;
+  var primeiro = p[0].charAt(0).toUpperCase() + p[0].slice(1).toLowerCase();
+  return primeiro + ' ' + p[1].charAt(0).toUpperCase();
+}
+
+// Mensagens criativas por KPI — cada um com voz própria.
+// win  = quando bateu (comemoração)   push = o que fazer quando falta
+var PREM_KPI_MSG = {
+  faturamento: {
+    win:  'Vendeu forte e trouxe volume. Faturamento é o coração do prêmio — e você fez ele bater!',
+    push: 'Aumenta o ticket das próximas visitas e fecha os pedidos grandes que estão parados. Cada pedido a mais te empurra pra cima.'
+  },
+  positivacao: {
+    win:  'Carteira viva! Você positivou o que precisava. Cliente ativo é dinheiro que volta todo mês.',
+    push: 'Visita os inativos da sua carteira — cada cliente novo positivado conta ponto. Vai lá buscar quem sumiu.'
+  },
+  sku: {
+    win:  'Mix recheado! Cada cliente saiu levando mais itens. É assim que se aumenta a venda sem cliente novo.',
+    push: 'Oferece mais itens por cliente na próxima venda. Um SKU a mais por visita já muda o placar.'
+  },
+  mix: {
+    win:  'Você vendeu com margem! Priorizou o que dá lucro de verdade. Esse é o KPI dos espertos.',
+    push: 'Prioriza os produtos de maior margem no seu mix. Vender melhor vale mais que vender muito.'
+  },
+  churn: {
+    win:  'Carteira blindada! Você segurou seus clientes e ninguém escapou. Defesa também é ataque.',
+    push: 'Recupera quem parou de comprar antes do mês fechar. Uma ligação hoje pode salvar o ponto.'
+  }
+};
+
+// Chamada de atenção conforme a proximidade (quanto falta pra bater)
+function headlineFalta(falta){
+  if(falta == null) return 'Dados a caminho —';
+  if(falta <= 2)  return 'Tá na trave! ';
+  if(falta <= 10) return 'Logo ali! ';
+  if(falta <= 30) return 'Dá pra alcançar! ';
+  return 'Bora pra cima! ';
+}
+function iconeFalta(falta){
+  if(falta == null) return '⏳';
+  if(falta <= 10) return '🔥';
+  if(falta <= 30) return '💪';
+  return '🎯';
+}
+
+// Prepara os 5 KPIs já ordenados: falta MENOS no topo, troféus embaixo.
+function prepKPIs(v, calc, pcts, regPorInd, arcPorInd){
+  regPorInd = regPorInd || {}; arcPorInd = arcPorInd || {};
+  var arr = INDICADORES_PREM.map(function(ind){
+    var pct = pcts[ind.id];
+    var temPct = !isNaN(pct);
+    var bateu = temPct && pct >= 100;
+    var falta = temPct ? Math.max(0, 100 - pct) : null;
+    var d = (calc.detalhe && calc.detalhe[ind.id]) || { subtotal: 0 };
+    var regB = regPorInd[ind.id] === true;
+    var arcB = arcPorInd[ind.id] === true;
+    // quanto ele DESTRAVA se bater esse indicador (o vendedor é o gatilho)
+    var ganhoPot = calc.valor_vendedor + (regB ? calc.valor_regional : 0) + (arcB ? calc.valor_arcofoods : 0);
+    return {
+      id: ind.id, nome: ind.nome, icone: ind.icone,
+      pct: pct, temPct: temPct, bateu: bateu, falta: falta,
+      valorGanho: d.subtotal || 0,
+      ganhoPot: ganhoPot,
+      msg: PREM_KPI_MSG[ind.id] || { win:'Mandou bem!', push:'Continue focado.' }
+    };
+  });
+  arr.sort(function(a, b){
+    if(a.bateu !== b.bateu) return a.bateu ? 1 : -1;      // batidos vão pro fim
+    if(!a.bateu){
+      var fa = a.falta == null ? 9999 : a.falta;
+      var fb = b.falta == null ? 9999 : b.falta;
+      return fa - fb;                                       // falta menos primeiro
+    }
+    return b.valorGanho - a.valorGanho;                     // entre batidos, maior valor no topo
+  });
+  return arr;
+}
+
+// Formata "faltam X%" com casas certas
+function fmtFalta(falta){
+  if(falta == null) return '—';
+  return 'faltam ' + falta.toFixed(falta < 10 ? 2 : 1).replace('.', ',') + '%';
+}
+
+// ── RENDER RICO (tela do vendedor) ──
+function renderKPIsVendedor(kpis){
+  var h = '';
+  var abriuTrofeus = false;
+  kpis.forEach(function(k){
+    if(k.bateu){
+      if(!abriuTrofeus){
+        abriuTrofeus = true;
+        h += '<div style="font-size:11px;font-weight:800;color:var(--gn);text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px">🏆 Já no seu bolso</div>';
+      }
+      // Card troféu: fundo escuro + borda dourada (quebra o "muito verde")
+      h += '<div style="background:rgba(6,14,30,0.55);border:1px solid var(--b);border-left:3px solid #F0B429;border-radius:11px;padding:11px 14px;margin-bottom:7px">';
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">';
+      h += '<div style="font-size:13px;font-weight:700;color:var(--t)">🏆 ' + k.icone + ' ' + k.nome + '</div>';
+      h += '<div style="font-size:14px;font-weight:900;color:var(--gn);white-space:nowrap">' + fBRL(k.valorGanho) + '</div>';
+      h += '</div>';
+      h += '<div style="font-size:11px;color:var(--t2);margin-top:4px;line-height:1.5">' + k.msg.win + '</div>';
+      h += '</div>';
+    } else {
+      // Card faltando: âmbar, com o quanto falta, o carrinho (+R$) e o que fazer
+      h += '<div style="background:rgba(245,158,11,0.07);border:1px solid var(--am3);border-radius:12px;padding:13px 15px;margin-bottom:8px">';
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">';
+      h += '<div style="font-size:13px;font-weight:700;color:var(--t)">' + k.icone + ' ' + k.nome + '</div>';
+      h += '<div style="display:flex;align-items:center;gap:10px">';
+      h += '<span style="font-size:11px;font-weight:700;color:var(--am);white-space:nowrap">' + iconeFalta(k.falta) + ' ' + fmtFalta(k.falta) + '</span>';
+      h += '<span style="font-size:14px;font-weight:900;color:var(--gn);white-space:nowrap">+' + fBRL(k.ganhoPot) + '</span>';
+      h += '</div></div>';
+      if(k.temPct){
+        var bp = Math.max(2, Math.min(100, k.pct));
+        h += '<div style="margin-top:9px;height:6px;background:rgba(255,255,255,0.08);border-radius:10px;overflow:hidden"><div style="height:100%;width:' + bp + '%;background:var(--am);border-radius:10px"></div></div>';
+      }
+      h += '<div style="font-size:12px;color:var(--t);margin-top:9px;line-height:1.6"><strong style="color:var(--am)">' + headlineFalta(k.falta) + '</strong>' + k.msg.push + '</div>';
+      h += '</div>';
+    }
+  });
+  return h;
+}
+
+// Fechamento motivador (resumo geral, sem repetir os KPIs)
+function renderResumoVendedor(kpis){
+  var batidos = kpis.filter(function(k){ return k.bateu; }).length;
+  var faltando = kpis.filter(function(k){ return !k.bateu; });
+  var naMesa = faltando.reduce(function(s, k){ return s + (k.ganhoPot || 0); }, 0);
+  if(batidos === 5){
+    return '<div style="background:linear-gradient(135deg,rgba(34,197,94,0.2),rgba(6,14,30,0.9));border:2px solid var(--gn3);border-radius:16px;padding:18px;margin-top:16px;text-align:center">'
+      + '<div style="font-size:16px;font-weight:900;color:var(--gn)">🏆 FERA! Você bateu os 5!</div>'
+      + '<div style="font-size:12px;color:var(--t2);margin-top:6px">Prêmio máximo garantido. Agora é manter o ritmo e ajudar a puxar a regional. 🚀</div></div>';
+  }
+  if(faltando.length){
+    return '<div style="background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(6,14,30,0.9));border:2px solid var(--am3);border-radius:16px;padding:18px;margin-top:16px">'
+      + '<div style="font-size:13px;font-weight:900;color:var(--am);margin-bottom:6px">💰 Ainda tem dinheiro na mesa!</div>'
+      + '<div style="font-size:13px;color:var(--t);line-height:1.7">Faltam <strong style="color:var(--gn)">' + fBRL(naMesa) + '</strong> pra você buscar esse mês'
+      + (batidos ? ' — e você já garantiu <strong>' + batidos + ' de 5</strong>' : '')
+      + '. Começa pelos de cima da lista, que são os mais pertinho. <strong>Bora! 💪</strong></div></div>';
+  }
+  return '';
+}
+
+// ── RENDER COMPACTO (visão do coordenador — ele vê os 9 juntos) ──
+function renderKPIsCoord(kpis){
+  var h = '';
+  kpis.forEach(function(k){
+    h += '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:5px 0">';
+    if(k.bateu){
+      h += '<span style="color:var(--t2)">🏆 ' + k.icone + ' ' + k.nome + '</span>';
+      h += '<span style="color:var(--gn);font-weight:700;white-space:nowrap">' + fBRL(k.valorGanho) + '</span>';
+    } else {
+      h += '<span style="color:var(--t2)">' + k.icone + ' ' + k.nome + '</span>';
+      h += '<span style="white-space:nowrap"><span style="color:var(--am);font-weight:700">' + fmtFalta(k.falta) + '</span> <span style="color:var(--gn);font-weight:700">+' + fBRL(k.ganhoPot) + '</span></span>';
+    }
+    h += '</div>';
+  });
+  // foco: a próxima vitória mais fácil
+  var alvo = kpis.filter(function(k){ return !k.bateu && k.falta != null; })[0];
+  if(alvo){
+    h += '<div style="margin-top:10px;padding:10px 12px;background:rgba(245,158,11,0.1);border:1px solid var(--am3);border-radius:10px;font-size:12px;color:var(--t)">'
+      + iconeFalta(alvo.falta) + ' Próxima vitória: <strong>' + alvo.nome + '</strong> (' + fmtFalta(alvo.falta) + ', +' + fBRL(alvo.ganhoPot) + '). '
+      + '<span style="color:var(--t2)">' + alvo.msg.push + '</span></div>';
+  }
+  return h;
+}
+
+// Chamada de destaque no topo, conforme quantos KPIs já bateu
+function taglinePremio(batidos){
+  if(batidos >= 5) return '🔥 On fire! Você bateu todos os 5!';
+  if(batidos >= 3) return '🔥 Tá voando! ' + batidos + ' de 5 já garantidos.';
+  if(batidos >= 1) return '💪 Bom começo — ' + batidos + ' de 5 no bolso. Bora buscar o resto!';
+  return '🎯 O mês tá aberto. Cada indicador vira dinheiro — bora pra cima!';
+}
+
+
 function renderMinhaPremiacao(v){
   var regPorInd = premiacaoData.regionalPorInd || {};
   var arcPorInd = premiacaoData.arcofoodsPorInd || {};
@@ -2769,6 +2931,10 @@ function renderMinhaPremiacao(v){
 
   var html = '';
 
+  // KPIs ja ordenados (proxima vitoria no topo, trofeus embaixo)
+  var kpis = prepKPIs(v, calc, pcts, regPorInd, arcPorInd);
+  var _batidos = kpis.filter(function(k){return k.bateu;}).length;
+
   // ── CABEÇALHO: quanto já garantiu ──
   html += '<div style="background:linear-gradient(135deg,rgba(34,197,94,0.18),rgba(6,14,30,0.9));border:2px solid var(--gn3);border-radius:18px;padding:20px;margin-bottom:16px;text-align:center">';
   html += '<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gn);margin-bottom:6px">💰 Você já garantiu</div>';
@@ -2778,44 +2944,15 @@ function renderMinhaPremiacao(v){
   var pctBar = Math.min(100, calc.pct_premiacao);
   html += '<div style="margin-top:12px;height:10px;background:rgba(255,255,255,0.1);border-radius:20px;overflow:hidden"><div style="height:100%;width:'+pctBar+'%;background:linear-gradient(90deg,var(--gn),#10B981);border-radius:20px;transition:width .6s"></div></div>';
   html += '<div style="font-size:10px;color:var(--t3);margin-top:4px">'+pctBar.toFixed(0)+'% do seu prêmio conquistado</div>';
+  html += '<div style="font-size:12px;font-weight:700;color:var(--gn);margin-top:8px">'+taglinePremio(_batidos)+'</div>';
   html += '</div>';
 
-  // ── OS 5 INDICADORES ──
+  // ── OS 5 INDICADORES (todos falam) ──
   html += '<div style="font-size:12px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">📊 Seus indicadores</div>';
+  html += renderKPIsVendedor(kpis);
 
-  var faltamPouco = []; // guarda os que faltam pouco pra motivar
-  INDICADORES_PREM.forEach(function(ind){
-    var pct = pcts[ind.id];
-    var bateu = pct >= 100;
-    var d = calc.detalhe[ind.id];
-    var falta = 100 - pct;
-
-    var cor = bateu ? 'var(--gn)' : (falta<=10 && falta>0 ? 'var(--am)' : 'var(--t3)');
-    var bg = bateu ? 'rgba(34,197,94,0.10)' : (falta<=10 && falta>0 ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.03)');
-    var borda = bateu ? 'var(--gn3)' : (falta<=10 && falta>0 ? 'var(--am3)' : 'var(--b)');
-
-    html += '<div style="background:'+bg+';border:1px solid '+borda+';border-radius:12px;padding:13px 15px;margin-bottom:8px">';
-    html += '<div style="display:flex;justify-content:space-between;align-items:center">';
-    html += '<div style="font-size:13px;font-weight:700;color:var(--t)">'+ind.icone+' '+ind.nome+'</div>';
-    if(bateu){
-      html += '<div style="font-size:12px;font-weight:800;color:var(--gn)">✅ BATEU · '+fBRL(d.subtotal)+'</div>';
-    } else if(falta<=10 && falta>0){
-      html += '<div style="font-size:12px;font-weight:800;color:var(--am)">🔥 falta '+falta.toFixed(2).replace('.',',')+'%</div>';
-      faltamPouco.push({ind:ind, falta:falta, valor:calc.valor_indicador});
-    } else {
-      html += '<div style="font-size:12px;font-weight:700;color:var(--t3)">'+(isNaN(pct)?'—':pct.toFixed(1).replace('.',',')+'%')+'</div>';
-    }
-    html += '</div>';
-    // mini barra do indicador
-    if(!isNaN(pct)){
-      var barPct = Math.max(0, Math.min(100, pct));
-      html += '<div style="margin-top:8px;height:6px;background:rgba(255,255,255,0.08);border-radius:10px;overflow:hidden"><div style="height:100%;width:'+barPct+'%;background:'+cor+';border-radius:10px"></div></div>';
-    }
-    html += '</div>';
-  });
-
-  // ── TEXTO MOTIVADOR INTELIGENTE ──
-  html += renderTextoMotivador(faltamPouco, calc, pcts);
+  // ── FECHAMENTO MOTIVADOR ──
+  html += renderResumoVendedor(kpis);
 
   return html;
 }

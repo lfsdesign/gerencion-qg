@@ -1745,6 +1745,7 @@ var _premRegTemp = null;      // dados da regional processados
 var _premVendTemp = [];       // dados dos vendedores acumulados
 var _premArcofoods = null;    // performance da Arcofoods (marcada pelo coordenador)
 var premiacaoData = null;     // dados salvos da premiação (o que aparece nos resultados)
+var _euReal = null;           // guarda o coordenador durante o "Ver como vendedor" (preview seguro)
 
 // Caixa de preview de um campo
 function premPrevBox(label, val){
@@ -2482,8 +2483,39 @@ function renderRankingEquipe(regional, arcofoods) {
   return html;
 }
 
+// ── Preview seguro da tela do vendedor: o coordenador testa sem salvar nada ──
+function previewComoVendedor(codigo){
+  var alvo = USERS.find(function(x){ return x.c === codigo && x.t === 'vend'; });
+  if(!alvo){ toast('Vendedor não encontrado.'); return; }
+  if(!_euReal) _euReal = eu;   // guarda o coordenador de verdade
+  eu = alvo;                   // entra como vendedor — SÓ na memória, nada é salvo
+  renderPremiacao();           // passa pelo caminho real do vendedor (com a correção do código)
+  var el = document.getElementById('premiacaoBox');
+  if(el){
+    el.innerHTML =
+      '<div style="background:#3B82F6;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'
+      + '<span style="font-size:12px;font-weight:700;color:#fff">👁️ Vendo como ' + alvo.n + ' — simulação, nada foi salvo</span>'
+      + '<button onclick="voltarCoordenador()" style="padding:6px 14px;background:#fff;border:none;border-radius:8px;color:#3B82F6;font-size:12px;font-weight:800;cursor:pointer;font-family:Inter,sans-serif">← Voltar ao coordenador</button>'
+      + '</div>' + el.innerHTML;
+  }
+}
+function voltarCoordenador(){
+  if(_euReal){ eu = _euReal; _euReal = null; }  // volta a ser o coordenador
+  renderPremiacao();
+}
+
 function renderPainelCoordenador(regional, arcofoods) {
   var html = '';
+
+  // ── Preview seguro: ver a tela como o vendedor vê (não salva nada, não registra aparelho) ──
+  html += '<div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:14px;margin-bottom:16px">';
+  html += '<div style="font-size:12px;font-weight:800;color:#3B82F6;margin-bottom:4px">🔍 Ver como vendedor (teste)</div>';
+  html += '<div style="font-size:11px;color:var(--t2);margin-bottom:10px">Clique num nome pra ver a tela exatamente como o vendedor vê. É só simulação — não altera nem salva nada.</div>';
+  html += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
+  USERS.filter(function(u){return u.t==='vend';}).forEach(function(u){
+    html += '<button onclick="previewComoVendedor(\'' + u.c + '\')" style="padding:7px 12px;background:var(--s1);border:1px solid var(--b2);border-radius:8px;color:var(--t);font-size:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">' + u.n.split(' ')[0] + '</button>';
+  });
+  html += '</div></div>';
 
   // Cabeçalho coordenador
   html += '<div style="background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(6,14,30,0.9));border:2px solid rgba(99,102,241,0.4);border-radius:16px;padding:18px;margin-bottom:16px">';

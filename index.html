@@ -1436,7 +1436,7 @@ function copiarCampo(id){var el=document.getElementById(id);if(!el||!el.value.tr
 
 function qgFmt(v){return'R$\u00a0'+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 
-function qgParse(s){if(!s)return 0;return parseFloat(String(s).replace(/[^\d,]/g,'').replace(',','.'))||0;}
+function qgParse(s){if(!s)return 0;s=String(s);var num=parseFloat(s.replace(/[^\d,]/g,'').replace(',','.'))||0;var m=s.indexOf('-'),d=s.search(/\d/);if(m!==-1&&(d===-1||m<d))num=-num;return num;}
 
 function iniciarMetasGrid(){
   var g=document.getElementById('qgMetasGrid');
@@ -1919,12 +1919,12 @@ function processarPremArcofoods(){
   toast('✓ Arcofoods processada!');
 }
 
-// Processa a tabela de Faturamento Base (nome + valor) e casa com os vendedores
+// Processa a tabela de Metas do mês (nome + valor) e casa com os vendedores
 var _premFatBaseMap = {}; // guarda global: nome normalizado -> valor (à prova de ordem)
 function processarFatBase(){
   var el = document.getElementById('premFatBaseColar');
   var txt = el ? el.value.trim() : '';
-  if(!txt){ toast('Cole a tabela de faturamento base primeiro.'); return; }
+  if(!txt){ toast('Cole a tabela de metas do mês primeiro.'); return; }
   var linhas = txt.split('\n').map(function(l){return l.trim();}).filter(function(l){return l!=='';});
   linhas.forEach(function(linha){
     var m = linha.match(/^(.+?)[\t]+(.*[\d.].*)$/) || linha.match(/^(.+?)\s{2,}(.*[\d.].*)$/) || linha.match(/^(.+?)\s+(R\$.*)$/);
@@ -1950,14 +1950,14 @@ function processarFatBase(){
       var lista = Object.keys(_premFatBaseMap).map(function(k){
         return '<div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0"><span style="color:var(--t2)">'+k+'</span><span style="color:var(--pu);font-weight:700">'+fBRL(_premFatBaseMap[k])+'</span></div>';
       }).join('');
-      prev.innerHTML = '<div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);border-radius:8px;padding:12px"><strong style="color:var(--pu);font-size:11px;text-transform:uppercase;display:block;margin-bottom:8px">✓ '+Object.keys(_premFatBaseMap).length+' faturamentos lidos ('+casados+' casados com vendedores):</strong>'+lista+'</div>';
+      prev.innerHTML = '<div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);border-radius:8px;padding:12px"><strong style="color:var(--pu);font-size:11px;text-transform:uppercase;display:block;margin-bottom:8px">✓ '+Object.keys(_premFatBaseMap).length+' metas lidas ('+casados+' casados com vendedores):</strong>'+lista+'</div>';
     }
   }
   atualizarPremStatus();
-  toast('✓ Faturamento base processado! '+casados+' casados.');
+  toast('✓ Metas do mês processadas! '+casados+' casados.');
 }
 
-// Aplica o faturamento base guardado nos vendedores da lista (à prova de ordem)
+// Aplica a meta do mês guardada nos vendedores da lista (à prova de ordem)
 function aplicarFatBase(){
   _premVendTemp.forEach(function(v){
     var chave = normNome(v.nome);
@@ -1984,7 +1984,7 @@ function normNome(n){
 // ═══════════════════════════════════════════════════════════════
 // MÁQUINA DE CÁLCULO DA PREMIAÇÃO — regras oficiais (PowerPoint Arcofoods 2026)
 // ───────────────────────────────────────────────────────────────
-// Faixa por faturamento mensal do vendedor. Cada faixa tem um prêmio-teto.
+// Faixa pela META do mês do vendedor. Cada faixa tem um prêmio-teto.
 // O prêmio se divide em 5 indicadores (20% cada). Cada indicador se
 // reparte em 3 áreas: Vendedor 50%, Regional 30%, Arcofoods 20%.
 // Cada pedaço (indicador × área) é conquistado de forma INDEPENDENTE.
@@ -2012,7 +2012,7 @@ var AREAS_PREM = [
   {id:'arcofoods', nome:'Arcofoods', pct:0.20},
 ];
 
-// Retorna a faixa de premiação pelo faturamento mensal
+// Retorna a faixa de premiação pela meta do mês
 function getFaixaPrem(fat_mensal) {
   for(var i = FAIXAS_PREM.length-1; i >= 0; i--) {
     if(fat_mensal >= FAIXAS_PREM[i].fat_min) return FAIXAS_PREM[i];
@@ -2192,11 +2192,11 @@ function carregarPremiacaoSupabase(callback) {
 function salvarPremiacaoCompleta(){
   if(_premVendTemp.length === 0){ toast('Adicione pelo menos um vendedor antes de salvar.'); return; }
   aplicarFatBase(); // garante que o faturamento base está aplicado
-  // Avisa se algum vendedor ficou sem faturamento base (cairia na faixa errada)
+  // Avisa se algum vendedor ficou sem meta do mês (cairia na faixa errada)
   var semBase = _premVendTemp.filter(function(v){ return !v.fatBase; });
   if(semBase.length > 0){
     var nomes = semBase.map(function(v){return v.nome;}).join(', ');
-    toast('⚠️ Sem faturamento base: '+nomes+'. Cole o campo 4 antes de salvar!', 6000);
+    toast('⚠️ Sem meta do mês: '+nomes+'. Cole o campo 4 antes de salvar!', 6000);
     return;
   }
   // Regional e Arcofoods por indicador (>= 100% em cada %)
@@ -2552,12 +2552,12 @@ function renderPainelCoordenador(regional, arcofoods) {
   html += '<div id="premVendLista" style="margin-top:12px"></div>';
   html += '</div>';
 
-  // ── BLOCO 4: FATURAMENTO BASE (define a faixa de cada vendedor) ──
+  // ── BLOCO 4: META DO MÊS (define a faixa de cada vendedor) ──
   html += '<div style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.25);border-radius:12px;padding:14px;margin-bottom:12px">';
-  html += '<div style="font-size:11px;font-weight:700;color:var(--pu);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">4 · Faturamento Base (define a faixa)</div>';
-  html += '<div style="font-size:11px;color:var(--t2);margin-bottom:8px">Cole a tabela de Faturamento Base (nome do vendedor + valor). É o que define a faixa de prêmio de cada um. Muda mês a mês.</div>';
-  html += '<textarea id="premFatBaseColar" placeholder="Cole aqui: nome e faturamento base de cada vendedor\\nEx: Vinicius Barao   R$ 885.705" style="width:100%;min-height:70px;background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:10px;color:var(--t);font-size:12px;font-family:Inter,sans-serif;resize:vertical"></textarea>';
-  html += '<button onclick="processarFatBase()" style="margin-top:8px;padding:9px 16px;background:var(--pu);border:none;border-radius:8px;color:#fff;font-weight:800;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">⚡ Processar Faturamento Base</button>';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--pu);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">4 · Meta do mês (define a faixa)</div>';
+  html += '<div style="font-size:11px;color:var(--t2);margin-bottom:8px">Cole a tabela de Metas do mês (nome do vendedor + valor da meta). É a meta vigente que define a faixa de prêmio de cada um. Muda mês a mês.</div>';
+  html += '<textarea id="premFatBaseColar" placeholder="Cole aqui: nome e meta do mês de cada vendedor\\nEx: Vinicius Barao   R$ 310.000" style="width:100%;min-height:70px;background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:10px;color:var(--t);font-size:12px;font-family:Inter,sans-serif;resize:vertical"></textarea>';
+  html += '<button onclick="processarFatBase()" style="margin-top:8px;padding:9px 16px;background:var(--pu);border:none;border-radius:8px;color:#fff;font-weight:800;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">⚡ Processar Metas do mês</button>';
   html += '<div id="premFatBasePreview" style="margin-top:10px"></div>';
   html += '</div>';
 

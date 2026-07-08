@@ -2596,6 +2596,94 @@ function atualizarPremStatus(){
 }
 
 // Resumo da equipe (resultado calculado)
+// ══════════════════════════════════════════════════════════════════
+//  NOVO — Painel de AÇÃO do Coordenador (a "página do Leandro").
+//  Olha o TODO (soma dos 9) e diz o que ELE faz pra ajudar a equipe
+//  a bater: onde estão pra trás, quanto tem na mesa e qual relatório
+//  disparar. NÃO toca em nada da página dos vendedores.
+// ══════════════════════════════════════════════════════════════════
+
+// Frente (KPI) -> relatório/print que o coordenador dispara + a atitude
+var PREM_COORD_ACAO = {
+  faturamento: { rel:'META DO DIA', ic:'📊',
+    dica:'Cobre o ritmo diário e destrave os pedidos grandes que estão parados.' },
+  positivacao: { rel:'LISTA DE CLIENTES NÃO POSITIVADOS', ic:'📋',
+    dica:'Mande a lista de inativos pra cada um visitar e reativar a carteira.' },
+  sku: { rel:'ACOMPANHAMENTO DAS CAMPANHAS', ic:'📢',
+    dica:'Reforce as campanhas pra eles puxarem mais itens por cliente.' },
+  mix: { rel:'ACOMPANHAMENTO DAS CAMPANHAS', ic:'📢',
+    dica:'Direcione as campanhas dos produtos de maior margem.' },
+  churn: { rel:'ACOMPANHAMENTO DE CHURN', ic:'🔄',
+    dica:'Aponte quem parou de comprar pra recuperar antes do mês fechar.' }
+};
+
+// Soma os 9 por frente: quem está atrás, quanto tem na mesa, quantos bateram
+function agregarFrentes(calcs, regPorInd, arcPorInd){
+  var n = qgParse;
+  var frentes = {};
+  INDICADORES_PREM.forEach(function(ind){
+    frentes[ind.id] = { ind:ind, atras:[], naMesa:0, bateram:0 };
+  });
+  calcs.forEach(function(item){
+    var v = item.v, c = item.c;
+    var pcts = {
+      faturamento:n(v.pctFat), positivacao:n(v.pctPos),
+      sku:n(v.pctSku), mix:n(v.pctMix), churn:n(v.pctChurn)
+    };
+    var kpis = prepKPIs(v, c, pcts, regPorInd, arcPorInd);
+    kpis.forEach(function(k){
+      var f = frentes[k.id];
+      if(k.bateu){ f.bateram++; }
+      else { f.atras.push({ nome:nomeCurto(v.nome||''), falta:k.falta }); f.naMesa += (k.ganhoPot||0); }
+    });
+  });
+  var arr = INDICADORES_PREM.map(function(ind){ return frentes[ind.id]; });
+  arr.sort(function(a,b){ return b.naMesa - a.naMesa; }); // mais oportunidade primeiro
+  return arr;
+}
+
+// Central de ação: por frente, o que fazer esta semana
+function renderCentralAcao(frentes){
+  var h = '<div style="font-size:12px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:1px;margin:8px 0 10px">🎯 Central de ação — onde focar</div>';
+  frentes.forEach(function(f){
+    var ac = PREM_COORD_ACAO[f.ind.id] || { rel:'—', ic:'•', dica:'' };
+    if(f.atras.length === 0){
+      h += '<div style="background:rgba(34,197,94,0.07);border:1px solid var(--gn3);border-left:3px solid var(--gn);border-radius:11px;padding:12px 14px;margin-bottom:8px">';
+      h += '<div style="font-size:13px;font-weight:700;color:var(--t)">' + f.ind.icone + ' ' + f.ind.nome + ' <span style="color:var(--gn)">✅ frente fechada</span></div>';
+      h += '<div style="font-size:11px;color:var(--t2);margin-top:3px">Todos os 9 bateram. Manda um reconhecimento pra equipe nessa frente!</div>';
+      h += '</div>';
+    } else {
+      h += '<div style="background:rgba(245,158,11,0.06);border:1px solid var(--am3);border-left:3px solid var(--am);border-radius:11px;padding:13px 15px;margin-bottom:8px">';
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">';
+      h += '<div style="font-size:13px;font-weight:700;color:var(--t)">' + f.ind.icone + ' ' + f.ind.nome + '</div>';
+      h += '<div style="font-size:13px;font-weight:800;color:var(--gn);white-space:nowrap">' + fBRL(f.naMesa) + ' na mesa</div>';
+      h += '</div>';
+      h += '<div style="font-size:11px;color:var(--t2);margin-top:5px"><strong>' + f.atras.length + ' de 9 abaixo:</strong> ' + f.atras.map(function(a){ return a.nome; }).join(', ') + '</div>';
+      h += '<div style="font-size:12px;color:var(--t);margin-top:9px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:9px 11px"><strong style="color:#3B82F6">📤 ' + ac.ic + ' Envie: ' + ac.rel + '</strong><br><span style="color:var(--t2)">' + ac.dica + '</span></div>';
+      h += '</div>';
+    }
+  });
+  return h;
+}
+
+// Checklist da rotina de segunda e quarta (só relatórios de frentes ainda abertas)
+function renderRotinaSegQua(frentes){
+  var rels = {};
+  frentes.forEach(function(f){
+    if(f.atras.length){ var ac = PREM_COORD_ACAO[f.ind.id]; if(ac) rels[ac.rel] = ac.ic; }
+  });
+  var lista = Object.keys(rels);
+  if(!lista.length) return '';
+  var h = '<div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:14px;margin:4px 0 18px">';
+  h += '<div style="font-size:12px;font-weight:800;color:var(--pu);margin-bottom:8px">📅 Sua rotina de segunda e quarta — dispare pra equipe:</div>';
+  lista.forEach(function(r){
+    h += '<div style="font-size:12px;color:var(--t);padding:3px 0">' + rels[r] + '  ' + r + '</div>';
+  });
+  h += '</div>';
+  return h;
+}
+
+
 function renderResultadoEquipe(){
   var html = '';
   var vends = premiacaoData.vendedores;
@@ -2609,11 +2697,24 @@ function renderResultadoEquipe(){
     total_equipe += c.total_ganho;
     return {v:v, c:c};
   });
-  html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px">';
-  html += '<div style="background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px;text-align:center"><div style="font-size:10px;color:var(--t2);margin-bottom:4px">💰 Total Equipe</div><div style="font-size:20px;font-weight:800;color:var(--am)">'+fBRL(total_equipe)+'</div></div>';
-  html += '<div style="background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px;text-align:center"><div style="font-size:10px;color:var(--t2);margin-bottom:4px">👥 Vendedores</div><div style="font-size:20px;font-weight:800;color:var(--gn)">'+vends.length+'</div></div>';
+
+  var frentes = agregarFrentes(calcs, regPorInd, arcPorInd);
+  var naMesaTotal = frentes.reduce(function(s,f){ return s + f.naMesa; }, 0);
+  var frentesFechadas = frentes.filter(function(f){ return f.atras.length===0; }).length;
+
+  // Cartoes de topo (o TODO da regional)
+  html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">';
+  html += '<div style="background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px;text-align:center"><div style="font-size:10px;color:var(--t2);margin-bottom:4px">💰 Garantido</div><div style="font-size:19px;font-weight:800;color:var(--gn)">'+fBRL(total_equipe)+'</div></div>';
+  html += '<div style="background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px;text-align:center"><div style="font-size:10px;color:var(--t2);margin-bottom:4px">🎯 Na mesa</div><div style="font-size:19px;font-weight:800;color:var(--am)">'+fBRL(naMesaTotal)+'</div></div>';
+  html += '<div style="background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px;text-align:center"><div style="font-size:10px;color:var(--t2);margin-bottom:4px">🏁 Frentes</div><div style="font-size:19px;font-weight:800;color:var(--pu)">'+frentesFechadas+'/5</div></div>';
   html += '</div>';
-  html += '<div style="font-size:12px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px">👁️ Visão de cada vendedor (o que eles veem)</div>';
+
+  // Central de acao + rotina seg/qua
+  html += renderCentralAcao(frentes);
+  html += renderRotinaSegQua(frentes);
+
+  // Situacao de cada vendedor (dados + foco de gestao)
+  html += '<div style="font-size:12px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px">👥 Situação de cada vendedor</div>';
   calcs.forEach(function(item){
     html += renderVisaoVendedorCoord(item.v, item.c);
   });
@@ -2893,12 +2994,11 @@ function renderKPIsCoord(kpis){
     }
     h += '</div>';
   });
-  // foco: a próxima vitória mais fácil
+  // foco de gestao: qual frente priorizar com esse vendedor e o que enviar
   var alvo = kpis.filter(function(k){ return !k.bateu && k.falta != null; })[0];
   if(alvo){
-    h += '<div style="margin-top:10px;padding:10px 12px;background:rgba(245,158,11,0.1);border:1px solid var(--am3);border-radius:10px;font-size:12px;color:var(--t)">'
-      + iconeFalta(alvo.falta) + ' Próxima vitória: <strong>' + alvo.nome + '</strong> (' + fmtFalta(alvo.falta) + ', +' + fBRL(alvo.ganhoPot) + '). '
-      + '<span style="color:var(--t2)">' + alvo.msg.push + '</span></div>';
+    var ac = PREM_COORD_ACAO[alvo.id] || { rel:'—', ic:'•' };
+    h += '<div style="margin-top:10px;padding:10px 12px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:10px;font-size:12px;color:var(--t)">📤 <strong>Prioridade:</strong> '+alvo.nome+' ('+fmtFalta(alvo.falta)+', '+fBRL(alvo.ganhoPot)+' na mesa) → envie <strong style="color:#3B82F6">'+ac.rel+'</strong></div>';
   }
   return h;
 }

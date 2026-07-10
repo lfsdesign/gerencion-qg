@@ -2140,18 +2140,21 @@ function processarFatBase(){
   if(!txt){ toast('Cole a tabela de metas do mês primeiro.'); return; }
   var linhas = txt.split('\n').map(function(l){return l.trim();}).filter(function(l){return l!=='';});
   linhas.forEach(function(linha){
-    var m = linha.match(/^(.+?)[\t]+(.*[\d.].*)$/) || linha.match(/^(.+?)\s{2,}(.*[\d.].*)$/) || linha.match(/^(.+?)\s+(R\$.*)$/);
-    if(!m){
-      var partes = linha.split(/\s+/);
-      var valTxt = partes[partes.length-1];
-      if(/\d/.test(valTxt)){
-        var nome = partes.slice(0, partes.length-1).join(' ');
-        _premFatBaseMap[normNome(nome)] = qgParse(valTxt.replace(/\./g,''));
-      }
-      return;
+    // Separa por TAB ou 2+ espacos. Ex: "249 | Vinicius Barao | 995.000"
+    var partes = linha.split(/\t+|\s{2,}/).map(function(p){return p.trim();}).filter(function(p){return p!=='';});
+    if(partes.length < 2){
+      // ultimo recurso: separado por espaco simples
+      partes = linha.split(/\s+/);
     }
-    var nome = m[1].trim();
-    var val = qgParse(m[2].replace(/\./g,''));
+    // o VALOR e o ultimo pedaco que tem digito
+    var iVal = -1;
+    for(var i = partes.length - 1; i >= 0; i--){ if(/\d/.test(partes[i])){ iVal = i; break; } }
+    if(iVal < 1) return;
+    var val = qgParse(String(partes[iVal]).replace(/\./g,''));
+    // o NOME e o que sobra antes do valor, ignorando um CODIGO no inicio (ex: 249)
+    var nomePartes = partes.slice(0, iVal).filter(function(p){ return !/^\d+$/.test(p); });
+    var nome = nomePartes.join(' ').trim();
+    if(!nome || !val) return;
     _premFatBaseMap[normNome(nome)] = val;
   });
   aplicarFatBase(); // aplica em quem já está na lista

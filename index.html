@@ -195,6 +195,61 @@ textarea.inp{resize:vertical;min-height:80px;}
 .cap-foot-txt{font-size:10px;color:rgba(255,255,255,0.7);letter-spacing:1px;}
 .cap-seg{font-size:10px;color:#94A3B8;margin-top:4px;}
 
+/* ===== MIX 2.0 — visual do protótipo (prefixo mx- para não colidir) ===== */
+.mx-wrap{--mxam:#F59E0B;--mxgn:#10B981;--mxwa:#25D366;--mxpu:#6366f1;--mxt:#F0F6FF;--mxt2:#94A3B8;--mxt3:#475569;--mxs1:#0A1628;--mxs2:#0F1F35;--mxb:rgba(255,255,255,.08);--mxb2:rgba(255,255,255,.15)}
+.mx-h1{font-size:22px;font-weight:900;color:var(--mxt)}
+.mx-sub{font-size:12px;color:var(--mxt2);margin:2px 0 16px}
+.mx-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:14px 0}
+.mx-tabs button{padding:11px 10px;border-radius:10px;border:1px solid var(--mxb2);background:var(--mxs1);color:var(--mxt2);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mx-tabs button.on{background:var(--mxpu);border-color:var(--mxpu);color:#fff}
+.mx-segs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.mx-seg{border-radius:16px;padding:26px 18px;text-align:center;cursor:pointer;border:1px solid var(--mxb2)}
+.mx-seg .ic{font-size:34px;margin-bottom:10px}
+.mx-seg .nm{font-size:16px;font-weight:800}
+.mx-seg .qt{font-size:12px;margin-top:4px;opacity:.75}
+.mx-back{background:none;border:none;color:var(--mxt2);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;padding:6px 0;margin-bottom:8px}
+.mx-inp{width:100%;padding:11px 12px;background:var(--mxs2);border:1px solid var(--mxb);border-radius:9px;color:var(--mxt);font-family:inherit;font-size:14px;outline:none}
+.mx-inp:focus{border-color:var(--mxam)}
+textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
+.mx-lbl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mxt2);margin-bottom:6px;display:block}
+.mx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.mx-cat{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--mxs1);border:1px solid var(--mxb);border-left:3px solid var(--mxam);border-radius:0 10px 10px 0;padding:12px 14px;cursor:pointer;font-size:13px;font-weight:600;color:var(--mxt)}
+.mx-cat span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.mx-cat.vazio{border-left-color:var(--mxt3);opacity:.55}
+.mx-bdg{font-size:10px;font-weight:800;color:var(--mxam);background:var(--mxs2);border:1px solid rgba(245,158,11,.25);border-radius:20px;padding:2px 8px;white-space:nowrap}
+.mx-bdg.zero{color:var(--mxt3);border-color:var(--mxb)}
+.mx-card{background:var(--mxs1);border:1px solid var(--mxb);border-radius:14px;padding:16px;margin-bottom:14px}
+.mx-eyebrow{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--mxt2);margin:16px 0 10px}
+.mx-hint{font-size:11px;color:var(--mxt3);margin-top:6px;line-height:1.5}
+.mx-empty{text-align:center;color:var(--mxt3);padding:28px 10px;font-size:13px}
+.mx-btn{padding:11px 16px;border:none;border-radius:9px;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer}
+.mx-btn.am{background:var(--mxam);color:#0A0A0A}
+.mx-btn.gn{background:var(--mxgn);color:#06121f}
+.mx-btn.wa{background:var(--mxwa);color:#06121f}
+.mx-btn.pu{background:var(--mxpu);color:#fff}
+.mx-btn.gh{background:rgba(255,255,255,.06);color:var(--mxt2);font-weight:700;border:1px solid var(--mxb)}
+.mx-row{display:flex;gap:8px;flex-wrap:wrap}
+.mx-ov{position:fixed;inset:0;background:rgba(3,8,18,.78);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9999}
+.mx-md{background:var(--mxs1);border:1px solid var(--mxb2);border-radius:16px;padding:18px;width:100%;max-width:540px;max-height:82vh;overflow:auto}
+.mx-md h3{font-size:17px;font-weight:800;color:var(--mxt);margin:0}
+.mx-prod{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--mxs2);border:1px solid var(--mxb);border-radius:10px;padding:13px 14px;margin-bottom:8px;cursor:pointer}
+.mx-prod.ja{border-color:rgba(16,185,129,.5);background:rgba(16,185,129,.08)}
+.mx-ds{font-size:13px;font-weight:600;color:var(--mxt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.mx-cd{color:#fff;opacity:.7;font-weight:700;margin-right:8px}
+.mx-plus{color:var(--mxgn);font-weight:900;font-size:18px;flex-shrink:0}
+.mx-cot{background:var(--mxs1);border:1px solid var(--mxb);border-radius:12px;padding:13px 15px;margin-bottom:8px}
+.mx-cot .d{font-weight:700;font-size:13px;color:var(--mxt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.mx-campos{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:9px}
+.mx-campos .f{flex:1;min-width:95px}
+.mx-rem{background:none;border:none;color:#EF4444;cursor:pointer;font-size:11px;font-weight:700;flex-shrink:0}
+.mx-total{font-size:18px;font-weight:900;color:var(--mxgn);text-align:right;margin:12px 0}
+.mx-alerta{background:linear-gradient(135deg,rgba(251,146,60,.16),rgba(10,22,40,.95));border:2px solid #FB923C;border-radius:14px;padding:16px 18px;margin:16px 0;box-shadow:0 0 22px rgba(251,146,60,.12)}
+.mx-alerta .tit{font-size:14px;font-weight:900;color:#FBBF24;letter-spacing:.3px}
+.mx-alerta .txt{font-size:13px;color:var(--mxt);line-height:1.6;margin-top:8px}
+.mx-alerta .txt b{color:#FCD34D}
+.mx-line{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--mxs2);border:1px solid var(--mxb);border-radius:8px;padding:8px 10px;margin-bottom:6px}
+.mx-line span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;font-size:12px;color:var(--mxt)}
+.mx-line button{background:none;border:none;color:var(--mxt3);cursor:pointer;font-size:15px}
 </style>
 </head>
 <body>
@@ -228,7 +283,8 @@ textarea.inp{resize:vertical;min-height:80px;}
   <div id="menuBar">
     <button class="mb on" onclick="ir('home',this)">Inicio</button>
     <button class="mb" onclick="ir('negociacao',this)">Negociacao</button>
-    <button class="mb" onclick="ir('tipologia',this)">Mix por Segmento</button>
+    <button class="mb" onclick="ir('tipologia',this);mxAbrirMix()">Mix por Segmento</button>
+    <button class="mb" onclick="ir('cotacao',this);mxAbrirCot()">Cota&#231;&#227;o</button>
     <button class="mb" onclick="ir('catalogos',this)">Catalogos</button>
     <button class="mb" onclick="ir('documentos',this)">Documentacao</button>
     <button class="mb" onclick="ir('contatos',this);carregarContatos()">Contatos</button>
@@ -248,13 +304,14 @@ textarea.inp{resize:vertical;min-height:80px;}
       </div>
       <div class="mgrid">
         <div class="mcard" onclick="irM('negociacao')"><div class="micon">&#129309;</div><div class="mname">Negociacao</div><div class="mdesc">Solicitar aprovacao de preco</div></div>
-        <div class="mcard" onclick="irM('tipologia')"><div class="micon">&#128203;</div><div class="mname">Mix por Segmento</div><div class="mdesc">Lista por tipo de cliente</div></div>
+        <div class="mcard" onclick="irM('tipologia');mxAbrirMix()"><div class="micon">&#128203;</div><div class="mname">Mix por Segmento</div><div class="mdesc">Lista por tipo de cliente</div></div>
         <div class="mcard" onclick="irM('catalogos')"><div class="micon">&#128218;</div><div class="mname">Catalogos</div><div class="mdesc">Arcofoods e fornecedores</div></div>
         <div class="mcard" onclick="irM('documentos')"><div class="micon">&#128196;</div><div class="mname">Documentacao</div><div class="mdesc">PIX e documentos</div></div>
         <div class="mcard" onclick="irM('contatos');carregarContatos()"><div class="micon">&#128222;</div><div class="mname">Contatos</div><div class="mdesc">Arcofoods e fornecedores</div></div>
         <div class="mcard" onclick="irM('campanhas');carregarCampanhas()"><div class="micon">&#127919;</div><div class="mname">Campanhas</div><div class="mdesc">Promocoes ativas</div></div>
         <div class="mcard" onclick="irM('bivendas')"><div class="micon">&#128200;</div><div class="mname">BI'S</div><div class="mdesc">Paineis de performance</div></div>
         <div class="mcard" onclick="irM('mixestrategico');carregarMix()"><div class="micon">&#11088;</div><div class="mname">Mix Estrat&#233;gico</div><div class="mdesc">Produtos de alta rentabilidade</div></div>
+        <div class="mcard" onclick="irM('cotacao');mxAbrirCot()"><div class="micon">&#129534;</div><div class="mname">Cota&#231;&#227;o</div><div class="mdesc" id="cotCardDesc">Monte e envie ao cliente</div></div>
         <div class="mcard" onclick="irM('premiacao');carregarPremiacao()"><div class="micon">&#128176;</div><div class="mname">Minha Premia&#231;&#227;o</div><div class="mdesc">Veja quanto voc&#234; vai ganhar</div></div>
       </div>
     </div>
@@ -285,109 +342,19 @@ textarea.inp{resize:vertical;min-height:80px;}
       <div id="negRes"></div>
     </div>
 
-    <div id="tipologia" class="pg">
-      <div id="tipoList">
-        <div class="ph"><div class="pt">Mix por Segmento</div><div class="ps">Selecione o tipo de estabelecimento</div></div>
-        <div class="tgrid">
-          <div class="tcard tc-rest" onclick="abrirTipo('rest')"><div class="ticon">&#127869;</div><div class="tname">Restaurante Tradicional</div><div class="tcount">67 produtos</div></div>
-          <div class="tcard tc-kilo" onclick="abrirTipo('kilo')"><div class="ticon">&#9878;</div><div class="tname">Restaurante por Kilo</div><div class="tcount">71 produtos</div></div>
-          <div class="tcard tc-pizza" onclick="abrirTipo('pizza')"><div class="ticon">&#127829;</div><div class="tname">Pizzarias</div><div class="tcount">58 produtos</div></div>
-          <div class="tcard tc-pada" onclick="abrirTipo('pada')"><div class="ticon">&#129360;</div><div class="tname">Padarias</div><div class="tcount">63 produtos</div></div>
-          <div class="tcard tc-hotel" onclick="abrirTipo('hotel')"><div class="ticon">&#127970;</div><div class="tname">Hoteleria</div><div class="tcount">68 produtos</div></div>
-          <div class="tcard tc-lanch" onclick="abrirTipo('lanch')"><div class="ticon">&#129394;</div><div class="tname">Lanchonetes</div><div class="tcount">56 produtos</div></div>
-        </div>
-      </div>
-      <div id="listaBox">
-        <div class="lhdr">
-          <button class="lback" onclick="voltarTipo()">Voltar</button>
-          <div><div class="ltitle" id="listaTitulo">-</div><div class="lsub">Lista Basica de Produtos - Arcofoods</div></div>
-        </div>
+    <div id="tipologia" class="pg mx-wrap">
+      <div class="ph"><div class="pt">Mix por Segmento</div><div class="ps">Lista basica de produtos - Arcofoods</div></div>
+      <div id="mixBody"><div class="mx-empty">Carregando...</div></div>
+    </div>
 
-        <!-- Abas -->
-        <div class="tab-bar">
-          <button class="tab-btn on" id="tabLista" onclick="irAba('lista')">&#128203; Lista</button>
-          <button class="tab-btn" id="tabCot" onclick="irAba('cot')">
-            &#128176; Cotação
-            <span class="tab-badge" id="cotBadge">0</span>
-          </button>
-        </div>
-
-        <!-- Aba Lista -->
-        <div id="abaLista">
-          <div style="font-size:11px;color:var(--t2);margin-bottom:10px;padding:0 2px">&#9745; Marque os produtos para adicionar à cotação</div>
-          <div class="card" style="padding:8px"><div class="pgrid" id="prodGrid"></div></div>
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button class="btn bp" onclick="irAba('cot')" style="flex:1">&#128176; Ver Cotação (<span id="selCount">0</span>)</button>
-            <button class="btn bs" onclick="compartilhar()">&#128172; WhatsApp</button>
-          </div>
-        </div>
-
-        <!-- Aba Cotação -->
-        <div id="abaCot" style="display:none">
-          <div id="cotVazio" class="empty" style="padding:30px 20px">
-            <div class="eico">&#128196;</div>
-            Selecione produtos na aba Lista para montar a cotação.
-          </div>
-          <div id="cotConteudo" style="display:none">
-
-<!-- Cabeçalho das colunas -->
-            <div style="display:grid;grid-template-columns:minmax(0,2.2fr) 38px 58px 64px 24px;gap:6px;padding:0 8px 6px;font-size:8.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t3)">
-              <span>Pedido</span><span style="text-align:center">Qtd</span><span style="text-align:center">R$</span><span style="text-align:center">Subt.</span><span></span>
-            </div>
-            
-            <div id="cotList"></div>
-
- <!-- Campo Cliente -->
-            <div class="card" style="margin-top:12px;padding:14px;background:linear-gradient(135deg,rgba(245,158,11,0.08),var(--s1));border-color:rgba(245,158,11,0.3)">
-              <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--am);margin-bottom:8px">Cliente</div>
-              <input id="cotCliente" class="inp" placeholder="Nome do cliente (aparece na cotação)" style="border-color:rgba(245,158,11,0.4)">
-            </div>
-
-            <!-- Adicionar manual -->
-            <div class="card" style="margin-top:8px;padding:14px">
-              <div class="ct">Adicionar Produto Manual</div>
-            
-              <div style="display:flex;gap:8px;align-items:center">
-                <input id="cotManualNome" class="inp" placeholder="Nome do produto" style="flex:1;padding:9px 11px">
-                <button class="btn bp" onclick="addProdManual()" style="padding:9px 14px;white-space:nowrap">+ Add</button>
-              </div>
-            </div>
-
-<!-- Total Geral -->
-            <div id="cotTotalGeral" style="display:none;justify-content:space-between;align-items:center;background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(6,14,30,0.9));border:1px solid rgba(16,185,129,0.4);border-radius:10px;padding:12px 16px;margin-top:8px">
-              <span style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:1px">Total da Cotação</span>
-              <span class="cot-total-val" style="font-size:20px;font-weight:800;color:var(--gn)"></span>
-            </div>
-
-            <!-- Ações -->
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-            
-              <button class="btn bp" onclick="gerarImagemCot()" style="flex:1">&#128247; Gerar Imagem</button>
-              <button class="btn bs" onclick="salvarCotacao()">&#128190; Salvar</button>
-            </div>
-
-<!-- Preview da imagem -->
-            <div id="cotImgBox">
-              <div style="font-size:11px;color:var(--t2);margin-bottom:8px;text-align:center">Salve a imagem e anexe no WhatsApp, ou envie o texto direto</div>
-              <img id="cotImgEl" src="" alt="Cotação">
-              <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-                <button class="btn bp" onclick="salvarImagemCot()" style="flex:1;min-width:140px">&#128247; Salvar Imagem</button>
-              </div>
-              <div style="display:flex;gap:8px;margin-top:8px">
-                <button class="btn bg" onclick="compartilharCotWA()" style="flex:1">&#128172; WhatsApp (texto)</button>
-                <button class="btn bs" onclick="compartilharCotEmail()">&#9993; E-mail</button>
-              </div>
-            </div>
-            
-          </div>
-        </div>
-      </div>
-
-      <!-- Painel oculto para captura html2canvas -->
+    <div id="cotacao" class="pg mx-wrap">
+      <div class="ph"><div class="pt">Cotacao</div><div class="ps">Monte e envie a cotacao do seu cliente</div></div>
+      <div class="mx-tabs" id="cotTabs"></div>
+      <div id="cotBody"></div>
+      <div id="mixModal"></div>
       <div id="cotCapture"></div>
     </div>
 
-    <!-- MÓDULO QG DO DIA -->
     <div id="qgdia" class="pg">
       <div class="ph">
         <div class="pt">QG do Dia</div>
@@ -613,14 +580,7 @@ var USERS=[
   {c:'CLT429',n:'Victor Hugo',cd:'CLT 429',s:'CLT429VICTORHUGO',t:'vend'},
   {c:'RCA459',n:'Carlos Bordignon',cd:'RCA 459',s:'RCA459CARLOSBORDIGNON',t:'vend'}
 ];
-var TIPOS={
-  rest:{n:'Restaurante Tradicional',p:['Acucar Cristal','Acucar Mascavo','Adocante','Agua Mineral com Gas','Agua Mineral sem Gas','Alcool','Arroz Branco','Arroz Negro','Arroz Integral','Arroz Vermelho','Arroz Parborizado','Extrato de Tomate','Molho de Tomate','Azeite','Azeitona em Conserva','Bacalhau','Cafe em Po','Caldos','Temperos','Cerveja','Chas','Chocolate','Cobertura','Creme de Leite','Desengordurante','Desinfetante','Destilados','Detergente','Embalagens Delivery','Farinha Crua','Farinha de Rosca','Farinha de Trigo','Feijao Preto','Feijao Branco','Feijao Vermelho','Feijao Fradinho','Filme PVC','Guardanapo','Leite Condensado','Leite Integral','Leite Desnatado','Leite Semidesnatado','Leite de Coco','Luva','Touca','Mascara','Maionese','Maionese Vegana','Margarina','Manteiga','Massas Semola','Massas Com Ovos','Oleo de Algodao','Oleo de Soja','Oleo de Girassol','Palmito em Conserva','Queijo Ralado','Queijo Parmesao peca','Requeijao','Cream Cheese','Sabao em Po','Sabao Pastoso','Saco de Lixo','Toalha de Papel cozinha','Toalha de Papel para Mesa','Vinho','Xarope']},
-  kilo:{n:'Restaurante por Kilo',p:['Acucar Cristal','Acucar Mascavo','Adocante','Agua Mineral com Gas','Agua sem Gas','Alcool','Arroz Branco','Arroz Negro','Arroz Integral','Arroz Vermelho','Arroz Parborizado','Extrato de Tomate','Molho de Tomate','Azeite','Azeitona em Conserva','Bacalhau','Batata Palha','Cafe em Po','Caldos','Temperos','Cerveja','Chas','Chocolate','Snacks','Cloro','Agua Sanitaria','Creme de Leite','Desengordurante','Desinfetante','Destilados','Detergente','Embalagens Delivery','Farinha Crua','Farinha de Rosca','Farinha de Trigo','Feijao Preto','Feijao Branco','Feijao Vermelho','Feijao Fradinho','Filme PVC','Guardanapo','Leite Condensado','Leite Integral','Leite Desnatado','Leite Semidesnatado','Leite de Coco','Luva','Touca','Mascara','Maionese','Maionese Vegana','Margarina','Manteiga','Massas Semola','Massas Com Ovos','Milho','Ervilha','Molho para Salada','Oleo de Algodao','Oleo de Soja','Oleo de Girassol','Palmito em Conserva','Po para Refresco','Queijo Ralado','Queijo Parmesao Peca','Requeijao','Cream Cheese','Sabao em Po','Sabao Pastoso','Saco de Lixo','Toalha de Papel cozinha']},
-  pizza:{n:'Pizzarias',p:['Agua Mineral com Gas','Agua sem Gas','Alcool','Alho Frito','Extrato de Tomate','Molho de Tomate','Atum em Conserva','Azeite','Azeitona em Conserva','Bacalhau','Carne Seca','Cerveja','Champignon','Chas','Chocolate','Cobertura','Coco Ralado','Confeitos','Creme de Leite','Desinfetante','Detergente','Doce de Leite','Embalagens Delivery','Farinha de Trigo','Fermento Biologico','Filme PVC','Guardanapo','Katchup','Mostarda','Maionese','Leite Integral','Leite Desnatado','Leite Semidesnatado','Luva','Touca','Mascara','Margarina','Manteiga','Massas Semola','Massas Com Ovos','Oleo de Algodao','Oleo de Soja','Oleo de Girassol','Oregano','Palmito em Conserva','Queijo Ralado','Queijo Parmesao Peca','Requeijao','Cream Cheese','Sabao em Po','Sabao Pastoso','Saches','Saco de Lixo','Toalha de Papel cozinha','Toalha Para Mesa','Tomate Pelado','Tomate Seco','Vinho']},
-  pada:{n:'Padarias',p:['Acucar Cristal','Acucar Mascavo','Adocante','Agua Mineral com Gas','Agua sem Gas','Alcool','Extrato de Tomate','Molho de Tomate','Azeite','Azeitona em Conserva','Cafe em Po','Caldos','Temperos','Cerveja','Chocolate','Cobertura','Coco Ralado','Creme de Leite','Desengordurante','Desinfetante','Destilados','Detergente','Doce de Leite','Embalagens Delivery','Farinha Crua','Farinha de Trigo','Fermento Biologico','Fermento Quimico','Filme PVC','Fruta Cristalizada','Frutas Seca','Guardanapo','Leite Condensado','Leite Integral','Leite Desnatado','Leite Semidesnatado','Leite de Coco','Luva','Touca','Mascara','Maionese','Maionese Vegana','Margarina','Manteiga','Oleaginosas','Oleo de Algodao','Oleo de Soja','Oleo de Girassol','Palmito em Conserva','Polvilho','Queijo Ralado','Queijo Parmesao Peca','Requeijao','Cream Cheese','Sabao em Po','Sabao Pastoso','Saches','Saco de Lixo','Suco','Refresco','Toalha de Papel cozinha','Toalha Para Mesa','Vinho']},
-  hotel:{n:'Hoteleria',p:['Achocolatado','Acucar Cristal','Acucar Mascavo','Adocante','Agua Mineral com Gas','Agua sem Gas','Agua de Coco','Alcool','Amaciante','Arroz Branco','Arroz Negro','Arroz Integral','Arroz Vermelho','Arroz Parborizado','Extrato de Tomate','Molho de Tomate','Azeite','Azeitona em Conserva','Batata Palha','Biscoito','Cafe em Po','Cerveja','Chas','Chocolate','Snacks','Creme de Leite','Desengordurante','Desinfetante','Destilados','Detergente','Espumante','Farinha Crua','Farinha de Rosca','Farinha de Trigo','Feijao Preto','Feijao Branco','Feijao Vermelho','Feijao Fradinho','Geleia','Leite Condensado','Leite Integral','Leite Desnatado','Leite Semidesnatado','Leite de Coco','Luva','Touca','Mascara','Maionese','Maionese Vegana','Margarina','Manteiga','Mel','Oleo de Algodao','Oleo de Soja','Oleo de Girassol','Pao de Forma Tradicional','Pao de Forma Integral','Queijo Ralado','Requeijao','Cream Cheese','Sabao em Po','Sabao Pastoso','Saches','Saco de Lixo','Suco','Suco de Tomate','Vinho','Xarope']},
-  lanch:{n:'Lanchonetes',p:['Achocolatado','Acucar Cristal','Acucar Mascavo','Adocante','Agua Mineral com Gas','Agua sem Gas','Alcool','Arroz Branco','Arroz Negro','Arroz Parborizado','Batata Palha','Cafe em Po','Caldos','Temperos','Chocolate','Snacks','Desengordurante','Desinfetante','Detergente','Embalagens Delivery','Farinha de Trigo','Feijao Preto','Feijao Branco','Feijao Vermelho','Feijao Fradinho','Filme PVC','Gordura','Guardanapo','Katchup','Mostarda','Maionese','Leite Integral','Leite Desnatado','Leite Semidesnatado','Luva','Touca','Mascara','Maionese Vegana','Margarina','Manteiga','Oleo de Algodao','Oleo de Soja','Oleo de Girassol','Pao de Forma Tradicional','Pao de Forma Integral','Requeijao','Queijo','Cream Cheese','Sabao em Po','Sabao Pastoso','Saches','Saco de Lixo','Suco','Refresco','Tapioca','Trigo para Kibe']}
-};
+var TIPOS={};
 var UNI=['kg','fardo','cx','bombona','bag','pct','unid','balde','lata','saco','galao','caixa'];
 var eu=null;var prods=[];var tipoAtual=null;
 var mixCache=[];
@@ -815,278 +775,531 @@ function sair(){if(confirm('Deseja sair?')){eu=null;localStorage.removeItem('QG_
 function ir(id,btn){document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});var pg=document.getElementById(id);if(pg)pg.classList.add('on');document.querySelectorAll('.mb').forEach(function(b){b.classList.remove('on');});if(btn)btn.classList.add('on');window.scrollTo(0,0);}
 function irM(id){var btn=Array.from(document.querySelectorAll('.mb')).find(function(b){return b.getAttribute('onclick')&&b.getAttribute('onclick').indexOf("'"+id+"'")>=0;});ir(id,btn);}
 
-var cotSel=[];
+/* ═══════════ MIX 2.0 + COTAÇÃO (do protótipo aprovado) ═══════════ */
+var MIX_EMPRESA='arcofoods', EMPRESA_NOME='Arcofoods';
+var TIPOS={}, MIX_CATALOGO={}, MIX_OK=false;
+var mxSeg=null, mxBusca='', mxCart=[], mxCliente='', mxModo='completa', mxValidade=7;
+var gAba='produtos', gImport=[], gDestino='__auto__', gCatSel='', gSegSel='';
 
-function abrirTipo(t){
-  tipoAtual=t;var tp=TIPOS[t];if(!tp)return;
-  cotSel=[];
-  document.getElementById('tipoList').style.display='none';
-  document.getElementById('listaBox').style.display='block';
-  document.getElementById('listaTitulo').textContent=tp.n;
-  irAba('lista');renderLista();
-}
+function mxE(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function mxJ(s){return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+function mxNum(v){if(v===''||v==null)return 0;return parseFloat(String(v).replace(/\./g,'').replace(',','.'))||0;}
+function mxQtd(v){if(v===''||v==null)return 0;return parseFloat(String(v).replace(',','.'))||0;}
+function mxBRL(v){return 'R$ '+(Number(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function mxHoje(){var d=new Date();return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();}
+function mxAssina(){return eu?(eu.cd+' - '+eu.n+' ('+EMPRESA_NOME+')'):EMPRESA_NOME;}
+function mxCoord(){return eu&&eu.t==='coord';}
+function mxCats(){var s={};Object.keys(TIPOS).forEach(function(k){TIPOS[k].p.forEach(function(p){s[p]=1;});});Object.keys(MIX_CATALOGO).forEach(function(c){s[c]=1;});return Object.keys(s).sort();}
 
-function renderLista(){
-  var tp=TIPOS[tipoAtual];if(!tp)return;
-  var ps=tp.p.slice().sort();
-  var g=document.getElementById('prodGrid');
-  g.innerHTML=ps.map(function(p){
-    var sel=cotSel.some(function(s){return s.nome===p;});
-    var pEsc=p.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    return '<div class="pitem'+(sel?' pitem-sel':'')+'" onclick="toggleProdSel(\''+pEsc+'\')" style="cursor:pointer">'
-      +'<input type="checkbox" '+(sel?'checked':'')+' onclick="event.stopPropagation();toggleProdSel(\''+pEsc+'\')">'
-      +'<span>'+p+'</span>'
-      +'</div>';
-  }).join('');
-  atualizarBadge();
-}
-
-function toggleProdSel(nome){
-  var idx=cotSel.findIndex(function(s){return s.nome===nome;});
-  if(idx>=0){cotSel.splice(idx,1);}else{cotSel.push({nome:nome,qtd:'',preco:''});}
-  renderLista();
-}
-
-function irAba(aba){
-  document.getElementById('abaLista').style.display=aba==='lista'?'block':'none';
-  document.getElementById('abaCot').style.display=aba==='cot'?'block':'none';
-  document.getElementById('tabLista').classList.toggle('on',aba==='lista');
-  document.getElementById('tabCot').classList.toggle('on',aba==='cot');
-  if(aba==='cot')renderCotacao();
-}
-
-function atualizarBadge(){
-  var n=cotSel.length;
-  var b=document.getElementById('cotBadge');var c=document.getElementById('selCount');
-  if(b){b.textContent=n;b.classList.toggle('on',n>0);}
-  if(c)c.textContent=n;
-}
-
-function parseValorBR(v){
-  if(!v)return 0;
-  v=String(v).trim().replace(/\./g,'').replace(',','.');
-  return parseFloat(v)||0;
-}
-function parseQtdBR(v){
-  if(!v)return 0;
-  v=String(v).trim().replace(',','.');
-  return parseFloat(v)||0;
-}
-
-function renderCotacao(){
-  atualizarBadge();
-  var vazio=document.getElementById('cotVazio');var cont=document.getElementById('cotConteudo');
-  if(!cotSel.length){vazio.style.display='';cont.style.display='none';return;}
-  vazio.style.display='none';cont.style.display='';
-  var rows=cotSel.map(function(s,i){
-    return '<div class="cot-row">'
-      +'<input class="cot-nome-edit" value="'+s.nome.replace(/"/g,'&quot;')+'" onchange="cotSel['+i+'].nome=this.value" title="Editar nome">'
-      +'<div><input class="cot-inp" id="cotQtd'+i+'" type="text" inputmode="decimal" placeholder="Qtd" value="'+s.qtd+'" oninput="atualizarItemCot('+i+',\'qtd\',this.value)"><div class="cot-lbl">Qtd</div></div>'
-      +'<div><input class="cot-inp" id="cotPreco'+i+'" type="text" inputmode="decimal" placeholder="0,00" value="'+s.preco+'" oninput="atualizarItemCot('+i+',\'preco\',this.value)"><div class="cot-lbl">R$ Unit</div></div>'
-      +'<div class="cot-total" id="cotSub'+i+'">'+calcSubtotalTxt(s)+'</div>'
-      +'<button class="cot-del" onclick="removerCotItem('+i+')">&times;</button>'
-      +'</div>';
-  }).join('');
-  document.getElementById('cotList').innerHTML=rows;
-  atualizarTotalGeral();
-  document.getElementById('cotImgBox').style.display='none';
-}
-
-function calcSubtotalTxt(s){
-  var qtd=parseQtdBR(s.qtd);
-  var preco=parseValorBR(s.preco);
-  var subtotal=qtd&&preco?qtd*preco:0;
-  return subtotal?'R$ '+subtotal.toLocaleString('pt-BR',{minimumFractionDigits:2}):'';
-}
-
-function atualizarItemCot(i,campo,valor){
-  valor=valor.replace(/[^0-9,]/g,'');
-  cotSel[i][campo]=valor;
-  var subEl=document.getElementById('cotSub'+i);
-  if(subEl)subEl.textContent=calcSubtotalTxt(cotSel[i]);
-  atualizarTotalGeral();
-}
-
-function atualizarTotalGeral(){
-  var totalGeral=0;
-  cotSel.forEach(function(s){
-    var qtd=parseQtdBR(s.qtd);
-    var preco=parseValorBR(s.preco);
-    if(qtd&&preco)totalGeral+=qtd*preco;
+function mxGet(p){return supaFetch(p,{}).then(function(r){if(!r.ok)throw new Error('Supabase '+r.status);return r.json();});}
+function mxCarregar(cb){
+  var e='empresa=eq.'+encodeURIComponent(MIX_EMPRESA);
+  Promise.all([
+    mxGet('mix_segmentos?'+e+'&ativo=eq.true&select=chave,nome,icone,cor,ordem&order=ordem.asc'),
+    mxGet('mix_segmento_itens?'+e+'&select=segmento,categoria'),
+    mxGet('mix_catalogo?'+e+'&select=id,item,cod,ean,descricao&order=descricao.asc')
+  ]).then(function(r){
+    TIPOS={};
+    r[0].forEach(function(s){TIPOS[s.chave]={n:s.nome,p:[],ic:s.icone||'📦',cor:s.cor||'#94A3B8'};});
+    r[1].forEach(function(i){if(TIPOS[i.segmento])TIPOS[i.segmento].p.push(i.categoria);});
+    MIX_CATALOGO={};
+    r[2].forEach(function(p){if(!MIX_CATALOGO[p.item])MIX_CATALOGO[p.item]=[];MIX_CATALOGO[p.item].push({id:p.id,cod:p.cod||'',ean:p.ean||'',desc:p.descricao});});
+    MIX_OK=true; mxRenderMix(); mxBadge(); if(cb)cb();
+  }).catch(function(err){
+    document.getElementById('mixBody').innerHTML='<div class="mx-alerta"><div class="tit">⚠️ NÃO CONSEGUI CARREGAR</div><div class="txt">'+mxE(err.message)+'<br><br>Verifique a internet e tente de novo.</div></div><button class="mx-btn am" onclick="mxCarregar()">🔄 Tentar de novo</button>';
   });
-  var totEl=document.getElementById('cotTotalGeral');
-  if(totEl){
-    if(totalGeral>0){
-      totEl.style.display='flex';
-      totEl.querySelector('.cot-total-val').textContent='R$ '+totalGeral.toLocaleString('pt-BR',{minimumFractionDigits:2});
-    }else{
-      totEl.style.display='none';
-    }
-  }
 }
-  
-function removerCotItem(i){cotSel.splice(i,1);renderCotacao();renderLista();}
+function mxAbrirMix(){var b=document.getElementById('mixBody');if(!MIX_OK){b.innerHTML='<div class="mx-empty">⏳ Carregando...</div>';mxCarregar();}else mxRenderMix();}
 
-function addProdManual(){
-  var inp=document.getElementById('cotManualNome');var nome=inp.value.trim();
-  if(!nome){toast('Digite o nome do produto.');return;}
-  cotSel.push({nome:nome,qtd:'',preco:''});inp.value='';
-  renderCotacao();atualizarBadge();toast('Produto adicionado!');
-}
-
-  function gerarImagemCot(){
-  if(!cotSel.length){toast('Nenhum produto na cotação.');return;}
-  var tp=TIPOS[tipoAtual]||{n:'Cotação'};
-  var hoje=new Date().toLocaleDateString('pt-BR');
-  var vend=eu?eu.n:'';
-  var cod=eu?eu.cd:'';
-  var cli=(document.getElementById('cotCliente')||{value:''}).value.trim()||'';
-  var totalGeral=0;
- 
-var rows=cotSel.map(function(s){
-    var nome=s.nome.toUpperCase();
-    var qtd=s.qtd||'-';
-    var preco=parseValorBR(s.preco);
-    var pr=preco?preco.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
-    var qtdNum=parseQtdBR(s.qtd);
-    var subtotal=qtdNum&&preco?qtdNum*preco:0;
-    var subTxt=subtotal?subtotal.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
-    if(subtotal)totalGeral+=subtotal;
-    return '<div class="cap-row"><div class="cap-rn">'+nome+'</div><div class="cap-rv">'+qtd+'</div><div class="cap-rv-r">'+pr+'</div><div class="cap-rv-sub">'+subTxt+'</div></div>';
-  }).join('');
-    
-var totalRow=totalGeral>0
-   ?'<div style="display:grid;grid-template-columns:1fr 46px 60px 90px;column-gap:14px;padding:12px 24px;background:#1A2F4A;border-top:2px solid #F59E0B;margin-top:4px;box-sizing:border-box">'
-     +'<div style="font-size:12px;font-weight:800;color:#F59E0B;text-transform:uppercase;letter-spacing:1px;grid-column:1/4">TOTAL</div>'
-     +'<div style="font-size:15px;font-weight:900;color:#10B981;text-align:right">'+totalGeral.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div>'
-     +'</div>'
-    :'';
-    
-    var cliRow=cli
-    ?'<div class="cap-cli-row"><div class="cap-cli-label">Cliente:&nbsp;</div><div class="cap-cli-valor">'+cli+'</div></div>'
-    :'';
-  document.getElementById('cotCapture').innerHTML=
-    '<div style="background:#060E1E;font-family:Inter,sans-serif;">'
-    +'<div class="cap-topo">'
-    +'<div class="cap-logo">GERENCION QG &middot; ARCOFOODS &middot; NORTE FLUMINENSE</div>'
-    +'<div class="cap-vend">'+cod+' &mdash; '+vend+'</div>'
-    +'<div class="cap-titulo">COTA&Ccedil;&Atilde;O</div>'
-    +cliRow
-    +'</div>'
-    +'<div class="cap-body">'
-    +'<div class="cap-head"><span>Produto</span><span style="text-align:center">Qtd</span><span style="text-align:right">R$</span><span style="text-align:right">Subtot.</span></div>'
-    +rows
-    +totalRow
-    +'</div>'
-    +'<div class="cap-foot">'
-    +'<div class="cap-foot-txt">GERENCION QG &mdash; Todos os direitos reservados &copy;</div>'
-    +'<div class="cap-seg">'+tp.n+' &middot; '+hoje+'</div>'
-    +'</div>'
-    +'</div>';
-
-    toast('Gerando imagem...');
-  var capEl=document.getElementById('cotCapture');
-  capEl.style.position='fixed';
-  capEl.style.left='-9999px';
-  capEl.style.top='0';
-  capEl.style.zIndex='-1';
-  capEl.style.display='block';
-  setTimeout(function(){
-    html2canvas(capEl,{backgroundColor:'#060E1E',scale:2,useCORS:true,logging:false}).then(function(canvas){
-      var url=canvas.toDataURL('image/png');
-      document.getElementById('cotImgEl').src=url;
-      document.getElementById('cotImgBox').style.display='block';
-      toast('Imagem gerada! Toque para salvar.');
-      window._cotImageDataURL=url;
-      capEl.style.display='none';
-    }).catch(function(e){
-      toast('Erro ao gerar imagem.');
-      capEl.style.display='none';
+/* ---------- TELA 1: MIX POR SEGMENTO (só consulta + envio) ---------- */
+function mxRenderMix(){
+  var b=document.getElementById('mixBody'); if(!b) return;
+  var h='';
+  if(!mxSeg){
+    h+='<div class="mx-sub">Selecione o tipo de estabelecimento</div><div class="mx-segs">';
+    Object.keys(TIPOS).forEach(function(k){
+      var t=TIPOS[k];
+      h+='<div class="mx-seg" style="background:linear-gradient(160deg,'+t.cor+'22,rgba(10,22,40,.9));border-color:'+t.cor+'55" onclick="mxSeg=\''+k+'\';mxBusca=\'\';mxRenderMix()">'
+       +'<div class="ic">'+t.ic+'</div><div class="nm" style="color:'+t.cor+'">'+mxE(t.n)+'</div>'
+       +'<div class="qt" style="color:'+t.cor+'">'+t.p.length+' produtos</div></div>';
     });
-  },300);
+    h+='</div>';
+  } else {
+    var t=TIPOS[mxSeg], cats=t.p.slice().sort();
+    if(mxBusca){var q=mxBusca.toLowerCase();cats=cats.filter(function(c){return c.toLowerCase().indexOf(q)>=0;});}
+    h+='<button class="mx-back" onclick="mxSeg=null;mxRenderMix()">← Voltar aos segmentos</button>';
+    h+='<div class="mx-h1" style="font-size:20px;color:'+t.cor+'">'+t.ic+' '+mxE(t.n)+'</div>';
+    h+='<div class="mx-sub">Lista básica de produtos indicados para este tipo de cliente</div>';
+    h+='<div class="mx-row" style="margin-bottom:14px"><button class="mx-btn wa" style="flex:1" onclick="mxEnviarLista(\'wa\')">💬 Enviar por WhatsApp</button>';
+    h+='<button class="mx-btn gh" style="flex:1" onclick="mxEnviarLista(\'email\')">✉️ Enviar por Email</button></div>';
+    h+='<input class="mx-inp" style="margin-bottom:12px" placeholder="🔎 Filtrar na lista..." value="'+mxE(mxBusca)+'" oninput="mxBusca=this.value;mxFiltraGrid()">';
+    h+='<div class="mx-grid" id="mixGrid"></div>';
+    h+='<div class="mx-hint" id="mixConta"></div>';
+    h+='<div class="mx-hint">Para montar uma cotação, use o módulo <b>Cotação</b>.</div>';
+  }
+  b.innerHTML=h;
+  if(mxSeg) mxFiltraGrid();
+}
+function mxFiltraGrid(){
+  var g=document.getElementById('mixGrid'); if(!g||!mxSeg) return;
+  var t=TIPOS[mxSeg], cats=t.p.slice().sort();
+  var q=(mxBusca||'').trim().toLowerCase();
+  if(q) cats=cats.filter(function(c){ return c.toLowerCase().indexOf(q)>=0; });
+  g.innerHTML=cats.map(function(c){
+    var n=(MIX_CATALOGO[c]||[]).length;
+    return '<div class="mx-cat" style="cursor:default"><span>'+mxE(c)+'</span><span class="mx-bdg'+(n?'':' zero')+'">'+n+'</span></div>';
+  }).join('') || '<div class="mx-empty" style="grid-column:1/-1">Nenhum produto com esse nome nesta lista.</div>';
+  var ct=document.getElementById('mixConta');
+  if(ct) ct.innerHTML = q ? ('Mostrando '+cats.length+' de '+t.p.length+'. O número ao lado é quanto existe no catálogo.')
+                          : (t.p.length+' produtos indicados. O número ao lado é quanto existe no catálogo.');
+}
+function mxLeque(cat){
+  var ps=MIX_CATALOGO[cat]||[];
+  var h='<div class="mx-ov" onclick="if(event.target===this)mxFechar()"><div class="mx-md">';
+  h+='<h3>'+mxE(cat)+'</h3><div class="mx-hint" style="margin-bottom:14px">Escolha o produto — depois ajuste quantidade e preço na Cotação.</div>';
+  if(!ps.length) h+='<div class="mx-empty">Nenhum produto cadastrado nesta categoria.</div>';
+  ps.forEach(function(p,i){
+    var ja=mxCart.some(function(s){return s.desc===p.desc;});
+    h+='<div class="mx-prod'+(ja?' ja':'')+'" onclick="mxEscolher(\''+mxJ(cat)+'\','+i+')" title="'+mxE(p.desc)+'">'
+     +'<div class="mx-ds">'+(p.cod?'<span class="mx-cd">'+mxE(p.cod)+'</span>':'')+mxE(p.desc)+'</div>'
+     +'<div class="mx-plus">'+(ja?'✓':'+')+'</div></div>';
+  });
+  h+='<button class="mx-btn gh" style="width:100%;margin-top:6px" onclick="mxFechar()">Fechar</button></div></div>';
+  document.getElementById('mixModal').innerHTML=h;
+}
+function mxFechar(){document.getElementById('mixModal').innerHTML='';}
+function mxEscolher(cat,i){
+  var p=(MIX_CATALOGO[cat]||[])[i]; if(!p)return;
+  var k=mxCart.findIndex(function(s){return s.desc===p.desc;});
+  if(k>=0){mxCart.splice(k,1);toast('Removido da cotação.');}
+  else{mxCart.push({cod:p.cod,desc:p.desc,qtd:'',preco:''});toast('Adicionado à cotação!');}
+  mxLeque(cat); mxRenderCotTudo();
+}
+function mxBadge(){
+  var n=mxCart.length, d=document.getElementById('cotCardDesc');
+  if(d) d.textContent = n? (n+' item'+(n>1?'s':'')+' na cotação') : 'Monte e envie ao cliente';
+}
+function mxMailto(assunto,corpo){
+  corpo=String(corpo).replace(/\*/g,'');   // tira o negrito do WhatsApp (email e texto puro)
+  var url='mailto:?subject='+encodeURIComponent(assunto)+'&body='+encodeURIComponent(corpo);
+  if(url.length>1900){
+    if(navigator.clipboard) navigator.clipboard.writeText(corpo);
+    alert('A lista é grande demais para o email abrir sozinho.\nCopiei o texto — é só colar no seu email.');
+    url='mailto:?subject='+encodeURIComponent(assunto);
+  }
+  var a=document.createElement('a'); a.href=url; a.style.display='none';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ if(a.parentNode) document.body.removeChild(a); },600);
+}
+function mxEnviarLista(via){
+  if(!mxSeg) return;
+  var t=TIPOS[mxSeg];
+  var L=['*'+EMPRESA_NOME.toUpperCase()+' · Sugestão de mix*', mxHoje(),'','*Indicado para: '+t.n+'*','','———————————'];
+  t.p.slice().sort().forEach(function(c,i){ L.push(''); L.push('*'+(i+1)+'.* '+c); });
+  L.push('','———————————','');
+  L.push('Me responde com os itens e as quantidades que eu já fecho pra você!');
+  L.push('', mxAssina());
+  var txt=L.join('\n');
+  if(via==='wa') window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+  else mxMailto('Sugestão de mix - '+t.n, txt);
 }
 
-function salvarImagemCot(){
-  if(!window._cotImageDataURL){toast('Gere a imagem primeiro.');return;}
-  var tp=TIPOS[tipoAtual]||{n:'Cotacao'};
-  var link=document.createElement('a');
-  link.download='Cotacao-'+tp.n.replace(/[^a-zA-Z0-9]/g,'-')+'.png';
-  link.href=window._cotImageDataURL;
-  link.click();
-  toast('Imagem salva! Agora abra o WhatsApp e anexe a foto.');
+/* ---------- TELA 2: COTAÇÃO (o protótipo, com abas) ---------- */
+var cAba='segmentos', cSeg=null, cBusca='', cSearch='';
+function mxAbrirCot(){ if(!MIX_OK) mxCarregar(function(){mxRenderCotTudo();}); else mxRenderCotTudo(); }
+function mxRenderCotTudo(){
+  var abas=[['segmentos','🔎 Escolher produtos'],['cotacao','🧾 Cotação ('+mxCart.length+')']];
+  if(mxCoord()) abas=abas.concat([['importar','📥 Importar'],['gestao','⚙️ Gestão']]);
+  var t=document.getElementById('cotTabs');
+  if(t) t.innerHTML=abas.map(function(a){return '<button class="'+(cAba===a[0]?'on':'')+'" onclick="cAba=\''+a[0]+'\';mxRenderCotTudo()">'+a[1]+'</button>';}).join('');
+  var b=document.getElementById('cotBody');
+  if(cAba==='segmentos') b.innerHTML=cSegmentosView();
+  else if(cAba==='importar'){ gAba='produtos'; b.innerHTML=gProdutos(); }
+  else if(cAba==='gestao'){ if(gAba==='produtos')gAba='categorias'; b.innerHTML=gTabsGestao(); }
+  else mxRenderCot();
+  if(cAba==='segmentos'){ if(cSeg) cFiltraGrid(); if(cSearch) cotBuscar(cSearch); }
+  mxBadge();
 }
-  
-function salvarCotacao(){
-  if(!cotSel.length){toast('Nenhum produto na cotação.');return;}
-  var tp=TIPOS[tipoAtual]||{n:'Cotação'};
+function gTabsGestao(){
+  var abas=[['categorias','🏷️ Categorias'],['listas','📋 Listas'],['segmentos','🍽️ Segmentos']];
+  var h='<div class="mx-tabs">'+abas.map(function(a){return '<button class="'+(gAba===a[0]?'on':'')+'" onclick="gAba=\''+a[0]+'\';mxRenderCotTudo()">'+a[1]+'</button>';}).join('')+'</div>';
+  return h+(gAba==='categorias'?gCategorias():(gAba==='listas'?gListas():gSegmentos()));
+}
+function cSegmentosView(){
+  var h='';
+  h+='<div class="mx-card"><div class="mx-eyebrow" style="margin-top:0">🔎 Buscar produto</div>';
+  h+='<input class="mx-inp" id="cotBusca" placeholder="Digite: arroz, detergente, refrigerante..." value="'+mxE(cSearch)+'" oninput="cotBuscar(this.value)">';
+  h+='<div id="cotRes"></div>';
+  h+='<div class="mx-hint">Busca em todo o catálogo — inclusive fora das listas (bebidas, limpeza, descartáveis).</div></div>';
+  h+='<div class="mx-card"><div class="mx-eyebrow" style="margin-top:0">📋 Ou puxar pela lista de um segmento</div>';
+  h+='<select class="mx-inp" onchange="cSeg=this.value||null;cBusca=\'\';mxRenderCotTudo()">';
+  h+='<option value="">— escolha o segmento —</option>';
+  Object.keys(TIPOS).forEach(function(k){var t=TIPOS[k];
+    h+='<option value="'+k+'"'+(cSeg===k?' selected':'')+'>'+t.ic+' '+mxE(t.n)+' ('+t.p.length+')</option>';});
+  h+='</select>';
+  if(cSeg){
+    var t=TIPOS[cSeg], cats=t.p.slice().sort();
+    if(cBusca){var q=cBusca.toLowerCase();cats=cats.filter(function(c){return c.toLowerCase().indexOf(q)>=0;});}
+    h+='<input class="mx-inp" style="margin-top:10px" placeholder="Filtrar nesta lista..." value="'+mxE(cBusca)+'" oninput="cBusca=this.value;cFiltraGrid()">';
+    h+='<div class="mx-hint" style="margin-bottom:10px">Toque no produto para escolher a marca.</div>';
+    h+='<div class="mx-grid" id="cotGrid"></div>';
+  } else {
+    h+='<div class="mx-hint">A lista é só um atalho. Você pode cotar qualquer produto, de qualquer segmento.</div>';
+  }
+  h+='</div>';
+  if(mxCart.length) h+='<button class="mx-btn gn" style="width:100%" onclick="cAba=\'cotacao\';mxRenderCotTudo()">🧾 Ir para a cotação ('+mxCart.length+' item'+(mxCart.length>1?'s':'')+')</button>';
+  return h;
+}
+function mxRenderCot(){
+  var b=document.getElementById('cotBody'); if(!b) return;
+  var h='';
+  h+='<div class="mx-card"><label class="mx-lbl">Cliente (opcional)</label>';
+  h+='<input class="mx-inp" placeholder="Ex: Pizzaria Sabor da Praça" value="'+mxE(mxCliente)+'" oninput="mxCliente=this.value">';
+  h+='<div class="mx-hint">Vendedor: <b style="color:var(--mxt)">'+mxE(mxAssina())+'</b></div></div>';
+
+  if(!mxCart.length){ b.innerHTML=h+'<div class="mx-empty">Cotação vazia. Vá na aba <b>Segmentos</b> e escolha os produtos.</div>'; return; }
+
+  var modos=[['lista','📋 Só a lista','sem preço'],['preco','🏷️ Com preço','sem quantidade'],['completa','🧾 Completa','qtd, preço e total']];
+  h+='<div class="mx-card"><div class="mx-eyebrow" style="margin-top:0">O que enviar</div><div class="mx-row">';
+  modos.forEach(function(m){
+    h+='<button class="mx-btn '+(mxModo===m[0]?'am':'gh')+'" style="flex:1;min-width:130px" onclick="mxModo=\''+m[0]+'\';mxRenderCotTudo()">'+m[1]+'<div style="font-size:10px;font-weight:600;opacity:.8;margin-top:2px">'+m[2]+'</div></button>';
+  });
+  h+='</div>';
+  if(mxModo!=='lista'){ h+='<label class="mx-lbl" style="margin-top:12px">Preço válido por (dias)</label><input class="mx-inp" style="max-width:120px" value="'+mxValidade+'" oninput="mxValidade=this.value">'; }
+  h+='</div>';
+
+  h+='<div class="mx-eyebrow">Itens ('+mxCart.length+')</div>';
+  var total=0;
+  mxCart.forEach(function(it,i){
+    var sub=mxQtd(it.qtd)*mxNum(it.preco); total+=sub;
+    h+='<div class="mx-cot"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px">';
+    h+='<div class="d" title="'+mxE(it.desc)+'">'+(it.cod?'<span class="mx-cd">'+mxE(it.cod)+'</span>':'')+mxE(it.desc)+'</div>';
+    h+='<button class="mx-rem" onclick="mxCart.splice('+i+',1);mxRenderCotTudo()">remover</button></div>';
+    h+='<div class="mx-campos">';
+    h+='<div class="f"><label class="mx-lbl">Qtd</label><input class="mx-inp" inputmode="decimal" value="'+mxE(it.qtd)+'" oninput="mxSet('+i+',\'qtd\',this.value)"></div>';
+    h+='<div class="f"><label class="mx-lbl">Preço unit.</label><input class="mx-inp" inputmode="decimal" placeholder="0,00" value="'+mxE(it.preco)+'" oninput="mxSet('+i+',\'preco\',this.value)"></div>';
+    h+='<div class="f"><label class="mx-lbl">Subtotal</label><input class="mx-inp" disabled value="'+mxBRL(sub)+'" style="color:var(--mxgn);font-weight:700"></div>';
+    h+='</div></div>';
+  });
+  if(mxModo==='completa') h+='<div class="mx-total">Total: '+mxBRL(total)+'</div>';
+
+  h+='<div class="mx-alerta"><div class="tit">⚠️ ATENÇÃO — CONFIRME O ESTOQUE</div>';
+  h+='<div class="txt">A ruptura muda <b>todos os dias</b>. Antes de enviar, <b>confirme a disponibilidade</b> de cada item. O QG não controla estoque — quem sabe o que tem hoje é você.</div></div>';
+
+  h+='<div class="mx-row"><button class="mx-btn gn" style="flex:1" onclick="cotCopiar()">📋 Copiar</button>';
+  h+='<button class="mx-btn wa" style="flex:1" onclick="cotWhats()">💬 WhatsApp</button>';
+  h+='<button class="mx-btn gh" onclick="cotEmail()">✉️ Email</button></div>';
+  h+='<div class="mx-row" style="margin-top:8px"><button class="mx-btn am" style="flex:1" onclick="cotImagem()">🖼️ Gerar Imagem</button>';
+  h+='<button class="mx-btn gh" onclick="cotSalvar()">💾 Salvar</button>';
+  h+='<button class="mx-btn gh" onclick="cotLimpar()">Limpar</button></div>';
+  h+='<div id="cotMsg" style="color:var(--mxgn);font-size:12px;font-weight:700;margin-top:8px"></div>';
+  b.innerHTML=h;
+}
+function mxSet(i,c,v){
+  mxCart[i][c]=v;
+  var total=0; mxCart.forEach(function(x){total+=mxQtd(x.qtd)*mxNum(x.preco);});
+  var t=document.querySelector('.mx-total'); if(t)t.textContent='Total: '+mxBRL(total);
+  var cots=document.querySelectorAll('.mx-cot');
+  if(cots[i]){var f=cots[i].querySelectorAll('input'); if(f[2])f[2].value=mxBRL(mxQtd(mxCart[i].qtd)*mxNum(mxCart[i].preco));}
+}
+function cFiltraGrid(){
+  var g=document.getElementById('cotGrid'); if(!g||!cSeg) return;
+  var cats=TIPOS[cSeg].p.slice().sort();
+  var q=(cBusca||'').trim().toLowerCase();
+  if(q) cats=cats.filter(function(c){ return c.toLowerCase().indexOf(q)>=0; });
+  g.innerHTML=cats.map(function(c){
+    var n=(MIX_CATALOGO[c]||[]).length;
+    return '<div class="mx-cat'+(n?'':' vazio')+'" onclick="mxLeque(\''+mxJ(c)+'\')"><span>'+mxE(c)+'</span><span class="mx-bdg'+(n?'':' zero')+'">'+n+'</span></div>';
+  }).join('') || '<div class="mx-empty" style="grid-column:1/-1">Nada com esse nome nesta lista.</div>';
+}
+function cotBuscar(t){
+  var box=document.getElementById('cotRes'); if(!box) return;
+  cSearch=t||'';
+  var q=cSearch.trim().toLowerCase();
+  if(q.length<2){box.innerHTML='';return;}
+  var cats=mxCats().filter(function(c){ return c.toLowerCase().indexOf(q)>=0; });
+  var prods=[];
+  Object.keys(MIX_CATALOGO).forEach(function(c){ MIX_CATALOGO[c].forEach(function(p){
+    if(p.desc.toLowerCase().indexOf(q)>=0||(p.cod||'').indexOf(q)>=0) prods.push(p); }); });
+  if(!cats.length && !prods.length){ box.innerHTML='<div class="mx-hint" style="padding:10px 0">Nada encontrado.</div>'; return; }
+  var s='';
+  if(cats.length){
+    s+='<div class="mx-eyebrow">Categorias ('+cats.length+')</div><div class="mx-grid">';
+    cats.forEach(function(c){ var n=(MIX_CATALOGO[c]||[]).length;
+      s+='<div class="mx-cat'+(n?'':' vazio')+'" onclick="mxLeque(\''+mxJ(c)+'\')"><span>'+mxE(c)+'</span><span class="mx-bdg'+(n?'':' zero')+'">'+n+'</span></div>'; });
+    s+='</div>';
+  }
+  if(prods.length){
+    s+='<div class="mx-eyebrow">Produtos ('+prods.length+')</div>';
+    s+=prods.slice(0,25).map(function(p){
+      var ja=mxCart.some(function(x){return x.desc===p.desc;});
+      return '<div class="mx-prod'+(ja?' ja':'')+'" onclick="cotAdd(\''+mxJ(p.desc)+'\',\''+mxJ(p.cod)+'\')" title="'+mxE(p.desc)+'">'
+       +'<div class="mx-ds">'+(p.cod?'<span class="mx-cd">'+mxE(p.cod)+'</span>':'')+mxE(p.desc)+'</div>'
+       +'<div class="mx-plus">'+(ja?'✓':'+')+'</div></div>'; }).join('');
+    if(prods.length>25) s+='<div class="mx-hint">Mostrando 25 de '+prods.length+'. Refine a busca.</div>';
+  }
+  box.innerHTML=s;
+}
+function cotAdd(desc,cod){
+  var k=mxCart.findIndex(function(s){return s.desc===desc;});
+  if(k>=0){mxCart.splice(k,1);toast('Removido.');}else{mxCart.push({cod:cod,desc:desc,qtd:'',preco:''});toast('Adicionado!');}
+  mxRenderCotTudo();
+}
+function cotLimpar(){ if(confirm('Limpar a cotação toda?')){mxCart=[];mxRenderCotTudo();} }
+
+function cotTexto(){
+  var L=[], tit = mxModo==='lista'?'Sugestão de mix':(mxModo==='preco'?'Tabela de preços':'Cotação');
+  L.push('*'+EMPRESA_NOME.toUpperCase()+' · '+tit+'*');
+  var cab=mxHoje();
+  if(mxModo!=='lista'&&Number(mxValidade)>0) cab+=' · válida por '+mxValidade+(Number(mxValidade)===1?' dia':' dias');
+  L.push(cab);
+  if(mxCliente.trim()){L.push('');L.push('*Cliente:* '+mxCliente.trim());}
+  L.push('','———————————');
+  var total=0;
+  mxCart.forEach(function(it,i){
+    L.push(''); L.push('*'+(i+1)+'.* '+it.desc);
+    if(mxModo==='preco') L.push('*'+mxBRL(mxNum(it.preco))+'*');
+    else if(mxModo==='completa'){var s=mxQtd(it.qtd)*mxNum(it.preco);total+=s;L.push((it.qtd||'0')+' x '+mxBRL(mxNum(it.preco))+' = *'+mxBRL(s)+'*');}
+  });
+  L.push('','———————————');
+  if(mxModo==='completa'){L.push('');L.push('*TOTAL: '+mxBRL(total)+'*');}
+  L.push('');
+  L.push('*ATENÇÃO:* itens sujeitos à disponibilidade de estoque — confirmo a disponibilidade no fechamento do pedido.');
+  L.push('');
+  L.push(mxModo==='lista'?'Me responde com os itens e as quantidades que eu já fecho pra você!':(mxModo==='preco'?'Me diz as quantidades que eu fecho o pedido!':'Qualquer dúvida é só me chamar!'));
+  L.push('', mxAssina());
+  return L.join('\n');
+}
+function cotCopiar(){
+  var t=cotTexto();
+  if(navigator.clipboard) navigator.clipboard.writeText(t).then(function(){document.getElementById('cotMsg').textContent='✅ Copiado!';},function(){prompt('Copie:',t);});
+  else prompt('Copie:',t);
+}
+function cotWhats(){ window.open('https://wa.me/?text='+encodeURIComponent(cotTexto()),'_blank'); }
+function cotEmail(){
+  var tit = mxModo==='lista'?'Sugestão de mix':(mxModo==='preco'?'Tabela de preços':'Cotação');
+  mxMailto(EMPRESA_NOME+' - '+tit+(mxCliente?' - '+mxCliente:''), cotTexto());
+}
+function cotSalvar(){
+  if(!mxCart.length){toast('Nenhum produto na cotação.');return;}
+  var total=0; mxCart.forEach(function(x){total+=mxQtd(x.qtd)*mxNum(x.preco);});
   supaFetch('cotacoes',{method:'POST',body:JSON.stringify({
-    segmento:tp.n,vendedor:eu?eu.n:'',codigo:eu?eu.cd:'',
-    produtos:JSON.stringify(cotSel),criado_em:new Date().toISOString()
+    segmento:mxSeg?TIPOS[mxSeg].n:null, vendedor:eu?eu.n:'', codigo:eu?eu.cd:'',
+    cliente:mxCliente||null, total:total||null,
+    produtos:JSON.stringify(mxCart), criado_em:new Date().toISOString()
   })}).then(function(){toast('Cotação salva!');}).catch(function(){toast('Salvo! (offline)');});
 }
+function cotImagem(){
+  if(!mxCart.length){toast('Nenhum produto na cotação.');return;}
+  var total=0;
+  var linhas=mxCart.map(function(it,i){
+    var s=mxQtd(it.qtd)*mxNum(it.preco); total+=s;
+    return '<tr><td style="padding:8px 6px;border-bottom:1px solid #1e293b;color:#e2e8f0;font-size:12px">'+(i+1)+'. '+mxE(it.desc)+'</td>'
+      +'<td style="padding:8px 6px;border-bottom:1px solid #1e293b;color:#94a3b8;text-align:right;font-size:12px;white-space:nowrap">'+(it.qtd||'0')+' x '+mxBRL(mxNum(it.preco))+'</td>'
+      +'<td style="padding:8px 6px;border-bottom:1px solid #1e293b;color:#10B981;text-align:right;font-weight:700;font-size:12px;white-space:nowrap">'+mxBRL(s)+'</td></tr>';
+  }).join('');
+  var cap=document.getElementById('cotCapture');
+  cap.style.cssText='position:fixed;left:-9999px;top:0;width:620px;background:#0A1628;padding:24px;font-family:Inter,Arial,sans-serif';
+  cap.innerHTML='<div style="color:#F0F6FF;font-size:20px;font-weight:900">'+EMPRESA_NOME.toUpperCase()+' · Cotação</div>'
+   +'<div style="color:#94a3b8;font-size:12px;margin-top:2px">'+mxHoje()+(Number(mxValidade)>0?' · válida por '+mxValidade+' dias':'')+'</div>'
+   +(mxCliente?'<div style="color:#F0F6FF;font-size:13px;margin-top:10px"><b>Cliente:</b> '+mxE(mxCliente)+'</div>':'')
+   +'<table style="width:100%;border-collapse:collapse;margin-top:14px">'+linhas+'</table>'
+   +'<div style="text-align:right;color:#10B981;font-size:18px;font-weight:900;margin-top:12px">TOTAL: '+mxBRL(total)+'</div>'
+   +'<div style="color:#FBBF24;font-size:11px;margin-top:14px;line-height:1.5"><b>ATENÇÃO:</b> itens sujeitos à disponibilidade de estoque — confirmo a disponibilidade no fechamento do pedido.</div>'
+   +'<div style="color:#94a3b8;font-size:12px;margin-top:14px">'+mxE(mxAssina())+'</div>';
+  html2canvas(cap,{backgroundColor:'#0A1628',scale:2}).then(function(cv){
+    var link=document.createElement('a');
+    link.download='Cotacao-'+(mxCliente||'cliente').replace(/[^a-zA-Z0-9]/g,'-')+'.png';
+    link.href=cv.toDataURL('image/png'); link.click();
+    cap.innerHTML=''; toast('Imagem salva! Anexe no WhatsApp.');
+  }).catch(function(){ cap.innerHTML=''; toast('Não consegui gerar a imagem.'); });
+}
 
-function compartilharCotWA(){
-  var tp=TIPOS[tipoAtual]||{n:'Cotação'};
-  var hoje=new Date().toLocaleDateString('pt-BR');
-  var cod=eu?eu.cd:'';
-  var vend=eu?eu.n:'';
-  var cli=(document.getElementById('cotCliente')||{value:''}).value.trim();
-  var totalGeral=0;
-  var ls=[
-    '*GERENCION QG \u00b7 ARCOFOODS \u00b7 NORTE FLUMINENSE*',
-    '_'+cod+' \u2014 '+vend+'_',
-    '',
-    '\uD83D\uDCCB *COTA\u00c7\u00c3O \u2014 '+tp.n.toUpperCase()+'*',
-    '\uD83D\uDCC5 '+hoje,
-    ''
-  ];
-  if(cli)ls.push('\uD83C\uDFEA *Cliente:* '+cli,'');
-  
-cotSel.forEach(function(s,i){
-    var nome=s.nome.toUpperCase();
-    var qtd=parseQtdBR(s.qtd);
-    var qtdTxt=qtd?String(qtd):'-';
-    var preco=parseValorBR(s.preco);
-    var prTxt=preco?preco.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
-    var subtotal=qtd&&preco?qtd*preco:0;
-    if(subtotal)totalGeral+=subtotal;
-    ls.push((i+1)+'. *'+nome+'*');
-    if(qtd||preco){
-      var linha='     Qtd: '+qtdTxt+'   \u2502   R$ '+prTxt;
-      if(subtotal)linha+='   \u2502   Subt: R$ '+subtotal.toLocaleString('pt-BR',{minimumFractionDigits:2});
-      ls.push(linha);
-    }
-  });
-  
-  if(totalGeral>0){
-    ls.push('');
-    ls.push('\uD83D\uDCB0 *TOTAL: R$ '+totalGeral.toLocaleString('pt-BR',{minimumFractionDigits:2})+'*');
+
+/* ═══════════ GESTÃO DO MIX (só coordenador) ═══════════ */
+function gProdutos(){
+  var cats=mxCats();
+  if(!gCatSel||cats.indexOf(gCatSel)<0) gCatSel=cats[0]||'';
+  var h='<div class="mx-card"><div class="mx-eyebrow" style="margin-top:0">📥 Importar do Sistema</div>';
+  h+='<div class="mx-hint" style="margin-bottom:12px">Seu sistema não deixa copiar? Printe a tela, passe no <b>Google Lens</b> e cole o texto aqui. O app descarta preço, código de barras, marca e estoque — guarda só <b>código + descrição</b>.</div>';
+  h+='<label class="mx-lbl">Jogar os produtos em</label>';
+  h+='<select class="mx-inp" style="margin-bottom:4px" onchange="gDestino=this.value;gImport=[];mxRenderCotTudo()">';
+  h+='<option value="__auto__"'+(gDestino==='__auto__'?' selected':'')+'>🤖 Detectar automaticamente</option>';
+  cats.forEach(function(c){h+='<option value="'+mxE(c)+'"'+(gDestino===c?' selected':'')+'>📁 Tudo em: '+mxE(c)+'</option>';});
+  h+='</select><div class="mx-hint" style="margin-bottom:12px">'+(gDestino==='__auto__'?'Para telas com produtos variados. O que não reconhecer, ele pergunta.':'Você filtrou o sistema e printou só um tipo. Vai tudo direto, sem adivinhação.')+'</div>';
+  h+='<textarea class="mx-inp" id="gBlob" placeholder="Cole aqui o texto do Google Lens..."></textarea>';
+  h+='<button class="mx-btn am" style="width:100%;margin-top:10px" onclick="gAnalisar()">🔎 Analisar</button></div>';
+  if(gImport.length){
+    var ok=gImport.filter(function(r){return r.item;}).length, nao=gImport.length-ok;
+    h+='<div class="mx-card"><div class="mx-eyebrow" style="margin-top:0">Confira antes de importar</div>';
+    h+='<div class="mx-hint" style="margin-bottom:10px">✅ <b style="color:#10B981">'+ok+'</b> reconhecido(s)'+(nao?' · ⚠️ <b style="color:#FBBF24">'+nao+'</b> precisam de categoria':'')+'</div>';
+    gImport.forEach(function(r,i){
+      h+='<div style="background:var(--mxs2);border:1px solid '+(r.item?'var(--mxb)':'rgba(245,158,11,.35)')+';border-radius:10px;padding:10px 12px;margin-bottom:7px">';
+      h+='<div style="display:flex;align-items:center;gap:8px"><input type="checkbox" '+(r.usar?'checked':'')+' onchange="gImport['+i+'].usar=this.checked">';
+      h+='<div class="mx-ds" style="font-size:12px" title="'+mxE(r.desc)+'">'+(r.cod?'<span class="mx-cd">'+mxE(r.cod)+'</span>':'')+mxE(r.desc)+'</div></div>';
+      if(gDestino==='__auto__'){
+        h+='<select class="mx-inp" style="margin-top:8px;font-size:12px;padding:7px 9px" onchange="gImport['+i+'].item=this.value"><option value="">— escolha a categoria —</option>';
+        cats.forEach(function(c){h+='<option'+(r.item===c?' selected':'')+'>'+mxE(c)+'</option>';});
+        h+='</select>';
+      }
+      h+='</div>';
+    });
+    if(nao) h+='<button class="mx-btn gh" style="width:100%;margin-bottom:8px" onclick="gImport.forEach(function(r){if(!r.item)r.usar=false;});mxRenderCotTudo()">✖ Desmarcar os '+nao+' não reconhecidos</button>';
+    h+='<button class="mx-btn gn" style="width:100%" onclick="gImportar()">✅ Importar os marcados</button></div>';
   }
-
-  ls.push('');
-  ls.push('_GERENCION QG \u2014 Todos os direitos reservados_');
-  window.open('https://wa.me/?text='+encodeURIComponent(ls.join('\n')),'_blank');
-}
-  
-function compartilharCotEmail(){
-  var tp=TIPOS[tipoAtual]||{n:'Cotação'};
-  var hoje=new Date().toLocaleDateString('pt-BR');
-  var corpo='Cotação — '+tp.n+'\n'+hoje+'\n\n';
-  cotSel.forEach(function(s,i){
-    var l=(i+1)+'. '+s.nome;
-    if(s.qtd)l+=' | Qtd: '+s.qtd;
-    if(s.preco)l+=' | R$ '+parseFloat(s.preco).toLocaleString('pt-BR',{minimumFractionDigits:2});
-    corpo+=l+'\n';
+  var atuais=MIX_CATALOGO[gCatSel]||[];
+  h+='<div class="mx-card"><div class="mx-eyebrow" style="margin-top:0">Cadastrados em "'+mxE(gCatSel)+'" ('+atuais.length+')</div>';
+  h+='<select class="mx-inp" style="margin-bottom:10px" onchange="gCatSel=this.value;mxRenderCotTudo()">'+cats.map(function(c){return '<option'+(c===gCatSel?' selected':'')+'>'+mxE(c)+'</option>';}).join('')+'</select>';
+  atuais.forEach(function(p){
+    h+='<div class="mx-line"><span title="'+mxE(p.desc)+'">'+(p.cod?'<span class="mx-cd">'+mxE(p.cod)+'</span>':'')+mxE(p.desc)+'</span><button onclick="gApagarProd('+p.id+')">✕</button></div>';
   });
-  corpo+='\nGERENCION QG \u00b7 Arcofoods Norte Fluminense';
-  window.location.href='mailto:?subject='+encodeURIComponent('Cotação Arcofoods — '+tp.n)+'&body='+encodeURIComponent(corpo);
+  if(!atuais.length) h+='<div class="mx-hint">Nenhum produto ainda.</div>';
+  h+='<label class="mx-lbl" style="margin-top:12px">Adicionar na mão (código + descrição, um por linha)</label>';
+  h+='<textarea class="mx-inp" id="gManual" style="min-height:60px" placeholder="12345 DESCRIÇÃO DO PRODUTO"></textarea>';
+  h+='<button class="mx-btn am" style="width:100%;margin-top:8px" onclick="gAddManual()">➕ Adicionar</button></div>';
+  return h;
+}
+function gNorm(s){return String(s).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z0-9 ]/g,' ').replace(/\s+/g,' ').trim();}
+function gDetecta(d0,cats){var d=gNorm(d0),m=null,t=0;
+  cats.forEach(function(c){var n=gNorm(c);var fim=d.length>n.length&&d.slice(-(n.length+1))===' '+n;
+    if(d===n||d.indexOf(n+' ')===0||d.indexOf(' '+n+' ')>=0||fim){if(n.length>t){m=c;t=n.length;}}});
+  if(m)return m;
+  cats.forEach(function(c){var n=gNorm(c);if(n.length>=4&&d.indexOf(n)>=0&&n.length>t){m=c;t=n.length;}});
+  return m;}
+function gEtiq(l){return /^\s*(c[oó]d\.?\s*bar|marca|pre[cç]o|und|unid|est)\s*:?\s*$/i.test(l)||/^\s*(c[oó]d\.?\s*bar|marca|pre[cç]o|und|unid|est)\s*:/i.test(l);}
+function gEAN(l){return /^\d{12,14}$/.test(l.trim());}
+function gPreco(l){var t=l.trim();return /R\$/.test(t)||/^\d+,\d+$/.test(t)||/^\d+\.\d{4,}$/.test(t);}
+function gCod(l){var t=l.trim();if(gEAN(t)||gPreco(t))return false;return /^\d{1,3}(\.\d{3})+$/.test(t)||/^\d{1,7}$/.test(t);}
+function gDescOk(l){var t=l.trim();if(gEtiq(t)||gPreco(t)||gEAN(t)||gCod(t))return false;if(t.length<12)return false;if((t.match(/[A-Za-zÀ-ÿ]/g)||[]).length<6)return false;return t.split(/\s+/).length>=2;}
+function gDig(c){return String(c).replace(/\D/g,'');}
+function gSepara(l){var m=l.match(/^(\d{1,3}(?:\.\d{3})+|\d{1,7})\s+(.{3,})$/);return m?{cod:gDig(m[1]),desc:m[2].trim()}:{cod:'',desc:l.trim()};}
+function gParse(txt,cats,dest){
+  var L=txt.split('\n').map(function(x){return x.trim();}).filter(Boolean), cods=[],eans=[],descs=[];
+  L.forEach(function(l){
+    var m=l.match(/^(\d{1,3}(?:\.\d{3})*|\d{1,7})\s+(.{10,})$/);
+    if(m&&gDescOk(m[2])&&!gPreco(l)){cods.push(m[1]);descs.push(m[2]);return;}
+    if(gEtiq(l)||gPreco(l))return;
+    if(gEAN(l)){eans.push(l.trim());return;}
+    if(gCod(l)){cods.push(l.trim());return;}
+    if(gDescOk(l))descs.push(l.trim());
+  });
+  if(dest&&dest!=='__auto__'){var n=gNorm(dest);descs=descs.filter(function(d){return gNorm(d).indexOf(n)>=0;});}
+  var out=[],q=Math.max(cods.length,descs.length),v={};
+  for(var i=0;i<q;i++){var d=descs[i];if(!d||v[d])continue;v[d]=1;
+    out.push({cod:cods[i]?gDig(cods[i]):'',ean:eans[i]||'',desc:d,item:(dest&&dest!=='__auto__')?dest:gDetecta(d,cats),usar:true});}
+  return out;
+}
+function gAnalisar(){var t=document.getElementById('gBlob').value;
+  if(!t.trim()){toast('Cole o texto primeiro.');return;}
+  gImport=gParse(t,mxCats(),gDestino);
+  if(!gImport.length)toast('Não encontrei produtos nesse texto.');
+  mxRenderCotTudo();}
+function gImportar(){
+  var lote=gImport.filter(function(r){return r.usar&&r.item;});
+  if(!lote.length){toast('Nada marcado.');return;}
+  var okc=0,dup=0,resta=lote.length;
+  lote.forEach(function(r){
+    supaFetch('mix_catalogo',{method:'POST',body:JSON.stringify({empresa:MIX_EMPRESA,item:r.item,cod:r.cod||null,ean:r.ean||null,descricao:r.desc})})
+    .then(function(res){res.ok?okc++:dup++;}).catch(function(){dup++;})
+    .then(function(){if(--resta===0){gImport=[];toast(okc+' salvo(s)'+(dup?', '+dup+' já existiam':''));mxCarregar(function(){mxRenderCotTudo();});}});
+  });
+}
+function gAddManual(){
+  var el=document.getElementById('gManual');
+  var ls=el.value.split('\n').map(function(x){return x.trim().replace(/\s+/g,' ');}).filter(Boolean);
+  if(!ls.length){toast('Escreva ao menos uma linha.');return;}
+  var resta=ls.length,okc=0;
+  ls.forEach(function(l){var p=gSepara(l);
+    supaFetch('mix_catalogo',{method:'POST',body:JSON.stringify({empresa:MIX_EMPRESA,item:gCatSel,cod:p.cod||null,descricao:p.desc})})
+    .then(function(r){if(r.ok)okc++;}).catch(function(){})
+    .then(function(){if(--resta===0){el.value='';toast(okc+' adicionado(s)');mxCarregar(function(){mxRenderCotTudo();});}});});
+}
+function gApagarProd(id){
+  if(!confirm('Apagar este produto do catálogo?'))return;
+  supaFetch('mix_catalogo?id=eq.'+id,{method:'DELETE'}).then(function(){toast('Apagado.');mxCarregar(function(){mxRenderCotTudo();});}).catch(function(){toast('Erro.');});
+}
+function gCategorias(){
+  var cats=mxCats();
+  var h='<div class="mx-card"><div class="mx-eyebrow" style="margin-top:0">Nova categoria</div>';
+  h+='<div class="mx-hint" style="margin-bottom:8px">O produto puro, sem marca nem embalagem. Ex: Detergente, Refrigerante, Copo Descartável.</div>';
+  h+='<input class="mx-inp" id="gNovaCat" placeholder="Nome da categoria">';
+  h+='<button class="mx-btn am" style="width:100%;margin-top:8px" onclick="gCriarCat()">➕ Criar</button></div>';
+  h+='<div class="mx-card"><div class="mx-eyebrow" style="margin-top:0">Categorias ('+cats.length+')</div>';
+  cats.forEach(function(c){var n=(MIX_CATALOGO[c]||[]).length;
+    h+='<div class="mx-line"><span>'+mxE(c)+' <span style="color:var(--mxt3)">('+n+' produtos)</span></span><button onclick="gApagarCat(\''+mxJ(c)+'\','+n+')">✕</button></div>';});
+  return h+'</div>';
+}
+function gCriarCat(){
+  var n=document.getElementById('gNovaCat').value.trim();
+  if(!n){toast('Digite o nome.');return;}
+  supaFetch('mix_categorias',{method:'POST',body:JSON.stringify({empresa:MIX_EMPRESA,nome:n})})
+   .then(function(r){if(r.ok){toast('Criada!');if(!MIX_CATALOGO[n])MIX_CATALOGO[n]=[];mxRenderCotTudo();}else toast('Já existe.');})
+   .catch(function(){toast('Erro.');});
+}
+function gApagarCat(nome,n){
+  if(n>0){alert('Essa categoria tem '+n+' produto(s). Apague os produtos primeiro.');return;}
+  if(!confirm('Apagar a categoria "'+nome+'"?\nEla sairá também das listas dos segmentos.'))return;
+  supaFetch('mix_categorias?empresa=eq.'+MIX_EMPRESA+'&nome=eq.'+encodeURIComponent(nome),{method:'DELETE'})
+   .then(function(){return supaFetch('mix_segmento_itens?empresa=eq.'+MIX_EMPRESA+'&categoria=eq.'+encodeURIComponent(nome),{method:'DELETE'});})
+   .then(function(){toast('Apagada.');mxCarregar(function(){mxRenderCotTudo();});}).catch(function(){toast('Erro.');});
+}
+function gListas(){
+  var ks=Object.keys(TIPOS);
+  if(!gSegSel||ks.indexOf(gSegSel)<0) gSegSel=ks[0];
+  var h='<div class="mx-card"><div class="mx-eyebrow" style="margin-top:0">Escolha o segmento</div>';
+  h+='<select class="mx-inp" onchange="gSegSel=this.value;mxRenderCotTudo()">';
+  ks.forEach(function(k){h+='<option value="'+k+'"'+(gSegSel===k?' selected':'')+'>'+mxE(TIPOS[k].n)+' ('+TIPOS[k].p.length+')</option>';});
+  h+='</select></div>';
+  var naLista=TIPOS[gSegSel].p.slice().sort();
+  var fora=mxCats().filter(function(c){return naLista.indexOf(c)<0;});
+  h+='<div class="mx-card"><div class="mx-eyebrow" style="margin-top:0">Adicionar categoria a este segmento</div>';
+  h+='<select class="mx-inp" id="gAddCat"><option value="">— escolha —</option>'+fora.map(function(c){return '<option>'+mxE(c)+'</option>';}).join('')+'</select>';
+  h+='<button class="mx-btn am" style="width:100%;margin-top:8px" onclick="gAddNaLista()">➕ Adicionar à lista</button></div>';
+  h+='<div class="mx-card"><div class="mx-eyebrow" style="margin-top:0">Na lista de '+mxE(TIPOS[gSegSel].n)+' ('+naLista.length+')</div>';
+  naLista.forEach(function(c){h+='<div class="mx-line"><span>'+mxE(c)+'</span><button onclick="gTiraDaLista(\''+mxJ(c)+'\')">✕</button></div>';});
+  return h+'</div>';
+}
+function gAddNaLista(){
+  var c=document.getElementById('gAddCat').value;
+  if(!c){toast('Escolha uma categoria.');return;}
+  supaFetch('mix_segmento_itens',{method:'POST',body:JSON.stringify({empresa:MIX_EMPRESA,segmento:gSegSel,categoria:c})})
+   .then(function(){toast('Adicionada!');mxCarregar(function(){mxRenderCotTudo();});}).catch(function(){toast('Erro.');});
+}
+function gTiraDaLista(c){
+  if(!confirm('Tirar "'+c+'" da lista de '+TIPOS[gSegSel].n+'?\nO produto continua no catálogo.'))return;
+  supaFetch('mix_segmento_itens?empresa=eq.'+MIX_EMPRESA+'&segmento=eq.'+gSegSel+'&categoria=eq.'+encodeURIComponent(c),{method:'DELETE'})
+   .then(function(){toast('Removida.');mxCarregar(function(){mxRenderCotTudo();});}).catch(function(){toast('Erro.');});
+}
+function gSegmentos(){
+  var h='<div class="mx-card"><div class="mx-eyebrow" style="margin-top:0">Novo segmento</div>';
+  h+='<div class="mx-hint" style="margin-bottom:8px">Ex: Adega, Padaria Gourmet, Hospital.</div>';
+  h+='<input class="mx-inp" id="gSegNome" placeholder="Nome do segmento" style="margin-bottom:8px">';
+  h+='<input class="mx-inp" id="gSegIcone" placeholder="Ícone (emoji), ex: 🍷" style="margin-bottom:8px">';
+  h+='<input class="mx-inp" id="gSegCor" placeholder="Cor, ex: #F87171">';
+  h+='<button class="mx-btn am" style="width:100%;margin-top:8px" onclick="gCriarSeg()">➕ Criar segmento</button></div>';
+  h+='<div class="mx-card"><div class="mx-eyebrow" style="margin-top:0">Segmentos ('+Object.keys(TIPOS).length+')</div>';
+  Object.keys(TIPOS).forEach(function(k){var t=TIPOS[k];
+    h+='<div class="mx-line"><span>'+t.ic+' <b style="color:'+t.cor+'">'+mxE(t.n)+'</b> <span style="color:var(--mxt3)">('+t.p.length+')</span></span>';
+    h+='<button onclick="gApagarSeg(\''+k+'\',\''+mxJ(t.n)+'\','+t.p.length+')">✕</button></div>';});
+  return h+'</div>';
+}
+function gCriarSeg(){
+  var n=document.getElementById('gSegNome').value.trim();
+  var ic=document.getElementById('gSegIcone').value.trim()||'📦';
+  var cor=document.getElementById('gSegCor').value.trim()||'#94A3B8';
+  if(!n){toast('Digite o nome.');return;}
+  var ch=gNorm(n).toLowerCase().replace(/\s+/g,'_').slice(0,20);
+  supaFetch('mix_segmentos',{method:'POST',body:JSON.stringify({empresa:MIX_EMPRESA,chave:ch,nome:n,icone:ic,cor:cor,ordem:99})})
+   .then(function(r){if(r.ok){toast('Criado!');mxCarregar(function(){mxRenderCotTudo();});}else toast('Já existe.');})
+   .catch(function(){toast('Erro.');});
+}
+function gApagarSeg(ch,nome,n){
+  if(!confirm('Apagar o segmento "'+nome+'"?\nA lista dele ('+n+' categorias) também será apagada.\nOs produtos do catálogo NÃO são apagados.'))return;
+  supaFetch('mix_segmento_itens?empresa=eq.'+MIX_EMPRESA+'&segmento=eq.'+ch,{method:'DELETE'})
+   .then(function(){return supaFetch('mix_segmentos?empresa=eq.'+MIX_EMPRESA+'&chave=eq.'+ch,{method:'DELETE'});})
+   .then(function(){toast('Apagado.');mxCarregar(function(){mxRenderCotTudo();});}).catch(function(){toast('Erro.');});
 }
 
-function voltarTipo(){
-  document.getElementById('listaBox').style.display='none';
-  document.getElementById('tipoList').style.display='block';
-  cotSel=[];
-}
 
 /* ===== QG DO DIA ===== */
 var qgdiaLista=[];
@@ -2280,6 +2493,12 @@ function toggleArcofoods(val) {
 
 // ── RENDERIZAÇÃO PRINCIPAL ───────────────────────────────────
 function renderPremiacao() {
+  _renderPremiacaoOriginal();
+  var _el = document.getElementById('premiacaoBox');
+  var _f = faixaPreviewHTML();
+  if(_el && _f) _el.innerHTML = _f + _el.innerHTML;
+}
+function _renderPremiacaoOriginal() {
   var el = document.getElementById('premiacaoBox');
   if(!el) return;
 
@@ -2486,22 +2705,23 @@ function renderRankingEquipe(regional, arcofoods) {
 // ── Preview seguro da tela do vendedor: o coordenador testa sem salvar nada ──
 function previewComoVendedor(codigo){
   var alvo = USERS.find(function(x){ return x.c === codigo && x.t === 'vend'; });
-  if(!alvo){ toast('Vendedor não encontrado.'); return; }
-  if(!_euReal) _euReal = eu;   // guarda o coordenador de verdade
-  eu = alvo;                   // entra como vendedor — SÓ na memória, nada é salvo
-  renderPremiacao();           // passa pelo caminho real do vendedor (com a correção do código)
-  var el = document.getElementById('premiacaoBox');
-  if(el){
-    el.innerHTML =
-      '<div style="background:#3B82F6;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'
-      + '<span style="font-size:12px;font-weight:700;color:#fff">👁️ Vendo como ' + alvo.n + ' — simulação, nada foi salvo</span>'
-      + '<button onclick="voltarCoordenador()" style="padding:6px 14px;background:#fff;border:none;border-radius:8px;color:#3B82F6;font-size:12px;font-weight:800;cursor:pointer;font-family:Inter,sans-serif">← Voltar ao coordenador</button>'
-      + '</div>' + el.innerHTML;
-  }
+  if(!alvo){ toast('Vendedor nao encontrado.'); return; }
+  if(!_euReal) _euReal = eu;
+  eu = alvo;
+  renderPremiacao();
 }
 function voltarCoordenador(){
-  if(_euReal){ eu = _euReal; _euReal = null; }  // volta a ser o coordenador
+  if(_euReal){ eu = _euReal; _euReal = null; }
   renderPremiacao();
+  toast('Voce voltou a ser o coordenador.');
+}
+// A faixa e desenhada TODA vez que a Premiacao aparece (nunca mais fica preso)
+function faixaPreviewHTML(){
+  if(!_euReal || !eu) return '';
+  return '<div style="background:#3B82F6;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'
+    + '<span style="font-size:12px;font-weight:700;color:#fff">Vendo como ' + eu.n + ' - simulacao, nada foi salvo</span>'
+    + '<button onclick="voltarCoordenador()" style="padding:6px 14px;background:#fff;border:none;border-radius:8px;color:#3B82F6;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">Voltar ao coordenador</button>'
+    + '</div>';
 }
 
 function renderPainelCoordenador(regional, arcofoods) {
@@ -2961,21 +3181,32 @@ function renderKPIsVendedor(kpis){
 }
 
 // Fechamento motivador (resumo geral, sem repetir os KPIs)
-function renderResumoVendedor(kpis){
+function renderResumoVendedor(kpis, calc){
   var batidos = kpis.filter(function(k){ return k.bateu; }).length;
   var faltando = kpis.filter(function(k){ return !k.bateu; });
   var naMesa = faltando.reduce(function(s, k){ return s + (k.ganhoPot || 0); }, 0);
+  var alcance = (calc? calc.total_ganho : 0) + naMesa;
+  var teto = calc? calc.total_potencial : 0;
+  var travado = Math.max(0, teto - alcance);
+  var explica = '';
+  if(travado > 0){
+    explica = '<div style="margin-top:12px;padding:12px 14px;background:rgba(99,102,241,0.10);border:1px solid rgba(99,102,241,0.3);border-radius:10px;font-size:12px;color:var(--t2);line-height:1.6">'
+      + '<strong style="color:var(--pu)">Como chegar aos ' + fBRL(teto) + '</strong><br>'
+      + 'Hoje, pelo parcial, <strong style="color:var(--gn)">' + fBRL(alcance) + '</strong> estão ao seu alcance. '
+      + 'Os outros <strong>' + fBRL(travado) + '</strong> destravam se a <strong>Regional</strong> e a <strong>Arcofoods</strong> também baterem esses indicadores até o fim do mês. '
+      + '<strong style="color:var(--t)">Ainda dá tempo</strong> — puxe o time junto que o seu prêmio sobe. 🚀</div>';
+  }
   if(batidos === 5){
     return '<div style="background:linear-gradient(135deg,rgba(34,197,94,0.2),rgba(6,14,30,0.9));border:2px solid var(--gn3);border-radius:16px;padding:18px;margin-top:16px;text-align:center">'
       + '<div style="font-size:16px;font-weight:900;color:var(--gn)">🏆 FERA! Você bateu os 5!</div>'
-      + '<div style="font-size:12px;color:var(--t2);margin-top:6px">Prêmio máximo garantido. Agora é manter o ritmo e ajudar a puxar a regional. 🚀</div></div>';
+      + '<div style="font-size:12px;color:var(--t2);margin-top:6px">Prêmio máximo garantido. Agora é manter o ritmo e ajudar a puxar a regional. 🚀</div></div>' + explica;
   }
   if(faltando.length){
     return '<div style="background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(6,14,30,0.9));border:2px solid var(--am3);border-radius:16px;padding:18px;margin-top:16px">'
-      + '<div style="font-size:13px;font-weight:900;color:var(--am);margin-bottom:6px">💰 Ainda tem dinheiro na mesa!</div>'
-      + '<div style="font-size:13px;color:var(--t);line-height:1.7">Faltam <strong style="color:var(--gn)">' + fBRL(naMesa) + '</strong> pra você buscar esse mês'
+      + '<div style="font-size:13px;font-weight:900;color:var(--am);margin-bottom:6px">Ainda tem dinheiro na mesa!</div>'
+      + '<div style="font-size:13px;color:var(--t);line-height:1.7">Faltam <strong style="color:var(--gn)">' + fBRL(naMesa) + '</strong> para você buscar até o fim do mês'
       + (batidos ? ' — e você já garantiu <strong>' + batidos + ' de 5</strong>' : '')
-      + '. Começa pelos de cima da lista, que são os mais pertinho. <strong>Bora! 💪</strong></div></div>';
+      + '. Começa pelos de cima da lista, que são os mais pertinho. <strong>Bora! 💪</strong></div></div>' + explica;
   }
   return '';
 }
@@ -3039,7 +3270,10 @@ function renderMinhaPremiacao(v){
   html += '<div style="background:linear-gradient(135deg,rgba(34,197,94,0.18),rgba(6,14,30,0.9));border:2px solid var(--gn3);border-radius:18px;padding:20px;margin-bottom:16px;text-align:center">';
   html += '<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gn);margin-bottom:6px">💰 Você já garantiu</div>';
   html += '<div style="font-size:44px;font-weight:900;color:var(--gn);line-height:1">'+fBRL(calc.total_ganho)+'</div>';
+  var _naMesa = kpis.filter(function(k){return !k.bateu;}).reduce(function(s,k){return s+(k.ganhoPot||0);},0);
+  var _alcance = calc.total_ganho + _naMesa;
   html += '<div style="font-size:12px;color:var(--t2);margin-top:6px">de '+fBRL(calc.total_potencial)+' possíveis · faixa '+calc.faixa.nome+'</div>';
+  html += '<div style="font-size:11px;color:var(--t3);margin-top:4px">📅 Resultado parcial — o mês ainda não acabou</div>';
   // barra de progresso
   var pctBar = Math.min(100, calc.pct_premiacao);
   html += '<div style="margin-top:12px;height:10px;background:rgba(255,255,255,0.1);border-radius:20px;overflow:hidden"><div style="height:100%;width:'+pctBar+'%;background:linear-gradient(90deg,var(--gn),#10B981);border-radius:20px;transition:width .6s"></div></div>';
@@ -3052,7 +3286,7 @@ function renderMinhaPremiacao(v){
   html += renderKPIsVendedor(kpis);
 
   // ── FECHAMENTO MOTIVADOR ──
-  html += renderResumoVendedor(kpis);
+  html += renderResumoVendedor(kpis, calc);
 
   return html;
 }

@@ -2736,7 +2736,7 @@ function renderPainelCoordenador(regional, arcofoods) {
   html += '<div style="font-size:11px;color:var(--t2);margin-bottom:10px">Clique num nome pra ver a tela exatamente como o vendedor vê. É só simulação — não altera nem salva nada.</div>';
   html += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
   USERS.filter(function(u){return u.t==='vend';}).forEach(function(u){
-    html += '<button onclick="previewComoVendedor(\'' + u.c + '\')" style="padding:7px 12px;background:var(--s1);border:1px solid var(--b2);border-radius:8px;color:var(--t);font-size:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">' + u.n.split(' ')[0] + '</button>';
+    html += '<button onclick="previewComoVendedor(\'' + u.c + '\')" style="padding:7px 12px;background:var(--s1);border:1px solid var(--b2);border-radius:8px;color:var(--t);font-size:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">' + u.n + '</button>';
   });
   html += '</div></div>';
 
@@ -2857,7 +2857,7 @@ function agregarFrentes(calcs, regPorInd, arcPorInd){
     kpis.forEach(function(k){
       var f = frentes[k.id];
       if(k.bateu){ f.bateram++; }
-      else { f.atras.push({ nome:nomeCurto(v.nome||''), falta:k.falta }); f.naMesa += (k.ganhoPot||0); }
+      else { f.atras.push({ nome:(v.nome||''), falta:k.falta }); f.naMesa += (k.ganhoPot||0); }
     });
   });
   var arr = INDICADORES_PREM.map(function(ind){ return frentes[ind.id]; });
@@ -2957,7 +2957,7 @@ function renderVisaoVendedorCoord(v, calc){
 
   var html = '<div style="background:var(--s1);border:1px solid var(--b);border-radius:14px;padding:16px;margin-bottom:14px">';
   html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--b)">';
-  html += '<div><div style="font-size:14px;font-weight:800;color:var(--t)">'+(v.cod||'')+' · '+nomeCurto(v.nome||'')+'</div>';
+  html += '<div><div style="font-size:14px;font-weight:800;color:var(--t)">'+(v.cod||'')+' · '+(v.nome||'')+'</div>';
   html += '<div style="font-size:10px;color:var(--t3)">Faixa '+calc.faixa.nome+' · potencial '+fBRL(calc.total_potencial)+'</div></div>';
   html += '<div style="text-align:right"><div style="font-size:22px;font-weight:900;color:var(--gn)">'+fBRL(calc.total_ganho)+'</div>';
   html += '<div style="font-size:9px;color:var(--t3)">'+calc.pct_premiacao.toFixed(0)+'% garantido</div></div></div>';

@@ -1428,7 +1428,7 @@ function gerarImagemQGDia(){
         +'</div>';
     }).join('');
     rankingBlock='<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:10px;padding:12px 14px;margin-bottom:16px">'
-      +'<div style="font-size:12px;font-weight:700;color:#F0F6FF;line-height:1.5;margin-bottom:10px">'+frase+'</div>'
+      +'<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#F59E0B;margin-bottom:8px">DESTAQUES DE ONTEM</div>'+'<div style="font-size:12px;font-weight:700;color:#F0F6FF;line-height:1.5;margin-bottom:10px">'+frase+'</div>'
       +nomesHtml+'</div>';
   }
   var dicaTxt=(document.getElementById('qgdiaDica')||{value:''}).value.trim();
@@ -1846,7 +1846,50 @@ function qgWhatsApp(){
   window.open('https://wa.me/?text='+encodeURIComponent(L.join('\n')),'_blank');
 }
 
-function gerarIA(){var cli=document.getElementById('negCli').value.trim();var conc=document.getElementById('negConc').value.trim();var itens=prods.map(function(p){return p.n||'produto';}).join(', ');var prompt='Escreva uma justificativa comercial CURTA (2 linhas no maximo) para aprovacao de preco especial. Seja objetivo e profissional. Cliente: '+(cli||'a definir')+'. Produtos: '+(itens||'a definir')+'.';navigator.clipboard&&navigator.clipboard.writeText(prompt).then(function(){var hint=document.getElementById('iaHint');if(hint)hint.style.display='block';toast('Prompt copiado! Cole no ChatGPT.');});window.open('https://chatgpt.com','_blank');}
+function gerarIA(){
+var cli=document.getElementById('negCli').value.trim();
+var conc=document.getElementById('negConc').value.trim();
+var skus=(document.getElementById('negSkus')||{value:''}).value.trim();
+var ctx=(document.getElementById('negCtx')||{value:''}).value.trim();
+var ps=(typeof coletarProds==='function')?coletarProds():[];
+var linhas=ps.map(function(p){
+  var t=parseFloat(p.t)||0,v=parseFloat(p.v)||0;
+  var pct=t>0?((t-v)/t*100):0;
+  return '- '+(p.n||'produto')+': '+(p.q||'?')+' '+(p.u||'')+' | tabela R$ '+t.toFixed(4)+' | solicitado R$ '+v.toFixed(4)+' | desconto '+pct.toFixed(1)+'%';
+}).join('\n');
+var tot=ps.reduce(function(a,p){return a+Math.abs(p.tot||0);},0);
+var med=ps.length?ps.reduce(function(a,p){return a+Math.abs(p.pct||0);},0)/ps.length:0;
+var vend=(typeof eu!=='undefined'&&eu)?(eu.cd+' - '+eu.n):'vendedor';
+
+var prompt='Voce e um analista comercial senior da Arcofoods, distribuidora de alimentos para food service. Escreva uma SOLICITACAO INTERNA de aprovacao de preco especial, endereçada a area de Supply/Pricing.\n\n'
++'=== DADOS DA OPERACAO ===\n'
++'Cliente: '+(cli||'nao informado')+'\n'
++'Vendedor responsavel: '+vend+'\n'
++'Concorrente que esta atacando a conta: '+(conc||'nao informado')+'\n'
++'SKUs envolvidos: '+(skus||String(ps.length))+'\n'
++'Desconto medio solicitado: '+med.toFixed(1)+'%\n'
++'Impacto financeiro estimado: R$ '+tot.toFixed(2)+'\n'
++'Contexto de campo relatado: '+(ctx||'nao informado')+'\n\n'
++'Itens:\n'+(linhas||'nao informado')+'\n\n'
++'=== COMO ESCREVER ===\n'
++'Estruture em 5 blocos curtos, com subtitulos:\n'
++'1. SITUACAO — o que esta acontecendo na conta, de forma objetiva e factual.\n'
++'2. CENARIO COMPETITIVO — a pressao de preco que o cliente esta recebendo do concorrente e o que isso significa para a posicao da Arcofoods nesse canal.\n'
++'3. NUMEROS — apresente os itens, o desconto pedido e o impacto em R$ com precisao. Deixe claro que o pedido e calculado, nao arbitrario.\n'
++'4. RISCO DE NAO AGIR — descreva com sobriedade o que a empresa perde se a condicao nao sair: nao apenas este pedido, mas presenca na conta, historico de compra, espaco de gondola/cardapio e a dificuldade de reconquistar depois. Mencione que espaco perdido em food service raramente volta no mesmo preco.\n'
++'5. PEDIDO — solicitacao objetiva, com prazo, e o compromisso de acompanhamento do vendedor.\n\n'
++'=== TOM ===\n'
++'- Tecnico, factual e respeitoso. Zero drama, zero apelo emocional explicito, zero chantagem.\n'
++'- A urgencia deve nascer dos numeros e do risco concreto, nunca de adjetivos.\n'
++'- Trate Supply como parceiro que decide junto, nao como obstaculo. Use "nos" e "a empresa", nunca "voces".\n'
++'- Nao use palavras como desespero, imploro, ultima chance, favor.\n'
++'- Nao invente dados que nao foram fornecidos. Se algo estiver como nao informado, apenas omita.\n'
++'- Portugues do Brasil, pronto para copiar e enviar. Maximo 300 palavras.\n\n'
++'Responda somente com a mensagem final.';
+
+if(navigator.clipboard){navigator.clipboard.writeText(prompt).then(function(){var hint=document.getElementById('iaHint');if(hint)hint.style.display='block';toast('Prompt copiado! Cole no ChatGPT.');},function(){window.prompt('Copie o prompt:',prompt);});}
+else{window.prompt('Copie o prompt:',prompt);}
+window.open('https://chatgpt.com','_blank');}
 
 function addProd(){prods.push({n:'',q:'',u:'kg',t:0,v:0,i:0});renderProds();}
 function renderProds(){var el=document.getElementById('negProds');if(!prods.length){el.innerHTML='<div class="empty"><div class="eico">&#128230;</div>Clique em Adicionar Produto.</div>';return;}var uo='kg,fardo,cx,bombona,bag,pct,unid,balde,lata,saco,galao,caixa'.split(',').map(function(u){return'<option>'+u+'</option>';}).join('');el.innerHTML=prods.map(function(p,i){return'<div class="pbox"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="pbtitle">Produto '+(i+1)+'</div><button onclick="remProd('+i+')" style="background:var(--rd2);border:1px solid rgba(239,68,68,.2);color:var(--rd);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:Inter,sans-serif">Remover</button></div><div class="fg"><label class="fl">Codigo + Nome</label><input class="inp" id="pn'+i+'" placeholder="ex: 66233 - Produto" value="'+(p.n||'')+'" oninput="sp('+i+')"></div><div class="g2" style="margin-bottom:12px"><div class="fg"><label class="fl">Quantidade</label><input class="inp" id="pq'+i+'" placeholder="10" value="'+(p.q||'')+'" oninput="cp('+i+')"></div><div class="fg"><label class="fl">Unidade</label><select class="inp" id="pu'+i+'" onchange="cp('+i+')">'+ uo+'</select></div></div><div class="g3"><div class="fg"><label class="fl">P. Tabela</label><input class="inp" type="number" step="0.0001" id="pt'+i+'" placeholder="0.0000" value="'+(p.t||'')+'" oninput="cp('+i+')"></div><div class="fg"><label class="fl">P. Vendedor</label><input class="inp" type="number" step="0.0001" id="pv'+i+'" placeholder="0.0000" value="'+(p.v||'')+'" oninput="cp('+i+')"></div><div class="fg"><label class="fl">P. Ideal</label><input class="inp" type="number" step="0.0001" id="pi'+i+'" placeholder="0.0000" value="'+(p.i||'')+'" oninput="cp('+i+')"></div></div><div id="pr'+i+'" class="pres"></div></div>';}).join('');}

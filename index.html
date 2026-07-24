@@ -791,8 +791,10 @@ function carregarCardCfg(){
   }).catch(function(){});
 }
 function qgNovidades(){
-  var last=localStorage.getItem(AVISO_KEY);var lt=last?new Date(last).getTime():0;var out=[];
-  function add(arr,tipo,ic){(arr||[]).forEach(function(x){var t=x.criado_em?new Date(x.criado_em).getTime():0;if(t>lt)out.push({tipo:tipo,nome:x.nome,ic:ic});});}
+  var last=localStorage.getItem(AVISO_KEY);
+  if(!last){localStorage.setItem(AVISO_KEY,new Date().toISOString());return [];}
+  var lt=new Date(last).getTime();var out=[];
+  function add(arr,tipo,ic){(arr||[]).forEach(function(x){if(!x.criado_em)return;var t=new Date(x.criado_em).getTime();if(t>lt)out.push({tipo:tipo,nome:x.nome,ic:ic});});}
   add(QG_CACHE.docs,'documento','\u{1F4C4}');
   add(QG_CACHE.cats,'catalogo','\u{1F4DA}');
   add(QG_CACHE.bis,'painel','\u{1F4CA}');
@@ -887,10 +889,8 @@ function gerarCardNovidade(soRecado){
       var w2=document.getElementById('cardPreviewWrap');
       if(w2){w2.style.display='block';
         w2.innerHTML='<img src="'+data+'" style="width:100%;border-radius:16px;border:1px solid var(--b)">'
-         +'<div style="display:flex;gap:8px;margin-top:10px">'
-         +'<button class="btn bp" style="flex:1" onclick="baixarCard()">\u{1F4F7} Baixar card</button>'
-         +'<button class="btn bg" style="flex:1" onclick="abrirWppCard()">WhatsApp</button></div>'
-         +'<div style="font-size:11px;color:var(--t3);margin-top:8px;text-align:center">Baixe a imagem e anexe no grupo.</div>';
+         +'<button class="btn bp" style="width:100%;margin-top:10px" onclick="baixarCard()">\u{1F4F7} Baixar imagem do card</button>'
+         +'<div style="font-size:12px;color:#D8E4F2;line-height:1.6;margin-top:10px;background:var(--s1);border-radius:10px;padding:10px 12px"><strong>Como enviar:</strong><br>1. Baixe a imagem acima<br>2. Abra o grupo no WhatsApp<br>3. Toque no clipe/anexo e escolha a imagem</div>';
       }
     },60);
   }).catch(function(){document.body.removeChild(card);toast('Erro ao gerar o card.');});
@@ -903,7 +903,7 @@ function gerarCardNovidade(soRecado){
   })();
 }
 function baixarCard(){if(!window._cardData){toast('Gere o card primeiro.');return;}var a=document.createElement('a');a.download='QG-novidade.png';a.href=window._cardData;document.body.appendChild(a);a.click();document.body.removeChild(a);toast('Card salvo! Agora anexe no grupo.');}
-function abrirWppCard(){baixarCard();setTimeout(function(){window.open('https://wa.me/','_blank');},400);}
+
 function toggleDocTipo(){
   var t=(document.getElementById('docTipo')||{value:'link'}).value;
   var l=document.getElementById('docCampoLink'),g=document.getElementById('docCampoImg');

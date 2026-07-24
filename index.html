@@ -799,30 +799,44 @@ function salvarAvisoCfg(){
   var novo={aberturas:ln('cfgAber'),fechos:ln('cfgFecho'),documento:ln('cfgDoc'),catalogo:ln('cfgCat'),painel:ln('cfgBI'),
     extra:(document.getElementById('cfgExtra')||{value:''}).value.trim(),
     extraAtivo:!!(document.getElementById('cfgExtraAtivo')||{}).checked};
-  ['aberturas','fechos','documento','catalogo','painel'].forEach(function(k){if(!novo[k].length)novo[k]=AVISO_PADRAO[k];});
+  var vazios=[];
+  [['aberturas','Como comeca'],['fechos','Como termina'],['documento','Documentos'],['catalogo','Catalogos'],['painel','Paineis BI']].forEach(function(p){
+    if(!novo[p[0]].length){novo[p[0]]=AVISO_PADRAO[p[0]];vazios.push(p[1]);}});
+  if(vazios.length)toast('Campos vazios voltaram ao padrao: '+vazios.join(', '));
   AVISO_CFG=novo;
   toast('Salvando...');
   supaFetch('qg_config',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},
     body:JSON.stringify({chave:'mensagem_grupo',valor:novo})})
-   .then(function(){toast('Mensagem salva!');renderAvisoBox();})
+   .then(function(){toast('Mensagem salva!');var ed=document.getElementById('avisoEditor');var aberto=ed&&ed.style.display==='block';renderAvisoBox();if(aberto)abrirEditorAviso();})
    .catch(function(){toast('Erro ao salvar.');});
 }
 function abrirEditorAviso(){
   var el=document.getElementById('avisoEditor');if(!el)return;
-  if(el.style.display==='block'){el.style.display='none';return;}
-  el.style.display='block';
-  el.innerHTML='<div class="admin-box" style="margin-top:10px">'
-   +'<div class="admin-title">\u270E Editar mensagem do grupo</div>'
-   +'<div style="font-size:11px;color:var(--t3);margin-bottom:10px">Uma opcao por linha. O app sorteia entre elas para a mensagem nao chegar sempre igual.</div>'
-   +'<div class="fg"><label class="fl">Aberturas</label><textarea id="cfgAber" class="inp" rows="4">'+AVISO_CFG.aberturas.join('\n')+'</textarea></div>'
-   +'<div class="fg"><label class="fl">Beneficio - Documentos</label><textarea id="cfgDoc" class="inp" rows="3">'+AVISO_CFG.documento.join('\n')+'</textarea></div>'
-   +'<div class="fg"><label class="fl">Beneficio - Catalogos</label><textarea id="cfgCat" class="inp" rows="3">'+AVISO_CFG.catalogo.join('\n')+'</textarea></div>'
-   +'<div class="fg"><label class="fl">Beneficio - Paineis BI</label><textarea id="cfgBI" class="inp" rows="3">'+AVISO_CFG.painel.join('\n')+'</textarea></div>'
-   +'<div class="fg"><label class="fl">Fechos</label><textarea id="cfgFecho" class="inp" rows="4">'+AVISO_CFG.fechos.join('\n')+'</textarea></div>'
-   +'<div class="fg"><label class="fl">Aviso fixo (entra em toda mensagem enquanto estiver ligado)</label><textarea id="cfgExtra" class="inp" rows="3" placeholder="Ex: Lembrando que agora da pra fazer cotacoes pelo proprio QG, e as premiacoes estao atualizadas no app.">'+(AVISO_CFG.extra||'')+'</textarea>'
-   +'<label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:var(--t2);cursor:pointer"><input type="checkbox" id="cfgExtraAtivo"'+(AVISO_CFG.extraAtivo?' checked':'')+'> Incluir este aviso nas mensagens</label></div>'
-   +'<button class="btn bp" style="width:100%" onclick="salvarAvisoCfg()">\u{1F4BE} Salvar mensagem</button>'
-   +'</div>';
+  var abrindo=(el.style.display!=='block');
+  el.style.display=abrindo?'block':'none';
+  if(!abrindo){el.innerHTML='';renderAvisoBox();return;}
+  function bl(lbl,id,val,rows,dica){
+    return '<div class="fg"><label class="fl">'+lbl+'</label>'
+      +'<textarea id="'+id+'" class="inp" rows="'+rows+'">'+val+'</textarea>'
+      +(dica?'<div style="font-size:10px;color:var(--t3);margin-top:4px">'+dica+'</div>':'')+'</div>';
+  }
+  el.innerHTML='<div style="border-top:1px solid var(--b);margin-top:14px;padding-top:14px">'
+   +'<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--am);margin-bottom:4px">Editar mensagem</div>'
+   +'<div style="font-size:11px;color:var(--t3);margin-bottom:14px">Uma frase por linha. O app sorteia entre elas para nao chegar sempre igual.</div>'
+   +bl('Como comeca','cfgAber',AVISO_CFG.aberturas.join('\n'),3,'')
+   +bl('Como termina','cfgFecho',AVISO_CFG.fechos.join('\n'),3,'')
+   +'<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin:16px 0 8px">Frase que acompanha cada item</div>'
+   +bl('Documentos','cfgDoc',AVISO_CFG.documento.join('\n'),2,'')
+   +bl('Catalogos','cfgCat',AVISO_CFG.catalogo.join('\n'),2,'')
+   +bl('Paineis BI','cfgBI',AVISO_CFG.painel.join('\n'),2,'')
+   +'<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin:16px 0 8px">Recado fixo</div>'
+   +'<div class="fg"><textarea id="cfgExtra" class="inp" rows="3" placeholder="Ex: Lembrando que agora da pra fazer cotacoes pelo proprio QG, e as premiacoes estao atualizadas.">'+(AVISO_CFG.extra||'')+'</textarea>'
+   +'<label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:var(--t2);cursor:pointer"><input type="checkbox" id="cfgExtraAtivo"'+(AVISO_CFG.extraAtivo?' checked':'')+'> Incluir em todas as mensagens</label>'
+   +'<div style="font-size:10px;color:var(--t3);margin-top:6px">Enquanto ligado, entra em toda mensagem. Desligue quando a equipe ja souber.</div></div>'
+   +'<div style="display:flex;gap:8px;margin-top:6px">'
+   +'<button class="btn bp" style="flex:1" onclick="salvarAvisoCfg()">Salvar</button>'
+   +'<button class="btn bs" style="flex:1" onclick="abrirEditorAviso()">Fechar</button>'
+   +'</div></div>';
 }
 function qgNovidades(){
   var last=localStorage.getItem(AVISO_KEY);
@@ -839,23 +853,31 @@ function qgNovidades(){
 function renderAvisoBox(){
   var el=document.getElementById('avisoBox');if(!el)return;
   if(!(eu&&eu.t==='coord')){el.style.display='none';return;}
-  var n=qgNovidades();
   el.style.display='block';
-  var topo='';
+  var n=qgNovidades();
+  var temExtra=!!(AVISO_CFG.extraAtivo&&AVISO_CFG.extra);
+  var status,cor,acao;
   if(n.length){
-    topo='<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:14px 16px;margin-bottom:10px">'
-     +'<div style="font-size:13px;font-weight:700;color:#F0F6FF;margin-bottom:4px">\u{1F4E3} '+n.length+' novidade'+(n.length>1?'s':'')+' ainda nao avisada'+(n.length>1?'s':'')+'</div>'
-     +'<div style="font-size:12px;color:#D8E4F2;margin-bottom:10px">'+n.map(function(x){return x.nome;}).join(' \u00b7 ')+'</div>'
-     +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
-     +'<button class="btn bp" style="flex:1" onclick="avisarEquipe()">Gerar mensagem do grupo</button>'
-     +'<button class="btn bs" style="flex:1" onclick="marcarAvisado()">Ja avisei</button>'
-     +'</div></div>';
+    status='<strong style="color:#F0F6FF">'+n.length+' novidade'+(n.length>1?'s':'')+'</strong> para avisar &middot; '+n.map(function(x){return x.nome;}).join(', ');
+    cor='var(--am)';
+    acao='<button class="btn bp" style="flex:1" onclick="avisarEquipe()">Gerar mensagem</button>'
+        +'<button class="btn bs" style="flex:1" onclick="marcarAvisado()">Ja avisei</button>';
+  }else if(temExtra){
+    status='Nenhuma novidade nova. O recado fixo esta ativo e pode ser enviado.';
+    cor='var(--t3)';
+    acao='<button class="btn bs" style="flex:1" onclick="avisarEquipe(true)">Enviar recado fixo</button>';
+  }else{
+    status='Tudo avisado. Assim que voce cadastrar algo, aparece aqui.';
+    cor='var(--t3)';
+    acao='';
   }
-  topo+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">'
-   +'<button class="btn bs" style="flex:1" onclick="abrirEditorAviso()">\u270E Editar mensagem do grupo</button>'
-   +'<button class="btn bs" style="flex:1" onclick="avisarEquipe(true)">Enviar aviso avulso</button>'
-   +'</div><div id="avisoEditor" style="display:none"></div>';
-  el.innerHTML=topo;
+  el.innerHTML='<div class="card" style="border-left:3px solid '+cor+'">'
+   +'<div class="ct">Avisar a equipe</div>'
+   +'<div style="font-size:12px;color:#D8E4F2;line-height:1.6;margin-bottom:'+(acao?'12px':'10px')+'">'+status+'</div>'
+   +(acao?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">'+acao+'</div>':'')
+   +'<button onclick="abrirEditorAviso()" style="background:none;border:none;color:var(--t3);font-size:11px;cursor:pointer;font-family:Inter,sans-serif;padding:0;text-decoration:underline">Editar mensagem</button>'
+   +'<div id="avisoEditor" style="display:none"></div>'
+   +'</div>';
 }
 function marcarAvisado(){
   localStorage.setItem(AVISO_KEY,new Date().toISOString());
@@ -1030,7 +1052,7 @@ function renderBI(){
   bis.forEach(function(b){
     h+='<div class="tcard" style="background:linear-gradient(135deg,rgba(59,130,246,0.15),var(--s1));border:1px solid rgba(59,130,246,0.3);border-radius:14px;padding:20px 16px;cursor:pointer;text-align:center;" onclick="window.open(\''+b.url+'\',\'_blank\')">';
     h+='<div class="ticon">'+b.icone+'</div><div class="tname" style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:4px;">'+b.nome+'</div>';
-    h+='<div style="font-size:11px;color:var(--t2);">'+b.desc+'</div>';
+    h+='<div style="font-size:11px;color:var(--t2);">'+(b.descricao||b.desc||'')+'</div>';
     h+='<div style="margin-top:10px;font-size:11px;color:#3B82F6;font-weight:600;">▶ Abrir painel</div></div>';
   });
   el.innerHTML=h||'<div class="empty">Nenhum painel BI cadastrado.</div>';

@@ -775,6 +775,55 @@ function renderBIAdmin(){
   }).join('');
 }
 var AVISO_KEY='QG_ULTIMO_AVISO';
+var AVISO_PADRAO={
+ aberturas:['Pessoal, subiu coisa nova no QG:','Bom dia, time. Atualizei o QG agora:','Time, acabei de subir no QG:','Pessoal, tem material novo no QG:','Atualizacao no QG, pessoal:'],
+ fechos:['Da uma olhada quando puder abrir o app. Qualquer duvida me chama.','Vale abrir o QG antes de sair pra rua hoje. Estou a disposicao.','Confere no app e me fala se ficou faltando alguma coisa.','Abre o QG e da uma olhada. Qualquer duvida, me chama.','Quem puder ja olhar hoje, ajuda bastante. Estou por aqui.'],
+ documento:['Vale ter isso na mao quando o cliente perguntar.','Ja fica disponivel pra consulta e envio.','Da pra mostrar direto do celular na visita.'],
+ catalogo:['Da pra mandar pro cliente pelo WhatsApp direto do app.','Ja esta pronto pra enviar na proxima visita.','Vale usar na abordagem de amanha.'],
+ painel:['Da pra ver sua posicao antes de montar a rota.','Vale conferir onde voce esta antes do fechamento.','Ja da pra acompanhar seus numeros por ali.'],
+ extra:'',
+ extraAtivo:false
+};
+var AVISO_CFG=JSON.parse(JSON.stringify(AVISO_PADRAO));
+function carregarAvisoCfg(){
+  return supaFetch('qg_config?chave=eq.mensagem_grupo').then(qgJson).then(function(d){
+    if(Array.isArray(d)&&d.length&&d[0].valor){
+      var v=d[0].valor;
+      Object.keys(AVISO_PADRAO).forEach(function(k){if(v[k]!==undefined)AVISO_CFG[k]=v[k];});
+    }
+  }).catch(function(){});
+}
+function salvarAvisoCfg(){
+  function ln(id){var e=document.getElementById(id);if(!e)return [];
+    return e.value.split(/\r?\n/).map(function(x){return x.trim();}).filter(function(x){return x;});}
+  var novo={aberturas:ln('cfgAber'),fechos:ln('cfgFecho'),documento:ln('cfgDoc'),catalogo:ln('cfgCat'),painel:ln('cfgBI'),
+    extra:(document.getElementById('cfgExtra')||{value:''}).value.trim(),
+    extraAtivo:!!(document.getElementById('cfgExtraAtivo')||{}).checked};
+  ['aberturas','fechos','documento','catalogo','painel'].forEach(function(k){if(!novo[k].length)novo[k]=AVISO_PADRAO[k];});
+  AVISO_CFG=novo;
+  toast('Salvando...');
+  supaFetch('qg_config',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},
+    body:JSON.stringify({chave:'mensagem_grupo',valor:novo})})
+   .then(function(){toast('Mensagem salva!');renderAvisoBox();})
+   .catch(function(){toast('Erro ao salvar.');});
+}
+function abrirEditorAviso(){
+  var el=document.getElementById('avisoEditor');if(!el)return;
+  if(el.style.display==='block'){el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML='<div class="admin-box" style="margin-top:10px">'
+   +'<div class="admin-title">\u270E Editar mensagem do grupo</div>'
+   +'<div style="font-size:11px;color:var(--t3);margin-bottom:10px">Uma opcao por linha. O app sorteia entre elas para a mensagem nao chegar sempre igual.</div>'
+   +'<div class="fg"><label class="fl">Aberturas</label><textarea id="cfgAber" class="inp" rows="4">'+AVISO_CFG.aberturas.join('\n')+'</textarea></div>'
+   +'<div class="fg"><label class="fl">Beneficio - Documentos</label><textarea id="cfgDoc" class="inp" rows="3">'+AVISO_CFG.documento.join('\n')+'</textarea></div>'
+   +'<div class="fg"><label class="fl">Beneficio - Catalogos</label><textarea id="cfgCat" class="inp" rows="3">'+AVISO_CFG.catalogo.join('\n')+'</textarea></div>'
+   +'<div class="fg"><label class="fl">Beneficio - Paineis BI</label><textarea id="cfgBI" class="inp" rows="3">'+AVISO_CFG.painel.join('\n')+'</textarea></div>'
+   +'<div class="fg"><label class="fl">Fechos</label><textarea id="cfgFecho" class="inp" rows="4">'+AVISO_CFG.fechos.join('\n')+'</textarea></div>'
+   +'<div class="fg"><label class="fl">Aviso fixo (entra em toda mensagem enquanto estiver ligado)</label><textarea id="cfgExtra" class="inp" rows="3" placeholder="Ex: Lembrando que agora da pra fazer cotacoes pelo proprio QG, e as premiacoes estao atualizadas no app.">'+(AVISO_CFG.extra||'')+'</textarea>'
+   +'<label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:var(--t2);cursor:pointer"><input type="checkbox" id="cfgExtraAtivo"'+(AVISO_CFG.extraAtivo?' checked':'')+'> Incluir este aviso nas mensagens</label></div>'
+   +'<button class="btn bp" style="width:100%" onclick="salvarAvisoCfg()">\u{1F4BE} Salvar mensagem</button>'
+   +'</div>';
+}
 function qgNovidades(){
   var last=localStorage.getItem(AVISO_KEY);
   var lt=last?new Date(last).getTime():0;
@@ -791,51 +840,44 @@ function renderAvisoBox(){
   var el=document.getElementById('avisoBox');if(!el)return;
   if(!(eu&&eu.t==='coord')){el.style.display='none';return;}
   var n=qgNovidades();
-  if(!n.length){el.style.display='none';return;}
   el.style.display='block';
-  el.innerHTML='<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:14px 16px;margin-bottom:16px">'
-   +'<div style="font-size:13px;font-weight:700;color:#F0F6FF;margin-bottom:4px">\u{1F4E3} '+n.length+' novidade'+(n.length>1?'s':'')+' ainda nao avisada'+(n.length>1?'s':'')+'</div>'
-   +'<div style="font-size:12px;color:#D8E4F2;margin-bottom:10px">'+n.map(function(x){return x.nome;}).join(' \u00b7 ')+'</div>'
-   +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
-   +'<button class="btn bp" style="flex:1" onclick="avisarEquipe()">Gerar mensagem do grupo</button>'
-   +'<button class="btn bs" style="flex:1" onclick="marcarAvisado()">Ja avisei</button>'
-   +'</div></div>';
+  var topo='';
+  if(n.length){
+    topo='<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:14px 16px;margin-bottom:10px">'
+     +'<div style="font-size:13px;font-weight:700;color:#F0F6FF;margin-bottom:4px">\u{1F4E3} '+n.length+' novidade'+(n.length>1?'s':'')+' ainda nao avisada'+(n.length>1?'s':'')+'</div>'
+     +'<div style="font-size:12px;color:#D8E4F2;margin-bottom:10px">'+n.map(function(x){return x.nome;}).join(' \u00b7 ')+'</div>'
+     +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+     +'<button class="btn bp" style="flex:1" onclick="avisarEquipe()">Gerar mensagem do grupo</button>'
+     +'<button class="btn bs" style="flex:1" onclick="marcarAvisado()">Ja avisei</button>'
+     +'</div></div>';
+  }
+  topo+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">'
+   +'<button class="btn bs" style="flex:1" onclick="abrirEditorAviso()">\u270E Editar mensagem do grupo</button>'
+   +'<button class="btn bs" style="flex:1" onclick="avisarEquipe(true)">Enviar aviso avulso</button>'
+   +'</div><div id="avisoEditor" style="display:none"></div>';
+  el.innerHTML=topo;
 }
 function marcarAvisado(){
   localStorage.setItem(AVISO_KEY,new Date().toISOString());
   renderAvisoBox();toast('Marcado como avisado.');
 }
-function avisarEquipe(){
-  var n=qgNovidades();
-  if(!n.length){toast('Nenhuma novidade nova.');return;}
-  function pick(a){return a[Math.floor(Math.random()*a.length)];}
-  var BENEF={
-    documento:['Vale ter isso na mao quando o cliente perguntar.','Ja fica disponivel pra consulta e envio.','Da pra mostrar direto do celular na visita.'],
-    catalogo:['Da pra mandar pro cliente pelo WhatsApp direto do app.','Ja esta pronto pra enviar na proxima visita.','Vale usar na abordagem de amanha.'],
-    painel:['Da pra ver sua posicao antes de montar a rota.','Vale conferir onde voce esta antes do fechamento.','Ja da pra acompanhar seus numeros por ali.']
-  };
-  var ABERTURA=pick([
-   'Pessoal, subiu coisa nova no QG:',
-   'Bom dia, time. Atualizei o QG agora:',
-   'Time, acabei de subir no QG:',
-   'Pessoal, tem material novo no QG:',
-   'Atualizacao no QG, pessoal:'
-  ]);
-  var FECHO=pick([
-   'Da uma olhada quando puder abrir o app. Qualquer duvida me chama.',
-   'Vale abrir o QG antes de sair pra rua hoje. Estou a disposicao.',
-   'Confere no app e me fala se ficou faltando alguma coisa.',
-   'Abre o QG e da uma olhada. Qualquer duvida, me chama.',
-   'Quem puder ja olhar hoje, ajuda bastante. Estou por aqui.'
-  ]);
-  var linhas=n.map(function(x){
-    var b=pick(BENEF[x.tipo]||['Ja esta disponivel no app.']);
-    return '\u2022 '+x.nome+' \u2014 '+b;
-  }).join('\n');
-  var msg=ABERTURA+'\n\n'+linhas+'\n\n'+FECHO;
+function avisarEquipe(avulso){
+  var n=avulso?[]:qgNovidades();
+  if(!avulso&&!n.length){toast('Nenhuma novidade nova.');return;}
+  if(avulso&&!(AVISO_CFG.extraAtivo&&AVISO_CFG.extra)){toast('Escreva e ative o aviso fixo primeiro.');abrirEditorAviso();return;}
+  function pick(a){return (a&&a.length)?a[Math.floor(Math.random()*a.length)]:'';}
+  var partes=[pick(AVISO_CFG.aberturas)];
+  if(n.length){
+    partes.push(n.map(function(x){
+      return '\u2022 '+x.nome+' \u2014 '+pick(AVISO_CFG[x.tipo]||['Ja esta disponivel no app.']);
+    }).join('\n'));
+  }
+  if(AVISO_CFG.extraAtivo&&AVISO_CFG.extra)partes.push(AVISO_CFG.extra);
+  partes.push(pick(AVISO_CFG.fechos));
+  var msg=partes.filter(function(x){return x;}).join('\n\n');
   if(navigator.clipboard){
     navigator.clipboard.writeText(msg).then(function(){
-      localStorage.setItem(AVISO_KEY,new Date().toISOString());
+      if(!avulso){localStorage.setItem(AVISO_KEY,new Date().toISOString());}
       renderAvisoBox();
       toast('Mensagem copiada! Cole no grupo.');
       window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
@@ -1006,7 +1048,7 @@ function entrar(u){
   document.getElementById('wNome').textContent='Ola, '+u.n.split(' ')[0]+'!';
   document.getElementById('wSub').textContent=u.cd+' - Arcofoods - Norte Fluminense';
   document.getElementById('negVend').textContent=u.cd+' - '+u.n;
-  qgCarregarTudo().then(function(){renderCatalogos();renderBI();renderDocs();renderBIAdmin();renderDocsAdmin();carregarCatalogosAdmin();renderAvisoBox();});
+  qgCarregarTudo().then(carregarAvisoCfg).then(function(){renderCatalogos();renderBI();renderDocs();renderBIAdmin();renderDocsAdmin();carregarCatalogosAdmin();renderAvisoBox();});
 
 if(u.t==='coord'){
     document.getElementById('adminContatos').style.display='block';

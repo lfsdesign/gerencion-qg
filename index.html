@@ -875,8 +875,8 @@ function gerarCardNovidade(soRecado){
    +'<div style="display:flex;align-items:center;gap:8px;margin-top:14px"><div style="font-size:20px;font-weight:800;color:#00E5C3">QG</div><div style="font-size:12px;color:#475569">Gerencion &middot; Norte Fluminense</div></div></div>';
   document.body.appendChild(card);
   var wrap=document.getElementById('cardPreviewWrap');
-  if(typeof html2canvas==='undefined'){toast('Aguarde um instante e tente de novo.');document.body.removeChild(card);return;}
   toast('Gerando card...');
+  function fazer(){
   html2canvas(card,{backgroundColor:null,scale:3,useCORS:true,logging:false}).then(function(canvas){
     document.body.removeChild(card);
     var data=canvas.toDataURL('image/png');
@@ -894,6 +894,13 @@ function gerarCardNovidade(soRecado){
       }
     },60);
   }).catch(function(){document.body.removeChild(card);toast('Erro ao gerar o card.');});
+  }
+  var tentativas=0;
+  (function esperar(){
+    if(typeof html2canvas!=='undefined'){fazer();return;}
+    if(tentativas++>40){document.body.removeChild(card);toast('Nao consegui carregar o gerador de imagem. Verifique a internet.');return;}
+    setTimeout(esperar,150);
+  })();
 }
 function baixarCard(){if(!window._cardData){toast('Gere o card primeiro.');return;}var a=document.createElement('a');a.download='QG-novidade.png';a.href=window._cardData;document.body.appendChild(a);a.click();document.body.removeChild(a);toast('Card salvo! Agora anexe no grupo.');}
 function abrirWppCard(){baixarCard();setTimeout(function(){window.open('https://wa.me/','_blank');},400);}

@@ -302,6 +302,7 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
         <div class="wname" id="wNome">Ola!</div>
         <div class="wsub" id="wSub">Bem-vindo ao GERENCION QG &middot; Norte Fluminense</div>
       </div>
+      <div id="avisoBox" style="display:none"></div>
       <div class="mgrid">
         <div class="mcard" onclick="irM('negociacao')"><div class="micon">&#129309;</div><div class="mname">Negociacao</div><div class="mdesc">Solicitar aprovacao de preco</div></div>
         <div class="mcard" onclick="irM('tipologia');mxAbrirMix()"><div class="micon">&#128203;</div><div class="mname">Mix por Segmento</div><div class="mdesc">Lista por tipo de cliente</div></div>
@@ -752,7 +753,7 @@ function addBI(){
    .then(qgJson).then(function(d){
      if(Array.isArray(d)&&d.length)QG_CACHE.bis=QG_CACHE.bis.concat(d);
      ['biNome','biUrl','biDesc'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
-     renderBI();renderBIAdmin();toast('Painel adicionado! Toda a equipe ja ve.');
+     renderBI();renderBIAdmin();renderAvisoBox();toast('Painel adicionado! Toda a equipe ja ve.');
    }).catch(function(){toast('Erro ao adicionar. Verifique a conexao.');});
 }
 function removerBI(id){
@@ -772,6 +773,74 @@ function renderBIAdmin(){
      +'<div style="font-size:11px;color:var(--t3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px">'+(b.descricao||b.url)+'</div></div>'
      +'<button onclick="removerBI(\''+b.id+'\')" style="background:var(--rd2);border:1px solid rgba(239,68,68,.25);color:var(--rd);border-radius:6px;padding:5px 11px;font-size:11px;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap">Remover</button></div>';
   }).join('');
+}
+var AVISO_KEY='QG_ULTIMO_AVISO';
+function qgNovidades(){
+  var last=localStorage.getItem(AVISO_KEY);
+  var lt=last?new Date(last).getTime():0;
+  var out=[];
+  function add(arr,tipo){(arr||[]).forEach(function(x){
+    var t=x.criado_em?new Date(x.criado_em).getTime():0;
+    if(t>lt)out.push({tipo:tipo,nome:x.nome});});}
+  add(QG_CACHE.docs,'documento');
+  add(QG_CACHE.cats,'catalogo');
+  add(QG_CACHE.bis,'painel');
+  return out;
+}
+function renderAvisoBox(){
+  var el=document.getElementById('avisoBox');if(!el)return;
+  if(!(eu&&eu.t==='coord')){el.style.display='none';return;}
+  var n=qgNovidades();
+  if(!n.length){el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML='<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:14px 16px;margin-bottom:16px">'
+   +'<div style="font-size:13px;font-weight:700;color:#F0F6FF;margin-bottom:4px">\u{1F4E3} '+n.length+' novidade'+(n.length>1?'s':'')+' ainda nao avisada'+(n.length>1?'s':'')+'</div>'
+   +'<div style="font-size:12px;color:#D8E4F2;margin-bottom:10px">'+n.map(function(x){return x.nome;}).join(' \u00b7 ')+'</div>'
+   +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+   +'<button class="btn bp" style="flex:1" onclick="avisarEquipe()">Gerar mensagem do grupo</button>'
+   +'<button class="btn bs" style="flex:1" onclick="marcarAvisado()">Ja avisei</button>'
+   +'</div></div>';
+}
+function marcarAvisado(){
+  localStorage.setItem(AVISO_KEY,new Date().toISOString());
+  renderAvisoBox();toast('Marcado como avisado.');
+}
+function avisarEquipe(){
+  var n=qgNovidades();
+  if(!n.length){toast('Nenhuma novidade nova.');return;}
+  function pick(a){return a[Math.floor(Math.random()*a.length)];}
+  var BENEF={
+    documento:['Vale ter isso na mao quando o cliente perguntar.','Ja fica disponivel pra consulta e envio.','Da pra mostrar direto do celular na visita.'],
+    catalogo:['Da pra mandar pro cliente pelo WhatsApp direto do app.','Ja esta pronto pra enviar na proxima visita.','Vale usar na abordagem de amanha.'],
+    painel:['Da pra ver sua posicao antes de montar a rota.','Vale conferir onde voce esta antes do fechamento.','Ja da pra acompanhar seus numeros por ali.']
+  };
+  var ABERTURA=pick([
+   'Pessoal, subiu coisa nova no QG:',
+   'Bom dia, time. Atualizei o QG agora:',
+   'Time, acabei de subir no QG:',
+   'Pessoal, tem material novo no QG:',
+   'Atualizacao no QG, pessoal:'
+  ]);
+  var FECHO=pick([
+   'Da uma olhada quando puder abrir o app. Qualquer duvida me chama.',
+   'Vale abrir o QG antes de sair pra rua hoje. Estou a disposicao.',
+   'Confere no app e me fala se ficou faltando alguma coisa.',
+   'Abre o QG e da uma olhada. Qualquer duvida, me chama.',
+   'Quem puder ja olhar hoje, ajuda bastante. Estou por aqui.'
+  ]);
+  var linhas=n.map(function(x){
+    var b=pick(BENEF[x.tipo]||['Ja esta disponivel no app.']);
+    return '\u2022 '+x.nome+' \u2014 '+b;
+  }).join('\n');
+  var msg=ABERTURA+'\n\n'+linhas+'\n\n'+FECHO;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(msg).then(function(){
+      localStorage.setItem(AVISO_KEY,new Date().toISOString());
+      renderAvisoBox();
+      toast('Mensagem copiada! Cole no grupo.');
+      window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+    },function(){window.prompt('Copie a mensagem:',msg);});
+  }else{window.prompt('Copie a mensagem:',msg);}
 }
 function toggleDocTipo(){
   var t=(document.getElementById('docTipo')||{value:'link'}).value;
@@ -807,7 +876,7 @@ function _salvarDoc(obj){
      if(Array.isArray(d)&&d.length)QG_CACHE.docs=QG_CACHE.docs.concat(d);
      ['docNome','docUrl','docDesc','docTexto'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
      var fi=document.getElementById('docImg');if(fi)fi.value='';
-     renderDocs();renderDocsAdmin();toast('Documento adicionado! Toda a equipe ja ve.');
+     renderDocs();renderDocsAdmin();renderAvisoBox();toast('Documento adicionado! Toda a equipe ja ve.');
    }).catch(function(){toast('Erro ao adicionar. Verifique a conexao.');});
 }
 function verDocImagem(id){
@@ -937,7 +1006,7 @@ function entrar(u){
   document.getElementById('wNome').textContent='Ola, '+u.n.split(' ')[0]+'!';
   document.getElementById('wSub').textContent=u.cd+' - Arcofoods - Norte Fluminense';
   document.getElementById('negVend').textContent=u.cd+' - '+u.n;
-  qgCarregarTudo().then(function(){renderCatalogos();renderBI();renderDocs();renderBIAdmin();renderDocsAdmin();carregarCatalogosAdmin();});
+  qgCarregarTudo().then(function(){renderCatalogos();renderBI();renderDocs();renderBIAdmin();renderDocsAdmin();carregarCatalogosAdmin();renderAvisoBox();});
 
 if(u.t==='coord'){
     document.getElementById('adminContatos').style.display='block';

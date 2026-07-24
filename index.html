@@ -1993,11 +1993,11 @@ var ANGULO=pick([
  'No apoio, cite que essa conta e referencia para outras da mesma praca.'
 ]);
 var FECHO=pick([
- 'Termine perguntando se consegue a aprovacao ainda hoje.',
- 'Termine pedindo um retorno rapido e se colocando a disposicao para ajustar.',
- 'Termine dizendo que acompanha o resultado e reporta depois.',
- 'Termine propondo aprovar so os itens criticos, se o total nao for possivel.',
- 'Termine pedindo a aprovacao e sinalizando que fecha o pedido na sequencia.'
+ 'Termine pedindo a aprovacao ainda hoje, com cordialidade e firmeza, e informando que fecho o pedido na sequencia.',
+ 'Termine solicitando uma posicao imediata, de forma educada, e se colocando a disposicao para ajustar agora mesmo.',
+ 'Termine pedindo a decisao hoje e propondo, com cordialidade, aprovar apenas os itens mais criticos caso o total nao seja possivel.',
+ 'Termine pedindo aprovacao imediata, de forma respeitosa, e informando que acompanho o resultado e reporto em seguida.',
+ 'Termine pedindo retorno ainda nesta data, com educacao, explicando que o cliente esta com decisao aberta neste momento.'
 ]);
 var VAR=Math.random().toString(36).slice(2,7);
 
@@ -2011,17 +2011,19 @@ var prompt='Escreva uma mensagem CURTA que EU vou enviar para o Supply/Pricing d
 +'Contexto de campo: '+(ctx||'nao informado')+'\n'
 +'Itens:\n'+(linhas||'nao informado')+'\n\n'
 +'=== REGRAS (execucao '+VAR+') ===\n'
-+'1. MAXIMO 90 PALAVRAS. Isso e uma regra rigida. Quem le tem pressa.\n'
++'1. ENTRE 150 E 190 PALAVRAS, em DOIS paragrafos curtos. Nao ultrapasse. Quem le tem pressa.\n'
 +'2. Escreva em PRIMEIRA PESSOA, como se eu mesmo tivesse escrito: "preciso", "estou", "consigo", "sugiro", "fecho". Nunca terceira pessoa, nunca linguagem de relatorio.\n'
 +'3. A PRIMEIRA FRASE ja deve trazer o pedido e o numero: o que preciso, em quantos SKUs, para qual cliente e o impacto em R$. Se a pessoa ler so essa linha, precisa entender tudo.\n'
-+'4. Depois, no maximo 3 frases curtas de apoio. '+ANGULO+'\n'
-+'5. '+FECHO+'\n'
-+'6. Sem saudacao longa, sem subtitulos, sem topicos, sem assinatura. Texto corrido e direto.\n'
-+'7. Nao repita os itens um a um. Resuma em numero de SKUs e impacto total.\n\n'
++'4. PARAGRAFO 1: o pedido, os numeros e a situacao concreta da conta. Pode citar os itens mais relevantes e o percentual, sem listar tudo.\n'
++'5. PARAGRAFO 2: o apoio e o fechamento. '+ANGULO+' Deixe claro, sem drama, o que a empresa perde se a condicao nao sair: nao apenas este pedido, mas presenca na conta e espaco no mix, que raramente volta pelo mesmo preco.\n'
++'6. '+FECHO+'\n'
++'7. Sem saudacao longa, sem subtitulos, sem topicos, sem assinatura. Texto corrido em dois paragrafos.\n'
++'8. Nao liste os itens um a um em formato de tabela. Cite no maximo dois itens de exemplo e resuma o resto.\n\n'
 +'=== TOM ===\n'
 +'- Direto, seguro e respeitoso. Como colega que precisa de uma decisao, nao como quem pede favor.\n'
 +'- A urgencia vem do numero e do risco real, nunca de adjetivo ou drama.\n'
 +'- Proibido: desespero, imploro, ultima chance, por favor, por gentileza, urgentissimo.\n'
++'- PROIBIDO pedir retorno de forma passiva. Nunca escreva "assim que possivel", "quando puder", "no aguardo", "fico no aguardo", "qualquer coisa me avisa", "se possivel". O pedido de decisao e para HOJE, dito com educacao e firmeza.\n'
 +'- Nao classifique o canal do cliente (nao diga food service, varejo, atacado) a menos que esteja no contexto.\n'
 +'- Nao invente dado. Se algo estiver como nao informado, omita.\n'
 +'- Varie a construcao das frases: esta mensagem sera lida pela mesma pessoa que ja recebeu outras. Nao pode parecer template.\n'

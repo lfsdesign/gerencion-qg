@@ -1978,66 +1978,53 @@ var ps=(typeof coletarProds==='function')?coletarProds():[];
 var linhas=ps.map(function(p){
   var t=parseFloat(p.t)||0,v=parseFloat(p.v)||0;
   var pct=t>0?((t-v)/t*100):0;
-  return '- '+(p.n||'produto')+': '+(p.q||'?')+' '+(p.u||'')+' | tabela R$ '+t.toFixed(4)+' | solicitado R$ '+v.toFixed(4)+' | desconto '+pct.toFixed(1)+'%';
+  return '- '+(p.n||'produto')+': '+(p.q||'?')+' '+(p.u||'')+' | tabela R$ '+t.toFixed(4)+' | pedido R$ '+v.toFixed(4)+' | '+pct.toFixed(1)+'%';
 }).join('\n');
 var tot=ps.reduce(function(a,p){return a+Math.abs(p.tot||0);},0);
 var med=ps.length?ps.reduce(function(a,p){return a+Math.abs(p.pct||0);},0)/ps.length:0;
-var vend=(typeof eu!=='undefined'&&eu)?(eu.cd+' - '+eu.n):'vendedor';
 
 function pick(a){return a[Math.floor(Math.random()*a.length)];}
-var ABERTURA=pick([
- 'Abra pelo movimento do concorrente na conta.',
- 'Abra pelo peso e pelo historico do cliente para a regional.',
- 'Abra pelo numero: o desconto pedido e o impacto em R$.',
- 'Abra pela janela de decisao (o pedido esta em aberto agora).',
- 'Abra pelo risco de perder posicao no mix do cliente.',
- 'Abra por uma leitura curta do que mudou no mercado dessa conta.'
+var ANGULO=pick([
+ 'No apoio, cite que o concorrente ja esta com proposta na mesa.',
+ 'No apoio, cite o peso e a recorrencia de compra desse cliente.',
+ 'No apoio, cite que o pedido esta em aberto e a decisao e agora.',
+ 'No apoio, cite o risco de perder espaco no mix e nao recuperar depois.',
+ 'No apoio, cite que o valor do desconto e pequeno perto do que a conta gera.',
+ 'No apoio, cite que essa conta e referencia para outras da mesma praca.'
 ]);
-var FORMATO=pick([
- 'Use subtitulos curtos em caixa alta separando os blocos.',
- 'Escreva em paragrafos corridos, sem subtitulos, com boa costura entre as ideias.',
- 'Faca um paragrafo de abertura e depois topicos curtos com marcadores.',
- 'Alterne: dois paragrafos, um bloco de dados em lista, e um fechamento em paragrafo.',
- 'Formato de nota tecnica: um paragrafo de contexto, os dados em lista enxuta e o pedido em uma linha.'
+var FECHO=pick([
+ 'Termine perguntando se consegue a aprovacao ainda hoje.',
+ 'Termine pedindo um retorno rapido e se colocando a disposicao para ajustar.',
+ 'Termine dizendo que acompanha o resultado e reporta depois.',
+ 'Termine propondo aprovar so os itens criticos, se o total nao for possivel.',
+ 'Termine pedindo a aprovacao e sinalizando que fecha o pedido na sequencia.'
 ]);
-var ENFASE=pick([
- 'Enfatize a assimetria: o valor do desconto e pequeno perto do faturamento anual em risco.',
- 'Enfatize a dificuldade e o custo de reconquistar a conta depois de perdida.',
- 'Enfatize a consistencia do cliente (recorrencia de compra) como ativo a preservar.',
- 'Enfatize a referencia que essa conta representa para outras da mesma praca.',
- 'Enfatize que a decisao e reversivel e pontual, com acompanhamento do vendedor.',
- 'Enfatize o efeito cascata: perder o pedido hoje abre espaco para o concorrente ampliar o mix depois.'
-]);
-var TAMANHO=pick(['entre 180 e 230 palavras','entre 220 e 280 palavras','entre 160 e 200 palavras','ate 300 palavras']);
-var VAR=Math.random().toString(36).slice(2,8);
+var VAR=Math.random().toString(36).slice(2,7);
 
-var prompt='Voce e um analista comercial senior da Arcofoods, distribuidora de alimentos. Escreva uma SOLICITACAO INTERNA de aprovacao de preco especial, endereçada a area de Supply/Pricing.\n\n'
-+'=== DADOS DA OPERACAO ===\n'
+var prompt='Escreva uma mensagem CURTA que EU vou enviar para o Supply/Pricing da Arcofoods pedindo aprovacao de preco especial.\n\n'
++'=== MEUS DADOS ===\n'
 +'Cliente: '+(cli||'nao informado')+'\n'
-+'Vendedor responsavel: '+vend+'\n'
-+'Concorrente atuando na conta: '+(conc||'nao informado')+'\n'
-+'SKUs envolvidos: '+(skus||String(ps.length))+'\n'
-+'Desconto medio solicitado: '+med.toFixed(1)+'%\n'
-+'Impacto financeiro estimado: R$ '+tot.toFixed(2)+'\n'
-+'Contexto de campo relatado: '+(ctx||'nao informado')+'\n\n'
++'Concorrente na conta: '+(conc||'nao informado')+'\n'
++'SKUs: '+(skus||String(ps.length))+'\n'
++'Desconto medio pedido: '+med.toFixed(1)+'%\n'
++'Impacto: R$ '+tot.toFixed(2)+'\n'
++'Contexto de campo: '+(ctx||'nao informado')+'\n'
 +'Itens:\n'+(linhas||'nao informado')+'\n\n'
-+'=== O QUE A MENSAGEM PRECISA CONTER (em qualquer ordem) ===\n'
-+'a) A situacao real da conta, de forma objetiva.\n'
-+'b) A pressao competitiva que o cliente esta recebendo e o que isso significa para a posicao da Arcofoods nessa conta.\n'
-+'c) Os numeros com precisao: itens, desconto pedido e impacto em R$ — deixando claro que o pedido e calculado, nao arbitrario.\n'
-+'d) O que a empresa perde se a condicao nao sair: nao apenas este pedido, mas presenca na conta, historico de compra e espaco no mix do cliente. Espaco perdido raramente volta pelo mesmo preco.\n'
-+'e) O pedido objetivo, com prazo e o compromisso de acompanhamento do vendedor.\n\n'
-+'=== VARIACAO OBRIGATORIA (execucao '+VAR+') ===\n'
-+ABERTURA+'\n'+FORMATO+'\n'+ENFASE+'\n'
-+'Tamanho: '+TAMANHO+'.\n'
-+'Nao use formula pronta nem frases de efeito repetidas. Varie o vocabulario e a construcao das frases. Esta mensagem sera lida pela mesma pessoa que ja recebeu outras solicitacoes: ela nao pode parecer template.\n\n'
++'=== REGRAS (execucao '+VAR+') ===\n'
++'1. MAXIMO 90 PALAVRAS. Isso e uma regra rigida. Quem le tem pressa.\n'
++'2. Escreva em PRIMEIRA PESSOA, como se eu mesmo tivesse escrito: "preciso", "estou", "consigo", "sugiro", "fecho". Nunca terceira pessoa, nunca linguagem de relatorio.\n'
++'3. A PRIMEIRA FRASE ja deve trazer o pedido e o numero: o que preciso, em quantos SKUs, para qual cliente e o impacto em R$. Se a pessoa ler so essa linha, precisa entender tudo.\n'
++'4. Depois, no maximo 3 frases curtas de apoio. '+ANGULO+'\n'
++'5. '+FECHO+'\n'
++'6. Sem saudacao longa, sem subtitulos, sem topicos, sem assinatura. Texto corrido e direto.\n'
++'7. Nao repita os itens um a um. Resuma em numero de SKUs e impacto total.\n\n'
 +'=== TOM ===\n'
-+'- Tecnico, factual e respeitoso. Zero drama, zero apelo emocional explicito, zero chantagem.\n'
-+'- A urgencia nasce dos numeros e do risco concreto, nunca de adjetivos.\n'
-+'- Trate Supply como parceiro que decide junto, nao como obstaculo. Use "nos" e "a empresa", nunca "voces".\n'
-+'- Nao use palavras como desespero, imploro, ultima chance, favor, por gentileza.\n'
-+'- Nao classifique o canal do cliente (nao diga food service, varejo, atacado ou similar) a menos que essa informacao tenha sido dada no contexto.\n'
-+'- Nao invente dados. Se algo estiver como nao informado, apenas omita.\n'
++'- Direto, seguro e respeitoso. Como colega que precisa de uma decisao, nao como quem pede favor.\n'
++'- A urgencia vem do numero e do risco real, nunca de adjetivo ou drama.\n'
++'- Proibido: desespero, imploro, ultima chance, por favor, por gentileza, urgentissimo.\n'
++'- Nao classifique o canal do cliente (nao diga food service, varejo, atacado) a menos que esteja no contexto.\n'
++'- Nao invente dado. Se algo estiver como nao informado, omita.\n'
++'- Varie a construcao das frases: esta mensagem sera lida pela mesma pessoa que ja recebeu outras. Nao pode parecer template.\n'
 +'- Portugues do Brasil, pronto para copiar e enviar.\n\n'
 +'Responda somente com a mensagem final.';
 

@@ -775,79 +775,27 @@ function renderBIAdmin(){
   }).join('');
 }
 var AVISO_KEY='QG_ULTIMO_AVISO';
-var AVISO_PADRAO={
- aberturas:['Pessoal, subiu coisa nova no QG:','Bom dia, time. Atualizei o QG agora:','Time, acabei de subir no QG:','Pessoal, tem material novo no QG:','Atualizacao no QG, pessoal:'],
- fechos:['Da uma olhada quando puder abrir o app. Qualquer duvida me chama.','Vale abrir o QG antes de sair pra rua hoje. Estou a disposicao.','Confere no app e me fala se ficou faltando alguma coisa.','Abre o QG e da uma olhada. Qualquer duvida, me chama.','Quem puder ja olhar hoje, ajuda bastante. Estou por aqui.'],
- documento:['Vale ter isso na mao quando o cliente perguntar.','Ja fica disponivel pra consulta e envio.','Da pra mostrar direto do celular na visita.'],
- catalogo:['Da pra mandar pro cliente pelo WhatsApp direto do app.','Ja esta pronto pra enviar na proxima visita.','Vale usar na abordagem de amanha.'],
- painel:['Da pra ver sua posicao antes de montar a rota.','Vale conferir onde voce esta antes do fechamento.','Ja da pra acompanhar seus numeros por ali.'],
- extra:'',
- extraAtivo:false
+var CARD_PADRAO={
+ titulo:'NOVIDADE NO QG',
+ chamada:'Material novo disponivel',
+ rodape:'Abra o QG e confira. Qualquer duvida, me chama.',
+ recado:'',
+ recadoAtivo:false
 };
-var AVISO_CFG=JSON.parse(JSON.stringify(AVISO_PADRAO));
-function carregarAvisoCfg(){
-  return supaFetch('qg_config?chave=eq.mensagem_grupo').then(qgJson).then(function(d){
+var CARD_CFG=JSON.parse(JSON.stringify(CARD_PADRAO));
+function carregarCardCfg(){
+  return supaFetch('qg_config?chave=eq.card_grupo').then(qgJson).then(function(d){
     if(Array.isArray(d)&&d.length&&d[0].valor){
-      var v=d[0].valor;
-      Object.keys(AVISO_PADRAO).forEach(function(k){if(v[k]!==undefined)AVISO_CFG[k]=v[k];});
+      var v=d[0].valor;Object.keys(CARD_PADRAO).forEach(function(k){if(v[k]!==undefined)CARD_CFG[k]=v[k];});
     }
   }).catch(function(){});
 }
-function salvarAvisoCfg(){
-  function ln(id){var e=document.getElementById(id);if(!e)return [];
-    return e.value.split(/\r?\n/).map(function(x){return x.trim();}).filter(function(x){return x;});}
-  var novo={aberturas:ln('cfgAber'),fechos:ln('cfgFecho'),documento:ln('cfgDoc'),catalogo:ln('cfgCat'),painel:ln('cfgBI'),
-    extra:(document.getElementById('cfgExtra')||{value:''}).value.trim(),
-    extraAtivo:!!(document.getElementById('cfgExtraAtivo')||{}).checked};
-  var vazios=[];
-  [['aberturas','Como comeca'],['fechos','Como termina'],['documento','Documentos'],['catalogo','Catalogos'],['painel','Paineis BI']].forEach(function(p){
-    if(!novo[p[0]].length){novo[p[0]]=AVISO_PADRAO[p[0]];vazios.push(p[1]);}});
-  if(vazios.length)toast('Campos vazios voltaram ao padrao: '+vazios.join(', '));
-  AVISO_CFG=novo;
-  toast('Salvando...');
-  supaFetch('qg_config',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},
-    body:JSON.stringify({chave:'mensagem_grupo',valor:novo})})
-   .then(function(){toast('Mensagem salva!');var ed=document.getElementById('avisoEditor');var aberto=ed&&ed.style.display==='block';renderAvisoBox();if(aberto)abrirEditorAviso();})
-   .catch(function(){toast('Erro ao salvar.');});
-}
-function abrirEditorAviso(){
-  var el=document.getElementById('avisoEditor');if(!el)return;
-  var abrindo=(el.style.display!=='block');
-  el.style.display=abrindo?'block':'none';
-  if(!abrindo){el.innerHTML='';renderAvisoBox();return;}
-  function bl(lbl,id,val,rows,dica){
-    return '<div class="fg"><label class="fl">'+lbl+'</label>'
-      +'<textarea id="'+id+'" class="inp" rows="'+rows+'">'+val+'</textarea>'
-      +(dica?'<div style="font-size:10px;color:var(--t3);margin-top:4px">'+dica+'</div>':'')+'</div>';
-  }
-  el.innerHTML='<div style="border-top:1px solid var(--b);margin-top:14px;padding-top:14px">'
-   +'<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--am);margin-bottom:4px">Editar mensagem</div>'
-   +'<div style="font-size:11px;color:var(--t3);margin-bottom:14px">Uma frase por linha. O app sorteia entre elas para nao chegar sempre igual.</div>'
-   +bl('Como comeca','cfgAber',AVISO_CFG.aberturas.join('\n'),3,'')
-   +bl('Como termina','cfgFecho',AVISO_CFG.fechos.join('\n'),3,'')
-   +'<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin:16px 0 8px">Frase que acompanha cada item</div>'
-   +bl('Documentos','cfgDoc',AVISO_CFG.documento.join('\n'),2,'')
-   +bl('Catalogos','cfgCat',AVISO_CFG.catalogo.join('\n'),2,'')
-   +bl('Paineis BI','cfgBI',AVISO_CFG.painel.join('\n'),2,'')
-   +'<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin:16px 0 8px">Recado fixo</div>'
-   +'<div class="fg"><textarea id="cfgExtra" class="inp" rows="3" placeholder="Ex: Lembrando que agora da pra fazer cotacoes pelo proprio QG, e as premiacoes estao atualizadas.">'+(AVISO_CFG.extra||'')+'</textarea>'
-   +'<label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:var(--t2);cursor:pointer"><input type="checkbox" id="cfgExtraAtivo"'+(AVISO_CFG.extraAtivo?' checked':'')+'> Incluir em todas as mensagens</label>'
-   +'<div style="font-size:10px;color:var(--t3);margin-top:6px">Enquanto ligado, entra em toda mensagem. Desligue quando a equipe ja souber.</div></div>'
-   +'<div style="display:flex;gap:8px;margin-top:6px">'
-   +'<button class="btn bp" style="flex:1" onclick="salvarAvisoCfg()">Salvar</button>'
-   +'<button class="btn bs" style="flex:1" onclick="abrirEditorAviso()">Fechar</button>'
-   +'</div></div>';
-}
 function qgNovidades(){
-  var last=localStorage.getItem(AVISO_KEY);
-  var lt=last?new Date(last).getTime():0;
-  var out=[];
-  function add(arr,tipo){(arr||[]).forEach(function(x){
-    var t=x.criado_em?new Date(x.criado_em).getTime():0;
-    if(t>lt)out.push({tipo:tipo,nome:x.nome});});}
-  add(QG_CACHE.docs,'documento');
-  add(QG_CACHE.cats,'catalogo');
-  add(QG_CACHE.bis,'painel');
+  var last=localStorage.getItem(AVISO_KEY);var lt=last?new Date(last).getTime():0;var out=[];
+  function add(arr,tipo,ic){(arr||[]).forEach(function(x){var t=x.criado_em?new Date(x.criado_em).getTime():0;if(t>lt)out.push({tipo:tipo,nome:x.nome,ic:ic});});}
+  add(QG_CACHE.docs,'documento','\u{1F4C4}');
+  add(QG_CACHE.cats,'catalogo','\u{1F4DA}');
+  add(QG_CACHE.bis,'painel','\u{1F4CA}');
   return out;
 }
 function renderAvisoBox(){
@@ -855,57 +803,100 @@ function renderAvisoBox(){
   if(!(eu&&eu.t==='coord')){el.style.display='none';return;}
   el.style.display='block';
   var n=qgNovidades();
-  var temExtra=!!(AVISO_CFG.extraAtivo&&AVISO_CFG.extra);
-  var status,cor,acao;
+  var temRecado=!!(CARD_CFG.recadoAtivo&&CARD_CFG.recado);
+  var status,cor,acao='';
   if(n.length){
     status='<strong style="color:#F0F6FF">'+n.length+' novidade'+(n.length>1?'s':'')+'</strong> para avisar &middot; '+n.map(function(x){return x.nome;}).join(', ');
     cor='var(--am)';
-    acao='<button class="btn bp" style="flex:1" onclick="avisarEquipe()">Gerar mensagem</button>'
-        +'<button class="btn bs" style="flex:1" onclick="marcarAvisado()">Ja avisei</button>';
-  }else if(temExtra){
-    status='Nenhuma novidade nova. O recado fixo esta ativo e pode ser enviado.';
-    cor='var(--t3)';
-    acao='<button class="btn bs" style="flex:1" onclick="avisarEquipe(true)">Enviar recado fixo</button>';
+    acao='<button class="btn bp" style="flex:1" onclick="gerarCardNovidade()">\u{1F4E3} Gerar card</button><button class="btn bs" style="flex:1" onclick="marcarAvisado()">Ja avisei</button>';
+  }else if(temRecado){
+    status='Nenhuma novidade nova. Seu recado fixo esta ativo.';cor='var(--cy)';
+    acao='<button class="btn bp" style="flex:1" onclick="gerarCardNovidade(true)">\u{1F4E3} Gerar card do recado</button>';
   }else{
-    status='Tudo avisado. Assim que voce cadastrar algo, aparece aqui.';
-    cor='var(--t3)';
-    acao='';
+    status='Tudo avisado. Assim que voce cadastrar algo, aparece aqui.';cor='var(--t3)';
   }
   el.innerHTML='<div class="card" style="border-left:3px solid '+cor+'">'
    +'<div class="ct">Avisar a equipe</div>'
    +'<div style="font-size:12px;color:#D8E4F2;line-height:1.6;margin-bottom:'+(acao?'12px':'10px')+'">'+status+'</div>'
    +(acao?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">'+acao+'</div>':'')
-   +'<button onclick="abrirEditorAviso()" style="background:none;border:none;color:var(--t3);font-size:11px;cursor:pointer;font-family:Inter,sans-serif;padding:0;text-decoration:underline">Editar mensagem</button>'
-   +'<div id="avisoEditor" style="display:none"></div>'
+   +'<button onclick="abrirEditorCard()" style="background:none;border:none;color:var(--t3);font-size:11px;cursor:pointer;font-family:Inter,sans-serif;padding:0;text-decoration:underline">Personalizar card</button>'
+   +'<div id="cardEditor" style="display:none"></div>'
+   +'<div id="cardPreviewWrap" style="display:none;margin-top:14px"></div>'
    +'</div>';
 }
-function marcarAvisado(){
-  localStorage.setItem(AVISO_KEY,new Date().toISOString());
-  renderAvisoBox();toast('Marcado como avisado.');
+function marcarAvisado(){localStorage.setItem(AVISO_KEY,new Date().toISOString());renderAvisoBox();toast('Marcado como avisado.');}
+function abrirEditorCard(){
+  var el=document.getElementById('cardEditor');if(!el)return;
+  var abrindo=(el.style.display!=='block');el.style.display=abrindo?'block':'none';
+  if(!abrindo){el.innerHTML='';return;}
+  function fld(lbl,id,val,ph){return '<div class="fg"><label class="fl">'+lbl+'</label><input id="'+id+'" class="inp" value="'+(val||'').replace(/"/g,'&quot;')+'" placeholder="'+(ph||'')+'"></div>';}
+  el.innerHTML='<div style="border-top:1px solid var(--b);margin-top:14px;padding-top:14px">'
+   +'<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--am);margin-bottom:12px">Personalizar card</div>'
+   +fld('Titulo (topo)','ccTitulo',CARD_CFG.titulo,'NOVIDADE NO QG')
+   +fld('Chamada','ccChamada',CARD_CFG.chamada,'Material novo disponivel')
+   +fld('Rodape','ccRodape',CARD_CFG.rodape,'Abra o QG e confira.')
+   +'<div class="fg"><label class="fl">Recado fixo (opcional)</label><textarea id="ccRecado" class="inp" rows="2" placeholder="Ex: Agora da pra fazer cotacoes pelo QG.">'+(CARD_CFG.recado||'')+'</textarea>'
+   +'<label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:var(--t2);cursor:pointer"><input type="checkbox" id="ccRecadoAtivo"'+(CARD_CFG.recadoAtivo?' checked':'')+'> Mostrar o recado no card</label></div>'
+   +'<button class="btn bp" style="width:100%" onclick="salvarCardCfg()">Salvar</button>'
+   +'</div>';
 }
-function avisarEquipe(avulso){
-  var n=avulso?[]:qgNovidades();
-  if(!avulso&&!n.length){toast('Nenhuma novidade nova.');return;}
-  if(avulso&&!(AVISO_CFG.extraAtivo&&AVISO_CFG.extra)){toast('Escreva e ative o aviso fixo primeiro.');abrirEditorAviso();return;}
-  function pick(a){return (a&&a.length)?a[Math.floor(Math.random()*a.length)]:'';}
-  var partes=[pick(AVISO_CFG.aberturas)];
-  if(n.length){
-    partes.push(n.map(function(x){
-      return '\u2022 '+x.nome+' \u2014 '+pick(AVISO_CFG[x.tipo]||['Ja esta disponivel no app.']);
-    }).join('\n'));
-  }
-  if(AVISO_CFG.extraAtivo&&AVISO_CFG.extra)partes.push(AVISO_CFG.extra);
-  partes.push(pick(AVISO_CFG.fechos));
-  var msg=partes.filter(function(x){return x;}).join('\n\n');
-  if(navigator.clipboard){
-    navigator.clipboard.writeText(msg).then(function(){
-      if(!avulso){localStorage.setItem(AVISO_KEY,new Date().toISOString());}
-      renderAvisoBox();
-      toast('Mensagem copiada! Cole no grupo.');
-      window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
-    },function(){window.prompt('Copie a mensagem:',msg);});
-  }else{window.prompt('Copie a mensagem:',msg);}
+function salvarCardCfg(){
+  var novo={titulo:(document.getElementById('ccTitulo')||{value:''}).value.trim()||CARD_PADRAO.titulo,
+    chamada:(document.getElementById('ccChamada')||{value:''}).value.trim()||CARD_PADRAO.chamada,
+    rodape:(document.getElementById('ccRodape')||{value:''}).value.trim()||CARD_PADRAO.rodape,
+    recado:(document.getElementById('ccRecado')||{value:''}).value.trim(),
+    recadoAtivo:!!(document.getElementById('ccRecadoAtivo')||{}).checked};
+  CARD_CFG=novo;
+  toast('Salvando...');
+  supaFetch('qg_config',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},
+    body:JSON.stringify({chave:'card_grupo',valor:novo})})
+   .then(function(){toast('Card salvo!');var e=document.getElementById('cardEditor');if(e)e.style.display='none';renderAvisoBox();})
+   .catch(function(){toast('Erro ao salvar.');});
 }
+function gerarCardNovidade(soRecado){
+  var n=soRecado?[]:qgNovidades();
+  if(!soRecado&&!n.length){toast('Nenhuma novidade nova.');return;}
+  var itensHTML=n.map(function(x){
+    return '<div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px;margin-bottom:10px">'
+     +'<div style="font-size:26px;line-height:1">'+x.ic+'</div>'
+     +'<div style="flex:1;min-width:0"><div style="font-size:18px;font-weight:700;color:#F0F6FF;line-height:1.25">'+x.nome+'</div>'
+     +'<div style="font-size:12px;color:#00E5C3;text-transform:uppercase;letter-spacing:.5px;margin-top:2px">'+x.tipo+'</div></div></div>';
+  }).join('');
+  var recadoHTML=(CARD_CFG.recadoAtivo&&CARD_CFG.recado)
+    ?'<div style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);border-radius:14px;padding:14px 16px;margin-top:6px"><div style="font-size:14px;color:#FCD34D;line-height:1.5">'+CARD_CFG.recado+'</div></div>':'';
+  var card=document.createElement('div');
+  card.style.cssText='position:fixed;left:-9999px;top:0;width:440px;background:linear-gradient(160deg,#0A1628 0%,#0F1F35 100%);padding:0;font-family:Inter,sans-serif;border-radius:24px;overflow:hidden';
+  card.innerHTML=
+   '<div style="background:linear-gradient(135deg,#00E5C3,#10B981);padding:22px 26px">'
+   +'<div style="font-size:13px;font-weight:800;letter-spacing:3px;color:#04231D">'+(CARD_CFG.titulo||'NOVIDADE NO QG')+'</div>'
+   +'<div style="font-size:22px;font-weight:800;color:#052B23;margin-top:2px;line-height:1.2">'+(CARD_CFG.chamada||'Material novo disponivel')+'</div></div>'
+   +'<div style="padding:24px 26px 10px">'+(itensHTML||'')+recadoHTML+'</div>'
+   +'<div style="padding:6px 26px 24px"><div style="font-size:14px;color:#94A3B8;line-height:1.5;border-top:1px solid rgba(255,255,255,.08);padding-top:16px">'+(CARD_CFG.rodape||'')+'</div>'
+   +'<div style="display:flex;align-items:center;gap:8px;margin-top:14px"><div style="font-size:20px;font-weight:800;color:#00E5C3">QG</div><div style="font-size:12px;color:#475569">Gerencion &middot; Norte Fluminense</div></div></div>';
+  document.body.appendChild(card);
+  var wrap=document.getElementById('cardPreviewWrap');
+  if(typeof html2canvas==='undefined'){toast('Aguarde um instante e tente de novo.');document.body.removeChild(card);return;}
+  toast('Gerando card...');
+  html2canvas(card,{backgroundColor:null,scale:3,useCORS:true,logging:false}).then(function(canvas){
+    document.body.removeChild(card);
+    var data=canvas.toDataURL('image/png');
+    if(!soRecado){localStorage.setItem(AVISO_KEY,new Date().toISOString());}
+    window._cardData=data;
+    renderAvisoBox();
+    setTimeout(function(){
+      var w2=document.getElementById('cardPreviewWrap');
+      if(w2){w2.style.display='block';
+        w2.innerHTML='<img src="'+data+'" style="width:100%;border-radius:16px;border:1px solid var(--b)">'
+         +'<div style="display:flex;gap:8px;margin-top:10px">'
+         +'<button class="btn bp" style="flex:1" onclick="baixarCard()">\u{1F4F7} Baixar card</button>'
+         +'<button class="btn bg" style="flex:1" onclick="abrirWppCard()">WhatsApp</button></div>'
+         +'<div style="font-size:11px;color:var(--t3);margin-top:8px;text-align:center">Baixe a imagem e anexe no grupo.</div>';
+      }
+    },60);
+  }).catch(function(){document.body.removeChild(card);toast('Erro ao gerar o card.');});
+}
+function baixarCard(){if(!window._cardData){toast('Gere o card primeiro.');return;}var a=document.createElement('a');a.download='QG-novidade.png';a.href=window._cardData;document.body.appendChild(a);a.click();document.body.removeChild(a);toast('Card salvo! Agora anexe no grupo.');}
+function abrirWppCard(){baixarCard();setTimeout(function(){window.open('https://wa.me/','_blank');},400);}
 function toggleDocTipo(){
   var t=(document.getElementById('docTipo')||{value:'link'}).value;
   var l=document.getElementById('docCampoLink'),g=document.getElementById('docCampoImg');
@@ -1070,7 +1061,7 @@ function entrar(u){
   document.getElementById('wNome').textContent='Ola, '+u.n.split(' ')[0]+'!';
   document.getElementById('wSub').textContent=u.cd+' - Arcofoods - Norte Fluminense';
   document.getElementById('negVend').textContent=u.cd+' - '+u.n;
-  qgCarregarTudo().then(carregarAvisoCfg).then(function(){renderCatalogos();renderBI();renderDocs();renderBIAdmin();renderDocsAdmin();carregarCatalogosAdmin();renderAvisoBox();});
+  qgCarregarTudo().then(carregarCardCfg).then(function(){renderCatalogos();renderBI();renderDocs();renderBIAdmin();renderDocsAdmin();carregarCatalogosAdmin();renderAvisoBox();});
 
 if(u.t==='coord'){
     document.getElementById('adminContatos').style.display='block';

@@ -435,6 +435,7 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
           </div>
           <div class="fg" id="docCampoLink"><label class="fl">Link do documento</label><input id="docUrl" class="inp" placeholder="https://drive.google.com/..."></div>
           <div class="fg" id="docCampoImg" style="display:none"><label class="fl">Imagem do documento</label><input id="docImg" class="inp" type="file" accept="image/*"><div style="font-size:11px;color:var(--t3);margin-top:5px">Ate 2 MB. Fotos maiores podem deixar o app lento.</div></div>
+          <div class="fg"><label class="fl">Dados em texto (opcional)</label><textarea id="docTexto" class="inp" rows="4" placeholder="Ex: Chave PIX: 08.365.731/0001-42&#10;Banco: Itau&#10;Agencia: 0530"></textarea><div style="font-size:11px;color:var(--t3);margin-top:5px">Aparece junto do documento, com botoes de copiar e enviar por WhatsApp.</div></div>
           <button class="btn bp" onclick="addDoc()" style="width:100%">&#10133; Adicionar Documento</button>
           <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin:14px 0 4px">Documentos cadastrados</div>
           <div id="docAdminLista"></div>
@@ -782,6 +783,7 @@ function addDoc(){
   var nome=(document.getElementById('docNome')||{value:''}).value.trim();
   var desc=(document.getElementById('docDesc')||{value:''}).value.trim();
   var tipo=(document.getElementById('docTipo')||{value:'link'}).value;
+  var txt=(document.getElementById('docTexto')||{value:''}).value.trim();
   if(!nome){toast('Informe o nome do documento.');return;}
   if(tipo==='imagem'){
     var inp=document.getElementById('docImg');
@@ -789,12 +791,12 @@ function addDoc(){
     if(!f){toast('Escolha a imagem do documento.');return;}
     if(f.size>2*1024*1024){toast('Imagem muito grande. Use ate 2 MB.');return;}
     var r=new FileReader();
-    r.onload=function(e){_salvarDoc({nome:nome,descricao:desc,icone:'\u{1F5BC}',url:'',imagem:e.target.result});};
+    r.onload=function(e){_salvarDoc({nome:nome,descricao:desc,icone:'\u{1F5BC}',url:'',imagem:e.target.result,texto:txt});};
     r.readAsDataURL(f);
   }else{
     var url=(document.getElementById('docUrl')||{value:''}).value.trim();
-    if(!url){toast('Informe o link do documento.');return;}
-    _salvarDoc({nome:nome,descricao:desc,icone:'\u{1F4C4}',url:url,imagem:''});
+    if(!url&&!txt){toast('Informe o link ou os dados em texto.');return;}
+    _salvarDoc({nome:nome,descricao:desc,icone:url?'\u{1F4C4}':'\u{1F4CB}',url:url,imagem:'',texto:txt});
   }
 }
 function _salvarDoc(obj){
@@ -803,7 +805,7 @@ function _salvarDoc(obj){
   supaFetch('qg_documentos',{method:'POST',body:JSON.stringify(obj)})
    .then(qgJson).then(function(d){
      if(Array.isArray(d)&&d.length)QG_CACHE.docs=QG_CACHE.docs.concat(d);
-     ['docNome','docUrl','docDesc'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+     ['docNome','docUrl','docDesc','docTexto'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
      var fi=document.getElementById('docImg');if(fi)fi.value='';
      renderDocs();renderDocsAdmin();toast('Documento adicionado! Toda a equipe ja ve.');
    }).catch(function(){toast('Erro ao adicionar. Verifique a conexao.');});
@@ -844,27 +846,53 @@ function renderDocsAdmin(){
      +'<button onclick="removerDoc(\''+b.id+'\')" style="background:var(--rd2);border:1px solid rgba(239,68,68,.25);color:var(--rd);border-radius:6px;padding:5px 11px;font-size:11px;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap">Remover</button></div>';
   }).join('');
 }
+function docTextoHTML(txt){
+  var linhas=String(txt||'').split(/\r?\n/).filter(function(l){return l.trim();});
+  if(!linhas.length)return '';
+  var h='<div style="font-size:14px;color:#D8E4F2;line-height:2.2;margin-bottom:14px">';
+  linhas.forEach(function(l,i){
+    var borda=(i<linhas.length-1)?'border-bottom:1px solid var(--b)':'';
+    var p=l.indexOf(':');
+    if(p>0&&p<l.length-1){
+      var rot=l.substring(0,p).trim(), val=l.substring(p+1).trim();
+      var destaque=/chave|pix/i.test(rot)?'var(--am)':'var(--t)';
+      h+='<div style="padding:8px 0;'+borda+'">'+rot+': <strong style="color:'+destaque+'">'+val+'</strong></div>';
+    }else{
+      h+='<div style="padding:8px 0;'+borda+';color:var(--t)">'+l+'</div>';
+    }
+  });
+  return h+'</div>';
+}
+function docToggle(id){
+  var b=document.getElementById('docBox_'+id);if(!b)return;
+  b.style.display=(b.style.display==='none'||!b.style.display)?'block':'none';
+}
+function copiarDocTexto(id){
+  var d=null,ds=QG_CACHE.docs||[];
+  for(var i=0;i<ds.length;i++){if(String(ds[i].id)===String(id)){d=ds[i];break;}}
+  if(!d||!d.texto){toast('Sem texto para copiar.');return;}
+  var t=d.nome+'\n'+d.texto;
+  if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){toast('Dados copiados!');},function(){window.prompt('Copie:',t);});}
+  else window.prompt('Copie:',t);
+}
 function renderDocs(){
   var el=document.getElementById('docLista');if(!el)return;
   var ds=getDocs();
   if(!ds.length){el.innerHTML='';return;}
   el.innerHTML=ds.map(function(d){
-    var h='';
-    if(d.imagem){
-      h+='<div class="ccard"><div class="cicon">\u{1F5BC}</div><div class="cinfo"><div class="cnome">'+d.nome+'</div><div class="cdesc">'+(d.descricao||'Imagem')+'</div></div>'
-        +'<button class="cbtn" onclick="verDocImagem(\''+d.id+'\')">Ver</button></div>';
-      h+='<div style="padding:4px 0 8px"><img src="'+d.imagem+'" onclick="verDocImagem(\''+d.id+'\')" style="width:100%;max-height:220px;object-fit:contain;background:var(--s1);border:1px solid var(--b);border-radius:10px;cursor:pointer"></div>';
-      h+='<div class="ccard"><div class="cicon">\u{1F4E4}</div><div class="cinfo"><div class="cnome">Compartilhar</div><div class="cdesc">Baixe e anexe no WhatsApp ou e-mail</div></div>'
-        +'<button class="cbtn cbtn-gn" onclick="baixarDocImagem(\''+d.id+'\')">Baixar</button></div>';
-    }else{
-      var share=encodeURIComponent(d.nome+': '+d.url);
-      var mail='mailto:?subject='+encodeURIComponent(d.nome)+'&body='+share;
-      h+='<div class="ccard"><div class="cicon">'+(d.icone||'\u{1F4C4}')+'</div><div class="cinfo"><div class="cnome">'+d.nome+'</div><div class="cdesc">'+(d.descricao||'Toque para abrir')+'</div></div>'
-        +'<a href="'+d.url+'" target="_blank" rel="noopener" class="cbtn">Ver</a></div>';
-      h+='<div class="ccard"><div class="cicon">\u{1F4AC}</div><div class="cinfo"><div class="cnome">Compartilhar</div><div class="cdesc">Enviar este documento</div></div>'
-        +'<a href="https://wa.me/?text='+share+'" target="_blank" rel="noopener" class="cbtn cbtn-gn">WhatsApp</a>'
-        +'<a href="'+mail+'" class="cbtn" style="margin-left:6px">E-mail</a></div>';
-    }
+    var ic=d.imagem?'\u{1F5BC}':(d.url?'\u{1F4C4}':'\u{1F4CB}');
+    var h='<div class="ccard"><div class="cicon">'+ic+'</div><div class="cinfo"><div class="cnome">'+d.nome+'</div><div class="cdesc">'+(d.descricao||'Toque em Ver')+'</div></div>'
+      +'<button class="cbtn" onclick="docToggle(\''+d.id+'\')">Ver</button></div>';
+    h+='<div id="docBox_'+d.id+'" style="display:none" class="card">';
+    if(d.imagem)h+='<img src="'+d.imagem+'" onclick="baixarDocImagem(\''+d.id+'\')" style="width:100%;border-radius:10px;margin-bottom:14px;cursor:pointer">';
+    if(d.texto)h+=docTextoHTML(d.texto);
+    h+='<div style="display:flex;gap:10px;flex-wrap:wrap">';
+    if(d.imagem)h+='<button class="btn bp" onclick="baixarDocImagem(\''+d.id+'\')" style="flex:1">&#128247; Salvar Imagem</button>';
+    if(d.texto)h+='<button class="btn bs" onclick="copiarDocTexto(\''+d.id+'\')" style="flex:1">Copiar Texto</button>';
+    var msg=d.texto?(d.nome+'\n'+d.texto):(d.nome+(d.url?': '+d.url:''));
+    h+='<a href="https://wa.me/?text='+encodeURIComponent(msg)+'" target="_blank" rel="noopener" class="btn bg" style="flex:1;text-decoration:none;justify-content:center">WhatsApp</a>';
+    if(d.url)h+='<a href="'+d.url+'" target="_blank" rel="noopener" class="btn bs" style="flex:1;text-decoration:none;justify-content:center">Abrir Link</a>';
+    h+='</div></div>';
     return h+'<div style="height:1px;background:var(--b);margin:8px 0"></div>';
   }).join('');
 }

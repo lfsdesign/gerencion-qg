@@ -566,6 +566,7 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
           <option value="Limpeza/Higiene">Limpeza/Higiene</option>
           <option value="Mercearia Seca">Mercearia Seca</option>
         </select>
+        <button id="mixFocoBtn" class="btn bs" onclick="toggleMixSoFoco()" style="flex-shrink:0">&#127919; S&#243; o Foco do M&#234;s</button>
       </div>
       <div id="mixContador" style="font-size:12px;color:var(--t2);margin-bottom:12px;text-align:right"></div>
       <div id="mixLista"></div>
@@ -613,6 +614,7 @@ var TIPOS={};
 var UNI=['kg','fardo','cx','bombona','bag','pct','unid','balde','lata','saco','galao','caixa'];
 var eu=null;var prods=[];var tipoAtual=null;
 var mixCache=[];
+var mixSoFoco=false;
 
 function carregarMix(){
   document.getElementById('mixLista').innerHTML='<div class="loading">Carregando Mix Estrategico...</div>';
@@ -627,10 +629,36 @@ function carregarMix(){
   });
 }
 
+function renderFocoBloco(focoItens,isAdmin){
+  if(!focoItens.length){
+    if(isAdmin){
+      return '<div style="background:linear-gradient(135deg,rgba(245,158,11,0.12),var(--s1));border:1px dashed var(--am3);border-radius:16px;padding:18px;margin-bottom:20px;text-align:center">'
+        +'<div style="font-size:15px;font-weight:800;color:var(--am);margin-bottom:6px">&#127919; Foco do M&#234;s vazio</div>'
+        +'<div style="font-size:12px;color:var(--t2);line-height:1.6">Marque de 10 a 15 itens abaixo com o bot&#227;o <b style="color:var(--am)">&#127919; Foco</b>. Eles sobem pra c&#225; no topo, em destaque, pra equipe focar no que paga pr&#234;mio.</div></div>';
+    }
+    return '';
+  }
+  var linhas=focoItens.map(function(p){
+    var star=isAdmin?'<button onclick="toggleFocoMix(\''+p.id+'\',false)" title="Tirar do Foco" style="background:none;border:none;color:var(--am);font-size:16px;cursor:pointer;flex-shrink:0;font-weight:800">&#10005;</button>':'';
+    return '<div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border-radius:10px;padding:11px 13px;margin-bottom:7px"><span style="font-size:15px;flex-shrink:0">&#127919;</span><div style="flex:1;font-size:13px;color:var(--t);line-height:1.4;font-weight:600">'+p.nome+'</div>'+star+'</div>';
+  }).join('');
+  var contador=isAdmin?'<span style="font-size:11px;color:'+(focoItens.length>15?'var(--rd)':'var(--t3)')+';font-weight:700">'+focoItens.length+' de 15</span>':'';
+  return '<div style="background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(239,68,68,0.06));border:1.5px solid var(--am3);border-radius:16px;padding:20px 18px;margin-bottom:20px">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:22px">&#127919;</span><div style="font-size:16px;font-weight:800;color:var(--am);letter-spacing:.5px">FOCO DO M&#202;S</div></div>'+contador+'</div>'
+    +'<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:14px">Encaixe <b style="color:var(--am)">um destes no pedido</b> junto do que o cliente j&#225; pediu. Cada item aqui puxa sua <b style="color:var(--am)">margem</b> e seu <b style="color:var(--am)">SKU/cliente</b> &mdash; os dois KPIs que pagam pr&#234;mio. R$ 2 a mais numa nota de R$ 3.000 o cliente n&#227;o sente; seu b&#244;nus sente.</div>'
+    +linhas+'</div>';
+}
 function renderMix(filtroTexto,filtroDep){
   filtroTexto=(filtroTexto||'').toLowerCase().trim();
   filtroDep=filtroDep||'';
   var isAdmin=eu&&eu.t==='coord';
+  var focoItens=mixCache.filter(function(p){return p.foco;});
+  // Modo "Só o Foco do Mês": mostra apenas o bloco de destaque
+  if(mixSoFoco){
+    document.getElementById('mixLista').innerHTML=renderFocoBloco(focoItens,isAdmin)||'<div class="empty"><div class="eico">&#127919;</div>Nenhum item no Foco do M&#234;s ainda.</div>';
+    document.getElementById('mixContador').textContent=focoItens.length+' item(ns) no Foco do M&#234;s';
+    return;
+  }
   var grupos={};
   mixCache.forEach(function(p){
     if(filtroDep&&p.departamento!==filtroDep)return;
@@ -640,23 +668,53 @@ function renderMix(filtroTexto,filtroDep){
     grupos[p.departamento][p.secao].push(p);
   });
   var html='';var count=0;
+  // Bloco Foco do Mês no topo (só na visão geral, sem busca ativa)
+  var focoTopo=(!filtroTexto&&!filtroDep)?renderFocoBloco(focoItens,isAdmin):'';
   Object.keys(grupos).sort().forEach(function(dep){
     var secs=grupos[dep];var depHtml='';var depCount=0;
     Object.keys(secs).sort().forEach(function(sec){
       var itens=secs[sec];depCount+=itens.length;
       depHtml+='<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin:14px 0 8px 4px">'+sec+' &middot; '+itens.length+'</div>';
       itens.forEach(function(p){
-        var delBtn=isAdmin?'<button onclick="excluirMixItem(\'"+p.id+"\')" style="background:var(--rd2);border:1px solid rgba(239,68,68,.2);color:var(--rd);border-radius:6px;padding:4px 8px;font-size:10px;cursor:pointer;font-family:Inter,sans-serif;flex-shrink:0">Excluir</button>':'';
-        var offBtn=isAdmin?'<button onclick="desativarMixItem(\'"+p.id+"\')" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,.25);color:var(--am);border-radius:6px;padding:4px 8px;font-size:10px;cursor:pointer;font-family:Inter,sans-serif;flex-shrink:0">Desativar</button>':'';
-        depHtml+='<div style="background:var(--s1);border:1px solid var(--b);border-left:3px solid var(--am);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px"><span style="background:linear-gradient(135deg,#F59E0B,#EF4444);color:#0A0A0A;font-size:9px;font-weight:800;padding:3px 8px;border-radius:20px;letter-spacing:.5px;flex-shrink:0">&#11088; OURO</span><div style="font-size:13px;color:var(--t);flex:1;line-height:1.4">'+p.nome+'</div>'+offBtn+delBtn+'</div>';
+        var delBtn=isAdmin?'<button onclick="excluirMixItem(\''+p.id+'\')" style="background:var(--rd2);border:1px solid rgba(239,68,68,.2);color:var(--rd);border-radius:6px;padding:4px 8px;font-size:10px;cursor:pointer;font-family:Inter,sans-serif;flex-shrink:0">Excluir</button>':'';
+        var offBtn=isAdmin?'<button onclick="desativarMixItem(\''+p.id+'\')" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,.25);color:var(--am);border-radius:6px;padding:4px 8px;font-size:10px;cursor:pointer;font-family:Inter,sans-serif;flex-shrink:0">Desativar</button>':'';
+        var focoBtn=isAdmin?'<button onclick="toggleFocoMix(\''+p.id+'\','+(p.foco?'false':'true')+')" style="background:'+(p.foco?'var(--am)':'rgba(245,158,11,0.12)')+';border:1px solid var(--am3);color:'+(p.foco?'#0A0A0A':'var(--am)')+';border-radius:6px;padding:4px 8px;font-size:10px;cursor:pointer;font-family:Inter,sans-serif;flex-shrink:0;font-weight:700">&#127919; '+(p.foco?'No Foco':'Foco')+'</button>':'';
+        var focoPill=p.foco?'<span style="background:var(--am);color:#0A0A0A;font-size:9px;font-weight:800;padding:3px 7px;border-radius:20px;letter-spacing:.3px;flex-shrink:0">&#127919; FOCO</span>':'';
+        depHtml+='<div style="background:var(--s1);border:1px solid var(--b);border-left:3px solid var(--am);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="background:linear-gradient(135deg,#F59E0B,#EF4444);color:#0A0A0A;font-size:9px;font-weight:800;padding:3px 8px;border-radius:20px;letter-spacing:.5px;flex-shrink:0">&#11088; OURO</span><div style="font-size:13px;color:var(--t);flex:1;min-width:120px;line-height:1.4">'+p.nome+'</div>'+focoPill+focoBtn+offBtn+delBtn+'</div>';
       });
     });
     if(depCount>0){count+=depCount;html+='<div style="margin-bottom:18px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;padding:8px 12px;background:var(--am2);border-radius:8px"><span style="font-size:16px">&#128230;</span><div style="font-size:13px;font-weight:700;color:var(--am)">'+dep+'</div><div style="margin-left:auto;font-size:11px;color:var(--t2)">'+depCount+' itens</div></div>'+depHtml+'</div>';}
   });
-  document.getElementById('mixLista').innerHTML=count?html:'<div class="empty"><div class="eico">&#128269;</div>Nenhum produto encontrado.</div>';
+  document.getElementById('mixLista').innerHTML=focoTopo+(count?html:'<div class="empty"><div class="eico">&#128269;</div>Nenhum produto encontrado.</div>');
   document.getElementById('mixContador').textContent=count+' produto(s) exibido(s)';
 }
 function filtrarMix(){var texto=document.getElementById('mixBusca').value;var dep=document.getElementById('mixDep').value;renderMix(texto,dep);}
+function toggleFocoMix(id,novo){
+  var novoBool=(novo===true||novo==='true');
+  if(novoBool){
+    var atuais=mixCache.filter(function(p){return p.foco;}).length;
+    if(atuais>=15){toast('Voce ja tem 15 itens no Foco do Mes. Tire um antes de por outro \u2014 a forca esta em ser poucos.');return;}
+  }
+  supaFetch('mix_estrategico?id=eq.'+id,{method:'PATCH',body:JSON.stringify({foco:novoBool})}).then(function(){
+    var it=mixCache.filter(function(p){return String(p.id)===String(id);})[0];
+    if(it)it.foco=novoBool;
+    toast(novoBool?'Item no Foco do Mes!':'Item saiu do Foco.');
+    filtrarMix();
+  }).catch(function(){toast('Erro ao atualizar. Rodou o SQL da coluna foco?');});
+}
+function toggleMixSoFoco(){
+  mixSoFoco=!mixSoFoco;
+  var b=document.getElementById('mixFocoBtn');
+  if(b){b.innerHTML=mixSoFoco?'Ver todos os produtos':'&#127919; So o Foco do Mes';b.classList.toggle('bp',mixSoFoco);b.classList.toggle('bs',!mixSoFoco);}
+  filtrarMix();
+}
+function abrirFocoDoMes(){
+  irM('mixestrategico');
+  mixSoFoco=true;
+  var b=document.getElementById('mixFocoBtn');
+  if(b){b.innerHTML='Ver todos os produtos';b.classList.add('bp');b.classList.remove('bs');}
+  carregarMix();
+}
 function excluirMixItem(id){if(!confirm('Excluir este item?'))return;supaFetch('mix_estrategico?id=eq.'+id,{method:'DELETE'}).then(function(){toast('Item excluido!');mixCache=mixCache.filter(function(p){return p.id!==id;});filtrarMix();});}
 function desativarMixItem(id){supaFetch('mix_estrategico?id=eq.'+id,{method:'PATCH',body:JSON.stringify({ativo:false})}).then(function(){toast('Item desativado!');mixCache=mixCache.filter(function(p){return p.id!==id;});filtrarMix();});}
 function reativarMixItem(id){supaFetch('mix_estrategico?id=eq.'+id,{method:'PATCH',body:JSON.stringify({ativo:true})}).then(function(){toast('Item reativado!');carregarMixInativos();});}
@@ -3587,6 +3645,9 @@ function renderKPIsVendedor(kpis){
         h += '<div style="margin-top:9px;height:6px;background:rgba(255,255,255,0.08);border-radius:10px;overflow:hidden"><div style="height:100%;width:' + bp + '%;background:var(--am);border-radius:10px"></div></div>';
       }
       h += '<div style="font-size:12px;color:var(--t);margin-top:9px;line-height:1.6"><strong style="color:var(--am)">' + headlineFalta(k.falta) + '</strong>' + k.msg.push + '</div>';
+      if(k.id === 'mix' || k.id === 'sku'){
+        h += '<button onclick="abrirFocoDoMes()" style="width:100%;margin-top:11px;padding:11px;background:var(--am);border:none;border-radius:9px;color:#0A0A0A;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#127919; Ver o Foco do M&#234;s</button>';
+      }
       h += '</div>';
     }
   });

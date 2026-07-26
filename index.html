@@ -556,10 +556,18 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
           <div class="fg"><label class="fl">Nome do estabelecimento</label><input id="prospNome" class="inp" placeholder="ex: Pizzaria Familia Lima"></div>
           <div class="fg"><label class="fl">Endere&#231;o</label><input id="prospEnd" class="inp" placeholder="Rua, n&#186;, bairro, cidade"></div>
           <div class="g2"><div class="fg"><label class="fl">Telefone</label><input id="prospTel" class="inp" placeholder="(22) 9...."></div><div class="fg"><label class="fl">CNPJ (opcional)</label><input id="prospCnpj" class="inp" placeholder="00.000.000/0001-00"></div></div>
+          <div class="fg"><label class="fl">Tipo</label><select id="prospTipo" class="inp"><option value="novo">Cliente novo</option><option value="reativar">Reativar (j\u00e1 comprou e parou)</option></select></div>
           <button class="btn bp" onclick="prospAddOne()" style="width:100%">+ Adicionar oportunidade</button>
-          <div style="border-top:1px solid var(--b);margin:16px 0 12px;padding-top:12px"><div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:8px">Ou cole uma <b>lista de uma vez</b> (um por linha):<br><span style="color:var(--t3)">Nome | Endere&#231;o | Telefone | CNPJ</span></div>
+          <div style="border-top:1px solid var(--b);margin:16px 0 12px;padding-top:12px"><div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:8px">Ou cole uma <b>lista de uma vez</b> (um por linha):<br><span style="color:var(--t3)">Nome | Endere&#231;o | Telefone | CNPJ</span><br>Pra marcar <b>reativa&#231;&#227;o</b>, comece a linha com <b style="color:#A78BFA">R|</b> (ex: <span style="color:var(--t3)">R|Perfetto | endere&#231;o | tel | cnpj</span>)</div>
           <textarea id="prospLote" class="inp" rows="4" placeholder="Pizzaria Familia Lima | Estr. de Sapiatiba, Iguaba Grande | (22) 99251-6785 | 62.431.063/0001-50"></textarea>
           <button class="btn bs" onclick="prospAddLote()" style="width:100%;margin-top:8px">+ Adicionar lista ao vendedor selecionado</button></div>
+        </div>
+        <div class="admin-box" style="border-color:rgba(239,68,68,0.25)">
+          <div class="admin-title" style="color:var(--rd)">&#128683; J&#225; s&#227;o clientes (n&#227;o prospectar)</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:8px">Cole os CNPJs que voc&#234; conferiu no BI e j&#225; s&#227;o clientes (ativos ou inativos). Eles <b>nunca mais</b> v&#227;o aparecer nas listas que voc&#234; adicionar. Pode colar s&#243; o CNPJ, um por linha.</div>
+          <textarea id="prospExclTxt" class="inp" rows="3" placeholder="33.964.522/0001-62"></textarea>
+          <button class="btn bs" onclick="prospAddExcluir()" style="width:100%;margin-top:8px;border-color:rgba(239,68,68,0.4);color:var(--rd)">&#128683; Marcar como j&#225; cliente</button>
+          <div id="prospExclCount" style="font-size:11px;color:var(--t3);margin-top:8px"></div>
         </div>
         <div class="admin-box">
           <div class="admin-title">&#128202; Painel da equipe</div>
@@ -1229,6 +1237,28 @@ function radarBuildCardEl(tipo,p){
 function radarBaixarImg(tipo,fn){var d=window._radarImgs&&window._radarImgs[tipo];if(!d){toast('Gere o card primeiro.');return;}var p=window._radarPkg||{};var slug=((p.cod||'')+'-'+(p.nome||'')).replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'_');var a=document.createElement('a');a.download='Radar-'+(slug?slug+'-':'')+fn+'.png';a.href=d;document.body.appendChild(a);a.click();document.body.removeChild(a);toast('Card salvo!');}
 /* ========================= PROSPECCAO ========================= */
 var prospCache=[];
+var prospExcluirSet=new Set();
+function prospCarregarExcluir(){
+  supaFetch('prospeccao_excluir?select=cnpj_num').then(function(r){return r.json();}).then(function(d){prospExcluirSet=new Set((d||[]).map(function(x){return x.cnpj_num;}));prospAtualizarExclCount();}).catch(function(){});
+}
+function prospAtualizarExclCount(){var el=document.getElementById('prospExclCount');if(el)el.innerHTML='\uD83D\uDCDD '+prospExcluirSet.size+' CNPJ(s) na mem\u00f3ria de j\u00e1-clientes.';}
+function prospAddExcluir(){
+  var txt=(document.getElementById('prospExclTxt')||{value:''}).value;
+  if(!txt.trim()){toast('Cole os CNPJs primeiro.');return;}
+  var itens=[];
+  txt.split(/[\n,;]+/).forEach(function(l){
+    if(!l.trim())return;
+    var partes=l.split('|');
+    var cnpjRaw=partes[partes.length-1]||l;
+    var num=(cnpjRaw||'').replace(/\D/g,'');
+    if(num.length<8)return;
+    if(prospExcluirSet.has(num))return;
+    if(itens.some(function(x){return x.cnpj_num===num;}))return;
+    itens.push({cnpj:cnpjRaw.trim(),cnpj_num:num,nome:partes.length>1?partes[0].trim():''});
+  });
+  if(!itens.length){toast('Nenhum CNPJ novo encontrado.');return;}
+  supaFetch('prospeccao_excluir',{method:'POST',body:JSON.stringify(itens)}).then(function(r){if(!r.ok)throw new Error();itens.forEach(function(x){prospExcluirSet.add(x.cnpj_num);});toast(itens.length+' marcado(s) como j\u00e1 cliente. Nao virao mais.');document.getElementById('prospExclTxt').value='';prospAtualizarExclCount();}).catch(function(){toast('Erro ao salvar. Rodou o SQL de prospeccao_excluir?');});
+}
 function prospInitVendSelect(){
   var sel=document.getElementById('prospVend');
   if(sel&&!sel.dataset.pronto){
@@ -1242,6 +1272,7 @@ function prospNomeAtual(){if(eu&&eu.t==='coord'){var s=document.getElementById('
 function carregarProspeccao(){
   prospInitVendSelect();
   prospSetGuia();
+  prospCarregarExcluir();
   var isCoord=eu&&eu.t==='coord';
   var intro=document.getElementById('prospIntro');
   if(intro)intro.innerHTML=isCoord?'<strong style="color:#10B981">\uD83D\uDCA1 Cadastre oportunidades e jogue pra cada vendedor.</strong> Eles veem a fila deles aqui, com Waze e telefone, e marcam quando fecham. Voc\u00ea acompanha no painel.':'<strong style="color:#10B981">\uD83D\uDCA1 Essas s\u00e3o suas oportunidades!</strong> Clientes novos pra voc\u00ea visitar e fechar. Use o Waze pra chegar, e marque aqui quando fechar. Bora crescer! \uD83D\uDE80';
@@ -1294,7 +1325,10 @@ function renderProspFila(){
   box.innerHTML=html;
 }
 function prospCard(p){
-  var st=p.status;var borda=st==='fechado'?'var(--gn)':(st==='recusado'?'var(--t3)':'#3B82F6');var acoes='';
+  var st=p.status;var ehReat=p.tipo==='reativar';
+  var borda=st==='fechado'?'var(--gn)':(st==='recusado'?'var(--t3)':(ehReat?'#8B5CF6':'#3B82F6'));var acoes='';
+  var selo=ehReat?'<span style="background:#7C3AED;color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;margin-left:6px;letter-spacing:.3px">\u267B\uFE0F REATIVAR</span>':'';
+  var lembrete=(ehReat&&st==='pendente')?'<div style="background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.3);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:11px;color:#C4B5FD;line-height:1.5">\u267B\uFE0F Esse cliente <b>j\u00e1 comprou e parou</b>. Descubra o motivo e reconquiste \u2014 \u00e9 mais f\u00e1cil que come\u00e7ar do zero!</div>':'';
   if(st==='pendente'){
     acoes='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'
       +'<a href="'+prospWazeLink(p)+'" target="_blank" rel="noopener" class="btn bs" style="flex:1;min-width:80px;text-decoration:none;justify-content:center">\uD83D\uDDFA\uFE0F Waze</a>'
@@ -1305,7 +1339,7 @@ function prospCard(p){
       +'<button class="btn bs" style="flex:1;min-width:110px" onclick="prospRecusar(\''+p.id+'\')">N\u00e3o rolou</button></div>';
   }else if(st==='fechado'){acoes='<div style="margin-top:8px;font-size:12px;color:var(--gn);font-weight:700">\u2705 Fechado'+(p.codigo_cliente?' \u2014 c\u00f3digo '+p.codigo_cliente:'')+'</div>';}
   else{acoes='<div style="margin-top:8px;font-size:12px;color:var(--t3)">'+(p.feedback?'Motivo: '+p.feedback:'N\u00e3o rolou')+(eu&&eu.t==='coord'?' <button onclick="prospReativar(\''+p.id+'\')" style="background:none;border:none;color:#3B82F6;text-decoration:underline;cursor:pointer;font-family:Inter,sans-serif;font-size:11px;padding:0">devolver pra fila</button>':'')+'</div>';}
-  return '<div style="background:var(--s1);border:1px solid var(--b);border-left:3px solid '+borda+';border-radius:12px;padding:14px;margin-bottom:10px"><div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:3px">'+(p.nome||'(sem nome)')+'</div>'+(p.endereco?'<div style="font-size:12px;color:var(--t2);line-height:1.5">\uD83D\uDCCD '+p.endereco+'</div>':'')+(p.telefone?'<div style="font-size:12px;color:var(--t2)">\uD83D\uDCDE '+p.telefone+'</div>':'')+(p.cnpj?'<div style="font-size:11px;color:var(--t3)">CNPJ '+p.cnpj+'</div>':'')+acoes+'</div>';
+  return '<div style="background:var(--s1);border:1px solid var(--b);border-left:3px solid '+borda+';border-radius:12px;padding:14px;margin-bottom:10px"><div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:3px">'+(p.nome||'(sem nome)')+selo+'</div>'+(p.endereco?'<div style="font-size:12px;color:var(--t2);line-height:1.5">\uD83D\uDCCD '+p.endereco+'</div>':'')+(p.telefone?'<div style="font-size:12px;color:var(--t2)">\uD83D\uDCDE '+p.telefone+'</div>':'')+(p.cnpj?'<div style="font-size:11px;color:var(--t3)">CNPJ '+p.cnpj+'</div>':'')+lembrete+acoes+'</div>';
 }
 function renderProspBoard(){
   var box=document.getElementById('prospBoard');if(!box)return;var by={};
@@ -1319,7 +1353,11 @@ function prospAddOne(){
   if(!cod){toast('Selecione o vendedor primeiro.');return;}
   var estab=document.getElementById('prospNome').value.trim();
   if(!estab){toast('Preencha o nome do estabelecimento.');return;}
-  var reg={vendedor_cod:cod,vendedor_nome:nome,nome:estab,endereco:document.getElementById('prospEnd').value.trim(),telefone:document.getElementById('prospTel').value.trim(),cnpj:document.getElementById('prospCnpj').value.trim(),status:'pendente'};
+  var cnpjVal=document.getElementById('prospCnpj').value.trim();
+  var cnpjNum=cnpjVal.replace(/\D/g,'');
+  if(cnpjNum&&prospExcluirSet.has(cnpjNum)){toast('Esse j\u00e1 \u00e9 cliente (est\u00e1 na mem\u00f3ria). N\u00e3o adicionei.');return;}
+  var tipo=(document.getElementById('prospTipo')||{value:'novo'}).value||'novo';
+  var reg={vendedor_cod:cod,vendedor_nome:nome,nome:estab,endereco:document.getElementById('prospEnd').value.trim(),telefone:document.getElementById('prospTel').value.trim(),cnpj:cnpjVal,tipo:tipo,status:'pendente'};
   supaFetch('prospeccao',{method:'POST',body:JSON.stringify(reg)}).then(function(r){if(!r.ok)throw new Error();return r.json();}).then(function(){toast('Oportunidade enviada pro '+cod+'!');['prospNome','prospEnd','prospTel','prospCnpj'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});carregarProspeccao();}).catch(function(){toast('Erro ao salvar. Rodou o SQL da prospeccao?');});
 }
 function prospAddLote(){
@@ -1327,10 +1365,10 @@ function prospAddLote(){
   if(!cod){toast('Selecione o vendedor primeiro.');return;}
   var txt=(document.getElementById('prospLote')||{value:''}).value;
   if(!txt.trim()){toast('Cole a lista primeiro.');return;}
-  var regs=[];
-  txt.split(/\r?\n/).forEach(function(l){if(!l.trim())return;var c=l.split('|').map(function(x){return x.trim();});if(!c[0])return;regs.push({vendedor_cod:cod,vendedor_nome:nome,nome:c[0],endereco:c[1]||'',telefone:c[2]||'',cnpj:c[3]||'',status:'pendente'});});
-  if(!regs.length){toast('Nao encontrei linhas validas.');return;}
-  supaFetch('prospeccao',{method:'POST',body:JSON.stringify(regs)}).then(function(r){if(!r.ok)throw new Error();return r.json();}).then(function(){toast(regs.length+' oportunidades enviadas pro '+cod+'!');document.getElementById('prospLote').value='';carregarProspeccao();}).catch(function(){toast('Erro ao salvar a lista.');});
+  var regs=[];var pulados=0;
+  txt.split(/\r?\n/).forEach(function(l){if(!l.trim())return;var c=l.split('|').map(function(x){return x.trim();});var tipo='novo';if(c[0]&&(c[0].toUpperCase()==='R'||c[0].toUpperCase()==='REATIVAR')){tipo='reativar';c=c.slice(1);}if(!c[0])return;var num=(c[3]||'').replace(/\D/g,'');if(num&&prospExcluirSet.has(num)){pulados++;return;}regs.push({vendedor_cod:cod,vendedor_nome:nome,nome:c[0],endereco:c[1]||'',telefone:c[2]||'',cnpj:c[3]||'',tipo:tipo,status:'pendente'});});
+  if(!regs.length){toast(pulados?'Todos j\u00e1 eram clientes (pulei '+pulados+').':'Nao encontrei linhas validas.');return;}
+  supaFetch('prospeccao',{method:'POST',body:JSON.stringify(regs)}).then(function(r){if(!r.ok)throw new Error();return r.json();}).then(function(){toast(regs.length+' enviada(s) pro '+cod+(pulados?' \u00b7 '+pulados+' j\u00e1 eram clientes':'')+'!');document.getElementById('prospLote').value='';carregarProspeccao();}).catch(function(){toast('Erro ao salvar a lista.');});
 }
 function prospFechar(id){var codigo=prompt('Parab\u00e9ns! \uD83C\uDF89 Qual o c\u00f3digo do novo cliente cadastrado?');if(codigo===null)return;supaFetch('prospeccao?id=eq.'+id,{method:'PATCH',body:JSON.stringify({status:'fechado',codigo_cliente:codigo.trim()})}).then(function(r){if(!r.ok)throw new Error();toast('Que massa! Cliente fechado! \uD83C\uDF89');carregarProspeccao();}).catch(function(){toast('Erro ao salvar.');});}
 function prospRecusar(id){var motivo=prompt('Sem problema! Me conta rapidinho o que houve (pra pensarmos juntos):');if(motivo===null)return;supaFetch('prospeccao?id=eq.'+id,{method:'PATCH',body:JSON.stringify({status:'recusado',feedback:motivo.trim()})}).then(function(r){if(!r.ok)throw new Error();toast('Anotado! Vamos pra pr\u00f3xima.');carregarProspeccao();}).catch(function(){toast('Erro ao salvar.');});}

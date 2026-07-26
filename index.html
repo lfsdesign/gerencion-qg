@@ -542,6 +542,7 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
           <div><div class="pt">Mix Estrat&#233;gico</div><div class="ps">Produtos de alta rentabilidade</div></div>
         </div>
         <div style="background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(239,68,68,0.08));border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--t2);line-height:1.6"><strong style="color:var(--am)">&#128161; Foque nesses produtos!</strong> Eles geram mais resultado para a equipe e fortalecem nossa posicao com a empresa.</div>
+        <div id="mixTotalSelo" style="display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:var(--s1);border:1px solid var(--b2);border-radius:20px;padding:7px 14px;font-size:12px;font-weight:700;color:var(--t)">&#128230; carregando itens...</div>
       </div>
       <div id="adminMix" style="display:none">
         <div class="admin-box">
@@ -662,6 +663,8 @@ function renderMix(filtroTexto,filtroDep){
   filtroTexto=(filtroTexto||'').toLowerCase().trim();
   filtroDep=filtroDep||'';
   var isAdmin=eu&&eu.t==='coord';
+  var _selo=document.getElementById('mixTotalSelo');
+  if(_selo)_selo.innerHTML='&#128230; '+mixCache.length+' '+(mixCache.length===1?'item':'itens')+' na lista';
   var focoItens=mixCache.filter(function(p){return p.foco;});
   // Modo "Só o Foco do Mês": mostra apenas o bloco de destaque
   if(mixSoFoco){

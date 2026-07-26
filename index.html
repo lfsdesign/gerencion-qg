@@ -293,6 +293,7 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
     <button class="mb" onclick="ir('mixestrategico',this);carregarMix()">Mix Estrat&#233;gico</button>
     <button class="mb" onclick="ir('premiacao',this);carregarPremiacao()">&#128176; Premia&#231;&#227;o</button>
    <button class="mb" id="menuQGDia" onclick="ir('qgdia',this);setTimeout(preencherDicaAutomatica,100)" style="display:none">&#128227; QG do Dia</button>
+   <button class="mb" id="menuRadar" onclick="ir('radar',this);radarInit()" style="display:none">&#128225; Radar</button>
   </div>
 
   <div id="main">
@@ -533,6 +534,31 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
         </div>
       </div>
       <div id="biLista" class="tgrid"></div>
+    </div>
+
+    <div id="radar" class="pg">
+      <div class="ph">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <div style="width:40px;height:40px;background:linear-gradient(135deg,#1E3A8A,#3B82F6);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">&#128225;</div>
+          <div><div class="pt">Radar de Clientes</div><div class="ps">Sua central de disparo &middot; s&#243; coordenador</div></div>
+        </div>
+        <div style="background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(30,58,138,0.08));border:1px solid rgba(59,130,246,0.3);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--t2);line-height:1.6"><strong style="color:#3B82F6">&#128161; Cole do BI, o Radar organiza.</strong> Veja o ranking da equipe e monte o pacote pronto de cada vendedor pra disparar no WhatsApp.</div>
+      </div>
+      <div class="admin-box">
+        <div class="admin-title" style="color:#3B82F6">&#128202; Panorama do Churn (os 9)</div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">Cole a vis&#227;o do churn com todos os vendedores. O Radar monta o ranking &mdash; quem sangra mais e onde vaza mais dinheiro.</div>
+        <textarea id="radarPanoTxt" class="inp" rows="4" placeholder="Cole aqui o churn dos 9 (colunas separadas por TAB)"></textarea>
+        <button class="btn bp" onclick="radarAnalisarPanorama()" style="width:100%;margin-top:8px">&#128202; Analisar panorama</button>
+        <div id="radarPanoBox" style="display:none;margin-top:14px"></div>
+      </div>
+      <div class="admin-box">
+        <div class="admin-title" style="color:#3B82F6">&#128228; Montar pacote do vendedor</div>
+        <div class="fg"><label class="fl">Vendedor</label><select id="radarVend" class="inp"><option value="">Selecione o vendedor...</option></select></div>
+        <div class="fg"><label class="fl">Churn detalhado (c&#243;digos deste vendedor)</label><textarea id="radarChurnTxt" class="inp" rows="3" placeholder="Cole o churn detalhado (CodCli + data da ultima compra)"></textarea></div>
+        <div class="fg"><label class="fl">N&#227;o positivados</label><textarea id="radarNaoposTxt" class="inp" rows="3" placeholder="Cole os n&#227;o-positivados (pode colar de todos, o Radar filtra este vendedor)"></textarea></div>
+        <button class="btn bp" onclick="radarMontarPacote()" style="width:100%;margin-top:4px">&#128228; Montar pacote pronto</button>
+        <div id="radarPacoteBox" style="display:none;margin-top:14px"></div>
+      </div>
     </div>
 
     <div id="mixestrategico" class="pg">
@@ -867,6 +893,135 @@ function carregarMixInativos(){var box=document.getElementById('mixInativosBox')
 function toggleMixInativos(){var box=document.getElementById('mixInativosBox');var btn=document.getElementById('mixInativosBtn');if(box.style.display==='none'){box.style.display='block';btn.textContent='Ocultar itens desativados';carregarMixInativos();}else{box.style.display='none';btn.textContent='Ver itens desativados';}}
 function adicionarMixItem(){var dep=document.getElementById('mixNovoDep').value.trim();var sec=document.getElementById('mixNovoSec').value.trim();var nome=document.getElementById('mixNovoNome').value.trim();if(!dep||!sec||!nome){toast('Preencha todos os campos.');return;}supaFetch('mix_estrategico',{method:'POST',body:JSON.stringify({departamento:dep,secao:sec,nome:nome,ativo:true})}).then(function(r){return r.json();}).then(function(data){toast('Item adicionado!');document.getElementById('mixNovoDep').value='';document.getElementById('mixNovoSec').value='';document.getElementById('mixNovoNome').value='';if(data&&data[0])mixCache.push(data[0]);filtrarMix();});}
 
+/* ========================= RADAR DE CLIENTES (Fase 1) ========================= */
+var radarPanoramaCache=[];
+var radarSnapAnterior=null;
+function radarInit(){
+  var sel=document.getElementById('radarVend');
+  if(sel&&!sel.dataset.pronto){
+    var opts='<option value="">Selecione o vendedor...</option>';
+    USERS.filter(function(u){return u.t==='vend';}).forEach(function(u){
+      var cod=(u.cd||'').replace(/\D/g,'');
+      opts+='<option value="'+cod+'|'+u.n+'">'+cod+' - '+u.n+'</option>';
+    });
+    sel.innerHTML=opts;sel.dataset.pronto='1';
+  }
+  radarCarregarUltimoSnap();
+}
+function radarNum(x){var s=String(x||'').replace(/[R$\s%.]/g,'').replace(',','.');var n=parseFloat(s);return isNaN(n)?0:n;}
+function radarCod(x){return String(x||'').replace(/[^\d]/g,'');}
+function radarBR(n){n=Math.round(n||0);return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
+function radarAnalisarPanorama(){
+  var txt=(document.getElementById('radarPanoTxt')||{value:''}).value;
+  if(!txt.trim()){toast('Cole o panorama do churn (os 9) primeiro.');return;}
+  var rows=[];
+  txt.split(/\r?\n/).forEach(function(l){
+    if(!l.trim())return;
+    var low=l.toLowerCase();
+    if(low.indexOf('vendedor')>=0&&low.indexOf('churn')>=0)return;
+    if(low.trim().indexOf('total')===0)return;
+    var c=l.split('\t');
+    if(c.length<5)return;
+    var nome=(c[0]||'').trim();
+    if(!nome||!/\d/.test(nome))return;
+    rows.push({vend:nome,cod:radarCod(nome.split('-')[0]||nome),carteira:radarNum(c[1]),churnQnt:radarNum(c[2]),baseChurn:radarNum(c[3]),churnPct:radarNum(c[4]),vendaMedia:radarNum(c[5]),churnVM3m:radarNum(c[6]),potFat:radarNum(c[7])});
+  });
+  if(!rows.length){toast('Nao consegui ler o panorama. Confira se colou com as colunas (TAB).');return;}
+  rows.sort(function(a,b){return b.churnPct-a.churnPct;});
+  radarPanoramaCache=rows;
+  radarRenderPanorama(rows);
+}
+function radarCorChurn(p){if(p>=20)return 'var(--rd)';if(p>=12)return 'var(--am)';return 'var(--gn)';}
+function radarRenderPanorama(rows){
+  var box=document.getElementById('radarPanoBox');if(!box)return;
+  var totalVaza=rows.reduce(function(s,r){return s+r.churnVM3m*r.churnQnt;},0);
+  var head='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px"><div style="font-size:14px;font-weight:800;color:var(--t)">Ranking de Churn &middot; '+rows.length+' vendedores</div><button class="btn bp" style="padding:8px 14px" onclick="radarSalvarSnap()">\uD83D\uDCBE Salvar semana</button></div>';
+  var linhas=rows.map(function(r,i){
+    var cor=radarCorChurn(r.churnPct);var comp='';
+    if(radarSnapAnterior){
+      var ant=radarSnapAnterior.filter(function(x){return x.cod===r.cod;})[0];
+      if(ant){var d=r.churnPct-ant.churnPct;
+        if(Math.abs(d)>=0.05){var subiu=d>0;comp='<span style="font-size:11px;font-weight:700;color:'+(subiu?'var(--rd)':'var(--gn)')+'">'+(subiu?'\u25B2':'\u25BC')+' '+Math.abs(d).toFixed(1).replace('.',',')+'pp</span>';}
+        else{comp='<span style="font-size:11px;color:var(--t3)">=</span>';}
+      }
+    }
+    return '<div style="display:flex;align-items:center;gap:10px;background:var(--s1);border:1px solid var(--b);border-left:3px solid '+cor+';border-radius:10px;padding:11px 13px;margin-bottom:8px"><div style="font-size:11px;font-weight:800;color:var(--t3);width:18px;text-align:center;flex-shrink:0">'+(i+1)+'</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+r.vend+'</div><div style="font-size:11px;color:var(--t2);margin-top:2px">'+r.churnQnt+' sumindo &middot; vazando ~R$ '+radarBR(r.churnVM3m*r.churnQnt)+'/mes</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:16px;font-weight:800;color:'+cor+'">'+r.churnPct.toFixed(2).replace('.',',')+'%</div>'+comp+'</div></div>';
+  }).join('');
+  box.innerHTML=head+'<div style="background:var(--rd2);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--t)"><b style="color:var(--rd)">~R$ '+radarBR(totalVaza)+'</b> em venda mensal vazando pela equipe. Ataque de cima pra baixo.</div>'+linhas;
+  box.style.display='block';
+}
+function radarSalvarSnap(){
+  if(!radarPanoramaCache.length){toast('Analise o panorama antes de salvar.');return;}
+  supaFetch('radar_panorama',{method:'POST',body:JSON.stringify({payload:radarPanoramaCache})}).then(function(r){if(!r.ok)throw new Error();toast('Semana salva! Na proxima, comparo pra voce.');}).catch(function(){toast('Erro ao salvar. Rodou o SQL do radar_panorama?');});
+}
+function radarCarregarUltimoSnap(){
+  supaFetch('radar_panorama?order=criado_em.desc&limit=1').then(function(r){return r.json();}).then(function(d){if(d&&d.length&&d[0].payload){radarSnapAnterior=d[0].payload;}}).catch(function(){});
+}
+function radarMontarPacote(){
+  var selV=document.getElementById('radarVend');
+  if(!selV||!selV.value){toast('Escolha o vendedor primeiro.');return;}
+  var parts=selV.value.split('|');var cod=parts[0];var nome=parts[1]||'';
+  var churnTxt=(document.getElementById('radarChurnTxt')||{value:''}).value;
+  var naoposTxt=(document.getElementById('radarNaoposTxt')||{value:''}).value;
+  if(!churnTxt.trim()&&!naoposTxt.trim()){toast('Cole o churn e/ou os nao-positivados deste vendedor.');return;}
+  var churn=[];
+  churnTxt.split(/\r?\n/).forEach(function(l){
+    if(!l.trim())return;var low=l.toLowerCase();
+    if(low.indexOf('codcli')>=0||low.indexOf('dtult')>=0||low.indexOf('churn rate')>=0)return;
+    if(low.trim().indexOf('total')===0)return;
+    var c=l.split('\t');var cc=radarCod(c[0]);if(!cc)return;
+    churn.push({cod:cc,dt:(c[1]||'').trim()});
+  });
+  var naopos=[];
+  naoposTxt.split(/\r?\n/).forEach(function(l){
+    if(!l.trim())return;var low=l.toLowerCase();
+    if(low.indexOf('vendedor')>=0&&low.indexOf('cliente')>=0)return;
+    if(low.trim().indexOf('total')===0)return;
+    var c=l.split('\t');
+    var temVend=/\d{2,}\s*-/.test(c[0]||'');
+    var off=temVend?1:0;
+    if(temVend){var vc=radarCod((c[0]||'').split('-')[0]);if(cod&&vc&&vc!==cod)return;}
+    var cc=radarCod(c[off]);var cli=(c[off+1]||'').trim();var mun=(c[off+2]||'').trim();var ult=(c[off+6]||c[off+5]||'').trim();
+    if(!cli&&!cc)return;
+    naopos.push({cod:cc,cliente:cli,municipio:mun,ult:ult});
+  });
+  radarRenderPacote(cod,nome,churn,naopos);
+}
+function radarRenderPacote(cod,nome,churn,naopos){
+  var box=document.getElementById('radarPacoteBox');if(!box)return;
+  var dataHoje=new Date().toLocaleDateString('pt-BR');
+  var T=['\uD83D\uDCCA *ACOMPANHAMENTO \u2014 '+cod+' '+nome.toUpperCase()+'*','',dataHoje,''];
+  if(churn.length){
+    T.push('\uD83D\uDD34 *SEU CHURN* (clientes que pararam de comprar)','Meta: churn \u2264 9%. Acompanhe e foque!');
+    churn.forEach(function(x){T.push('\u2022 '+x.cod+(x.dt?' \u2014 ult. compra '+x.dt:''));});
+    T.push('','S\u00e3o '+churn.length+' clientes. Cliente que some volta com uma liga\u00e7\u00e3o, n\u00e3o com desconto. Corra atr\u00e1s ainda esta semana.','');
+  }
+  if(naopos.length){
+    T.push('\uD83D\uDFE1 *N\u00c3O POSITIVADOS DO M\u00caS*');
+    naopos.forEach(function(x){T.push('\u2022 '+(x.cliente||x.cod)+(x.municipio?' ('+x.municipio+')':'')+(x.ult?' \u2014 ult. '+x.ult:''));});
+    T.push('','S\u00e3o '+naopos.length+' clientes da sua carteira sem comprar este m\u00eas. Visite, ofere\u00e7a e garanta o pedido.','');
+  }
+  T.push('Bora buscar cada um! \uD83D\uDE80','_GERENCION QG_');
+  var texto=T.join('\n');window._radarTexto=texto;
+  box.style.display='block';
+  box.innerHTML='<div class="card"><div class="ct">Pacote de '+nome+'</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px"><div style="flex:1;min-width:110px;background:var(--rd2);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--rd)">'+churn.length+'</div><div style="font-size:11px;color:var(--t2)">churn (meta \u22649%)</div></div><div style="flex:1;min-width:110px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--am)">'+naopos.length+'</div><div style="font-size:11px;color:var(--t2)">nao positivados</div></div></div><div id="radarCardImgWrap"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn bp" style="flex:1;min-width:150px" onclick="radarGerarCard(\''+cod+'\',\''+nome.replace(/[\'"]/g,'')+'\','+churn.length+','+naopos.length+')">\uD83D\uDCF7 Gerar card</button><a href="https://wa.me/?text='+encodeURIComponent(texto)+'" target="_blank" rel="noopener" class="btn bg" style="flex:1;min-width:130px;text-decoration:none;justify-content:center">\uD83D\uDCAC Texto no WhatsApp</a></div><div style="font-size:11px;color:var(--t3);margin-top:10px;line-height:1.6">O texto tem a lista completa com os c\u00f3digos. Gere o card, baixe e mande no zap do vendedor junto com o texto.</div></div>';
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function radarGerarCard(cod,nome,nChurn,nNaopos){
+  if(typeof html2canvas==='undefined'){toast('Aguarde o gerador de imagem e tente de novo.');return;}
+  var card=document.createElement('div');
+  card.style.cssText='position:fixed;left:-9999px;top:0;width:460px;background:linear-gradient(160deg,#0B1929 0%,#0F1F35 100%);font-family:Inter,sans-serif;border-radius:22px;overflow:hidden';
+  card.innerHTML='<div style="background:linear-gradient(135deg,#1E3A8A,#3B82F6);padding:24px 28px"><div style="font-size:14px;font-weight:800;letter-spacing:2px;color:#fff">\uD83D\uDCE1 ACOMPANHAMENTO</div><div style="font-size:22px;font-weight:900;color:#fff;margin-top:3px">'+cod+' \u2014 '+nome+'</div><div style="font-size:13px;color:rgba(255,255,255,0.75);margin-top:4px;font-weight:600">Sua semana de ca\u00e7a \u00b7 Norte Fluminense</div></div><div style="padding:22px 28px;display:flex;gap:12px"><div style="flex:1;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.35);border-radius:14px;padding:18px;text-align:center"><div style="font-size:34px;font-weight:900;color:#FCA5A5">'+nChurn+'</div><div style="font-size:12px;color:#FCA5A5;font-weight:700;margin-top:2px">clientes em CHURN</div><div style="font-size:11px;color:#94A3B8;margin-top:4px">meta \u2264 9%</div></div><div style="flex:1;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.35);border-radius:14px;padding:18px;text-align:center"><div style="font-size:34px;font-weight:900;color:#FCD34D">'+nNaopos+'</div><div style="font-size:12px;color:#FCD34D;font-weight:700;margin-top:2px">N\u00c3O positivados</div><div style="font-size:11px;color:#94A3B8;margin-top:4px">carteira do m\u00eas</div></div></div><div style="padding:0 28px 24px"><div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:15px 17px"><div style="font-size:13px;color:#D8E4F2;line-height:1.6;font-weight:600">Cliente que some volta com uma <b style="color:#7DD3FC">liga\u00e7\u00e3o</b>, n\u00e3o com desconto. A lista completa com os c\u00f3digos est\u00e1 na mensagem. Corra atr\u00e1s de cada um esta semana! \uD83D\uDE80</div></div><div style="display:flex;align-items:center;gap:8px;margin-top:16px"><div style="font-size:24px;font-weight:900;color:#3B82F6">QG</div><div style="font-size:14px;color:#8098B8">Gerencion \u00b7 Radar de Clientes</div></div></div>';
+  document.body.appendChild(card);toast('Gerando card...');
+  html2canvas(card,{backgroundColor:null,scale:3,useCORS:true,logging:false}).then(function(canvas){
+    if(card.parentNode)document.body.removeChild(card);
+    var data=canvas.toDataURL('image/png');window._radarImg=data;
+    var w=document.getElementById('radarCardImgWrap');
+    if(w)w.innerHTML='<img src="'+data+'" style="width:100%;border-radius:12px;border:1px solid var(--b);margin:0 0 10px"><button class="btn bp" style="width:100%;margin-bottom:10px" onclick="radarBaixarCard()">\u2B07\uFE0F Baixar card</button>';
+    toast('Card pronto!');
+  }).catch(function(){if(card.parentNode)document.body.removeChild(card);toast('Erro ao gerar o card.');});
+}
+function radarBaixarCard(){if(!window._radarImg){toast('Gere o card primeiro.');return;}var a=document.createElement('a');a.download='Radar-'+Date.now()+'.png';a.href=window._radarImg;document.body.appendChild(a);a.click();document.body.removeChild(a);toast('Card salvo! Anexe no zap do vendedor.');}
 function toast(m){var e=document.getElementById('toast');e.textContent=m;e.classList.add('on');setTimeout(function(){e.classList.remove('on');},2800);}
 function supaFetch(path,opts){return fetch(SUPA_URL+'/rest/v1/'+path,Object.assign({headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'}},opts));}
 function getDevId(){var id=localStorage.getItem('QG_DEV');if(!id){id='D_'+Math.random().toString(36).substr(2,10).toUpperCase()+'_'+Date.now();localStorage.setItem('QG_DEV',id);}return id;}
@@ -1282,6 +1437,8 @@ if(u.t==='coord'){
     var ad=document.getElementById('adminDocs');if(ad)ad.style.display='block';
     var menuQG=document.getElementById('menuQGDia');
     if(menuQG)menuQG.style.display='inline-block';
+    var menuR=document.getElementById('menuRadar');
+    if(menuR)menuR.style.display='inline-block';
     carregarCatalogosAdmin();
     iniciarMetasGrid();
   }

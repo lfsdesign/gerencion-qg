@@ -668,7 +668,7 @@ function renderFocoBloco(focoItens,isAdmin){
   var contador=isAdmin?'<span style="font-size:11px;color:'+(focoItens.length>15?'var(--rd)':'var(--t3)')+';font-weight:700">'+focoItens.length+' de 15</span>':'';
   return '<div style="background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(239,68,68,0.06));border:1.5px solid var(--am3);border-radius:16px;padding:20px 18px;margin-bottom:20px">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:22px">&#127919;</span><div style="font-size:16px;font-weight:800;color:var(--am);letter-spacing:.5px">FOCO DO M&#202;S</div></div>'+contador+'</div>'
-    +'<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:14px">Encaixe <b style="color:var(--am)">um destes no pedido</b> junto do que o cliente j&#225; pediu. Cada item aqui puxa sua <b style="color:var(--am)">margem</b> e seu <b style="color:var(--am)">SKU/cliente</b> &mdash; os dois KPIs que pagam pr&#234;mio. R$ 2 a mais numa nota de R$ 3.000 o cliente n&#227;o sente; seu b&#244;nus sente.</div>'
+    +'<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:14px"><b style="color:var(--am)">Ofere&#231;a estes itens em toda visita</b>: apresente, mostre o valor e convide o cliente a levar. Cada um puxa sua <b style="color:var(--am)">margem</b> e seu <b style="color:var(--am)">SKU/cliente</b> &mdash; os dois KPIs que pagam pr&#234;mio. Oferecer com convic&#231;&#227;o &#233; vender: quanto mais voc&#234; oferece, mais o cliente leva.</div>'
     +linhas
     +(isAdmin?'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn bp" style="flex:1;min-width:150px" onclick="compartilharFocoMes()">&#128228; Compartilhar no grupo</button><button class="btn bs" style="flex:1;min-width:120px" onclick="limparFocoMes()">&#128465; Limpar Foco</button></div>':'')
     +'</div>';
@@ -759,9 +759,9 @@ function compartilharFocoMes(){
   var hoje=new Date();
   var mesNome=hoje.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
   mesNome=mesNome.charAt(0).toUpperCase()+mesNome.slice(1);
-  var Lt=['\u{1F3AF} *FOCO DO MES \u2014 ARCOFOODS NORTE FLUMINENSE*','',mesNome,'','Time, esses sao os itens que enchem o bolso de voces este mes \u{1F447}',''];
+  var Lt=['\u{1F3AF} *FOCO DO MÊS \u2014 ARCOFOODS NORTE FLUMINENSE*','',mesNome,'','Time, esses são os itens que enchem o bolso de vocês este mês \u{1F447}',''];
   foco.forEach(function(p,i){Lt.push((i+1)+'. '+p.nome);});
-  Lt.push('','Cada um desses sobe sua *margem* e seu *SKU por cliente* \u2014 os dois KPIs que pagam premio. Encaixa UM deles em cada pedido, junto do que o cliente ja quer. R$ 2 a mais numa nota de R$ 3.000 o cliente nem sente; seu bonus sente. \u{1F4B0}','','Bora transformar cada visita em margem! \u{1F680}','_GERENCION QG_');
+  Lt.push('','Ofereçam estes itens em cada visita: apresentem, mostrem o valor e convidem o cliente a levar. Cada um sobe sua *margem* e seu *SKU por cliente* \u2014 os KPIs que pagam prêmio. Vender é oferecer: quanto mais você oferece com convicção, mais o cliente leva. \u{1F4B0}','','Bora oferecer mais e vender melhor! \u{1F680}','_GERENCION QG_');
   var texto=Lt.join('\n');
   window._focoTexto=texto;
   var itensHTML=foco.map(function(p){
@@ -769,13 +769,13 @@ function compartilharFocoMes(){
   }).join('');
   var card=document.createElement('div');
   card.style.cssText='position:fixed;left:-9999px;top:0;width:460px;background:linear-gradient(160deg,#0B1929 0%,#0F1F35 100%);font-family:Inter,sans-serif;border-radius:22px;overflow:hidden';
-  card.innerHTML='<div style="background:linear-gradient(135deg,#F59E0B,#EF4444);padding:22px 26px">'
-    +'<div style="font-size:12px;font-weight:800;letter-spacing:3px;color:#0A0A0A">\u{1F3AF} FOCO DO MES</div>'
-    +'<div style="font-size:21px;font-weight:900;color:#0A0A0A;margin-top:2px;line-height:1.15">Os itens que pagam seu premio</div>'
-    +'<div style="font-size:12px;color:rgba(0,0,0,0.65);margin-top:4px;font-weight:600">Arcofoods \u00b7 Norte Fluminense \u00b7 '+mesNome+'</div></div>'
+  card.innerHTML='<div style="background:linear-gradient(135deg,#F59E0B,#EF4444);padding:24px 28px">'
+    +'<div style="font-size:15px;font-weight:800;letter-spacing:3px;color:#0A0A0A">\u{1F3AF} FOCO DO MÊS</div>'
+    +'<div style="font-size:25px;font-weight:900;color:#0A0A0A;margin-top:3px;line-height:1.15">Os itens que pagam seu prêmio</div>'
+    +'<div style="font-size:14px;color:rgba(0,0,0,0.65);margin-top:5px;font-weight:600">Arcofoods \u00b7 Norte Fluminense \u00b7 '+mesNome+'</div></div>'
     +'<div style="padding:22px 26px 8px">'+itensHTML+'</div>'
-    +'<div style="padding:4px 26px 22px"><div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:14px 16px"><div style="font-size:13px;color:#FCD34D;line-height:1.6;font-weight:600">Encaixe <b>um destes em cada pedido</b>. Cada item sobe sua <b>margem</b> e seu <b>SKU/cliente</b> \u2014 os KPIs que pagam premio. R$ 2 a mais numa nota de R$ 3.000 ninguem sente; seu bonus sente. \u{1F4B0}</div></div>'
-    +'<div style="display:flex;align-items:center;gap:8px;margin-top:14px"><div style="font-size:20px;font-weight:900;color:#F59E0B">QG</div><div style="font-size:12px;color:#475569">Gerencion \u00b7 Vender mais e melhor</div></div></div>';
+    +'<div style="padding:4px 28px 24px"><div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:15px 17px"><div style="font-size:14px;color:#FCD34D;line-height:1.6;font-weight:600"><b>Ofereça estes itens em toda visita.</b> Apresente, mostre o valor e convide o cliente a levar. Cada um sobe sua <b>margem</b> e seu <b>SKU/cliente</b> \u2014 os KPIs que pagam prêmio. Oferecer é vender. \u{1F4B0}</div></div>'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-top:16px"><div style="font-size:24px;font-weight:900;color:#F59E0B">QG</div><div style="font-size:14px;color:#8098B8">Gerencion \u00b7 Vender mais e melhor</div></div></div>';
   document.body.appendChild(card);
   toast('Gerando card...');
   html2canvas(card,{backgroundColor:null,scale:3,useCORS:true,logging:false}).then(function(canvas){

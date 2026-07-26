@@ -545,6 +545,9 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
           <div><div class="pt">Minha Prospec&#231;&#227;o</div><div class="ps">Oportunidades novas pra voc&#234; ca&#231;ar</div></div>
         </div>
         <div id="prospIntro" style="background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(59,130,246,0.08));border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--t2);line-height:1.6"></div>
+        <div id="prospGuiaFixa" style="margin-top:10px"></div>
+        <button class="btn bs" onclick="prospToggleGuia()" style="margin-top:8px;width:100%">&#10067; Como usar (passo a passo)</button>
+        <div id="prospGuiaFull" style="display:none;margin-top:10px"></div>
       </div>
       <div id="prospAdmin" style="display:none">
         <div class="admin-box">
@@ -1238,12 +1241,38 @@ function prospCodAtual(){if(eu&&eu.t==='coord'){var s=document.getElementById('p
 function prospNomeAtual(){if(eu&&eu.t==='coord'){var s=document.getElementById('prospVend');return s&&s.value?(s.value.split('|')[1]||''):'';}return (eu&&eu.n)||'';}
 function carregarProspeccao(){
   prospInitVendSelect();
+  prospSetGuia();
   var isCoord=eu&&eu.t==='coord';
   var intro=document.getElementById('prospIntro');
   if(intro)intro.innerHTML=isCoord?'<strong style="color:#10B981">\uD83D\uDCA1 Cadastre oportunidades e jogue pra cada vendedor.</strong> Eles veem a fila deles aqui, com Waze e telefone, e marcam quando fecham. Voc\u00ea acompanha no painel.':'<strong style="color:#10B981">\uD83D\uDCA1 Essas s\u00e3o suas oportunidades!</strong> Clientes novos pra voc\u00ea visitar e fechar. Use o Waze pra chegar, e marque aqui quando fechar. Bora crescer! \uD83D\uDE80';
   var url=isCoord?'prospeccao?order=criado_em.desc':'prospeccao?vendedor_cod=eq.'+prospCodAtual()+'&order=criado_em.desc';
   supaFetch(url).then(function(r){return r.json();}).then(function(d){prospCache=d||[];if(isCoord)renderProspBoard();renderProspFila();}).catch(function(){var f=document.getElementById('prospFilaBox');if(f)f.innerHTML='<div class="empty">Erro ao carregar. Rodou o SQL da tabela prospeccao?</div>';});
 }
+function prospSetGuia(){
+  var isCoord=eu&&eu.t==='coord';
+  var fixa=document.getElementById('prospGuiaFixa');var full=document.getElementById('prospGuiaFull');
+  function passo(n,txt){return '<div style="display:flex;gap:10px;margin-bottom:10px"><div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;background:#10B981;color:#04120f;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center">'+n+'</div><div style="font-size:13px;color:var(--t);line-height:1.5">'+txt+'</div></div>';}
+  if(isCoord){
+    if(fixa)fixa.innerHTML='<div style="background:var(--s1);border:1px solid var(--b);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--t2);line-height:1.6"><b style="color:var(--t)">Resumo:</b> escolha o vendedor \u2192 cadastre os clientes \u2192 gere o alerta e mande no zap dele. Acompanhe a fila no painel.</div>';
+    if(full)full.innerHTML='<div style="background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:16px"><div style="font-size:13px;font-weight:800;color:#10B981;margin-bottom:12px">\uD83D\uDCCB Passo a passo (coordenador)</div>'
+      +passo(1,'<b>Escolha o vendedor</b> no seletor da \u00e1rea do coordenador.')
+      +passo(2,'<b>Cadastre os clientes:</b> um a um, ou colando uma <b>lista</b> no formato <span style="color:var(--t3)">Nome | Endere\u00e7o | Telefone | CNPJ</span> (um por linha).')
+      +passo(3,'Clique em <b>\uD83D\uDCE3 Gerar alerta pro zap</b>, baixe o card e mande no <b>WhatsApp do vendedor</b>.')
+      +passo(4,'Acompanhe no <b>painel da equipe</b>: fila, fechados \uD83C\uDF89 e n\u00e3o-rolou de cada um.')
+      +passo(5,'Precisa de clientes? Pe\u00e7a ao Claude (\u201cpizzarias de Iguaba\u201d) que ele manda a lista pronta pra colar.')
+      +'</div>';
+  }else{
+    if(fixa)fixa.innerHTML='<div style="background:var(--s1);border:1px solid var(--b);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--t2);line-height:1.6"><b style="color:var(--t)">Resumo:</b> toque no <b>Waze</b> pra chegar, visite e ofere\u00e7a. Fechou? toque <b>\uD83C\uDF89 Fechei!</b>. N\u00e3o rolou? conte rapidinho. O resto fica pra depois.</div>';
+    if(full)full.innerHTML='<div style="background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:16px"><div style="font-size:13px;font-weight:800;color:#10B981;margin-bottom:12px">\uD83D\uDCCB Passo a passo</div>'
+      +passo(1,'Aqui est\u00e3o os <b>clientes novos</b> que o coordenador separou pra voc\u00ea.')
+      +passo(2,'Em cada um, toque em <b>\uD83D\uDDFA\uFE0F Waze</b> ou <b>\uD83D\uDCCD Maps</b> pra chegar, e <b>\uD83D\uDCDE Ligar</b> pra falar antes.')
+      +passo(3,'Fechou? Toque <b>\uD83C\uDF89 Fechei!</b> e coloque o c\u00f3digo do novo cliente. Comemore! \uD83D\uDE80')
+      +passo(4,'<b>N\u00e3o rolou?</b> Toque <b>N\u00e3o rolou</b> e conte rapidinho \u2014 pra pensarmos numa abordagem melhor.')
+      +passo(5,'Os que voc\u00ea n\u00e3o visitar <b>ficam aqui</b>, esperando. Sem pressa, sem cobran\u00e7a.')
+      +'</div>';
+  }
+}
+function prospToggleGuia(){var f=document.getElementById('prospGuiaFull');if(!f)return;f.style.display=f.style.display==='none'?'block':'none';}
 function prospMapsLink(p){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((p.nome||'')+' '+(p.endereco||''));}
 function prospWazeLink(p){return 'https://waze.com/ul?q='+encodeURIComponent((p.endereco||p.nome||''));}
 function renderProspFila(){

@@ -553,8 +553,10 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
       </div>
       <div class="admin-box">
         <div class="admin-title" style="color:#3B82F6">&#128228; Montar pacote do vendedor</div>
-        <div class="fg"><label class="fl">Vendedor</label><select id="radarVend" class="inp"><option value="">Selecione o vendedor...</option></select></div>
-        <div class="fg"><label class="fl">Churn detalhado (c&#243;digos deste vendedor)</label><textarea id="radarChurnTxt" class="inp" rows="3" placeholder="Cole o churn detalhado (CodCli + data da ultima compra)"></textarea></div>
+        <div class="fg"><label class="fl">Vendedor</label><select id="radarVend" class="inp" onchange="radarVendMudou()"><option value="">Selecione o vendedor...</option></select></div>
+        <div class="fg"><label class="fl">Churn detalhado (c&#243;digos deste vendedor)</label><textarea id="radarChurnTxt" class="inp" rows="3" placeholder="Cole o churn detalhado deste vendedor (CodCli + data)"></textarea>
+        <button class="btn bs" onclick="radarAddChurn()" style="width:100%;margin-top:6px">&#10133; Adicionar ao churn deste vendedor</button>
+        <div id="radarChurnInfo" style="font-size:12px;color:var(--t2);margin-top:8px;display:none"></div></div>
         <div class="fg"><label class="fl">N&#227;o positivados</label><textarea id="radarNaoposTxt" class="inp" rows="3" placeholder="Cole os n&#227;o-positivados (pode colar de todos, o Radar filtra este vendedor)"></textarea></div>
         <button class="btn bp" onclick="radarMontarPacote()" style="width:100%;margin-top:4px">&#128228; Montar pacote pronto</button>
         <div id="radarPacoteBox" style="display:none;margin-top:14px"></div>
@@ -952,27 +954,64 @@ function radarRenderPanorama(rows){
 }
 function radarSalvarSnap(){
   if(!radarPanoramaCache.length){toast('Analise o panorama antes de salvar.');return;}
-  supaFetch('radar_panorama',{method:'POST',body:JSON.stringify({payload:radarPanoramaCache})}).then(function(r){if(!r.ok)throw new Error();toast('Semana salva! Na proxima, comparo pra voce.');}).catch(function(){toast('Erro ao salvar. Rodou o SQL do radar_panorama?');});
+  supaFetch('radar_panorama',{method:'POST',body:JSON.stringify({payload:radarPanoramaCache})}).then(function(r){
+    if(r.ok){toast('Semana salva! Na proxima, comparo pra voce.');return;}
+    if(r.status===404){toast('Tabela ainda nao visivel. Rode o SQL e aguarde ~1 min (cache do Supabase), depois tente de novo.');}
+    else if(r.status===401||r.status===403){toast('Sem permissao na tabela. Rode a parte GRANT do SQL.');}
+    else{toast('Erro '+r.status+' ao salvar.');}
+  }).catch(function(){toast('Sem conexao ao salvar. Tente de novo.');});
 }
 function radarCarregarUltimoSnap(){
   supaFetch('radar_panorama?order=criado_em.desc&limit=1').then(function(r){return r.json();}).then(function(d){if(d&&d.length&&d[0].payload){radarSnapAnterior=d[0].payload;}}).catch(function(){});
+}
+var radarChurnAcc=[];
+var radarVendAtual='';
+function radarVendMudou(){
+  var selV=document.getElementById('radarVend');
+  var cod=selV&&selV.value?selV.value.split('|')[0]:'';
+  if(cod!==radarVendAtual){
+    radarVendAtual=cod;radarChurnAcc=[];
+    var t=document.getElementById('radarChurnTxt');if(t)t.value='';
+    var pb=document.getElementById('radarPacoteBox');if(pb){pb.style.display='none';pb.innerHTML='';}
+    radarAtualizarChurnInfo();
+  }
+}
+function radarAtualizarChurnInfo(){
+  var el=document.getElementById('radarChurnInfo');if(!el)return;
+  if(!radarChurnAcc.length){el.style.display='none';el.innerHTML='';return;}
+  el.style.display='block';
+  el.innerHTML='<b style="color:var(--rd)">'+radarChurnAcc.length+' cliente(s)</b> no churn deste vendedor &middot; <button onclick="radarLimparChurn()" style="background:none;border:none;color:var(--t3);text-decoration:underline;cursor:pointer;font-family:Inter,sans-serif;font-size:12px;padding:0">limpar</button>';
+}
+function radarLimparChurn(){radarChurnAcc=[];var t=document.getElementById('radarChurnTxt');if(t)t.value='';radarAtualizarChurnInfo();toast('Churn deste vendedor limpo.');}
+function radarAddChurn(){
+  var selV=document.getElementById('radarVend');
+  if(!selV||!selV.value){toast('Escolha o vendedor primeiro.');return;}
+  radarVendMudou();
+  var txt=(document.getElementById('radarChurnTxt')||{value:''}).value;
+  if(!txt.trim()){toast('Cole o churn detalhado antes de adicionar.');return;}
+  var add=0;
+  txt.split(/\r?\n/).forEach(function(l){
+    if(!l.trim())return;var low=l.toLowerCase();
+    if(low.indexOf('codcli')>=0||low.indexOf('dtult')>=0||low.indexOf('churn rate')>=0)return;
+    if(low.trim().indexOf('total')===0)return;
+    var c=l.split('\t');var cc=radarCod(c[0]);if(!cc)return;
+    if(radarChurnAcc.some(function(x){return x.cod===cc;}))return;
+    radarChurnAcc.push({cod:cc,dt:(c[1]||'').trim()});add++;
+  });
+  document.getElementById('radarChurnTxt').value='';
+  radarAtualizarChurnInfo();
+  toast(add?add+' adicionado(s) \u00b7 total '+radarChurnAcc.length:'Nenhum novo (ja estavam na lista).');
 }
 function radarMontarPacote(){
   var selV=document.getElementById('radarVend');
   if(!selV||!selV.value){toast('Escolha o vendedor primeiro.');return;}
   var parts=selV.value.split('|');var cod=parts[0];var nome=parts[1]||'';
-  var churnTxt=(document.getElementById('radarChurnTxt')||{value:''}).value;
+  var pend=(document.getElementById('radarChurnTxt')||{value:''}).value;
+  if(pend.trim())radarAddChurn();
+  var churn=radarChurnAcc.slice();
   var naoposTxt=(document.getElementById('radarNaoposTxt')||{value:''}).value;
-  if(!churnTxt.trim()&&!naoposTxt.trim()){toast('Cole o churn e/ou os nao-positivados deste vendedor.');return;}
-  var churn=[];
-  churnTxt.split(/\r?\n/).forEach(function(l){
-    if(!l.trim())return;var low=l.toLowerCase();
-    if(low.indexOf('codcli')>=0||low.indexOf('dtult')>=0||low.indexOf('churn rate')>=0)return;
-    if(low.trim().indexOf('total')===0)return;
-    var c=l.split('\t');var cc=radarCod(c[0]);if(!cc)return;
-    churn.push({cod:cc,dt:(c[1]||'').trim()});
-  });
-  var naopos=[];
+  if(!churn.length&&!naoposTxt.trim()){toast('Adicione o churn e/ou cole os nao-positivados.');return;}
+  var naopos=[];var npTotal=0;
   naoposTxt.split(/\r?\n/).forEach(function(l){
     if(!l.trim())return;var low=l.toLowerCase();
     if(low.indexOf('vendedor')>=0&&low.indexOf('cliente')>=0)return;
@@ -980,14 +1019,15 @@ function radarMontarPacote(){
     var c=l.split('\t');
     var temVend=/\d{2,}\s*-/.test(c[0]||'');
     var off=temVend?1:0;
-    if(temVend){var vc=radarCod((c[0]||'').split('-')[0]);if(cod&&vc&&vc!==cod)return;}
     var cc=radarCod(c[off]);var cli=(c[off+1]||'').trim();var mun=(c[off+2]||'').trim();var ult=(c[off+6]||c[off+5]||'').trim();
     if(!cli&&!cc)return;
+    npTotal++;
+    if(temVend){var vc=radarCod((c[0]||'').split('-')[0]);if(cod&&vc&&vc!==cod)return;}
     naopos.push({cod:cc,cliente:cli,municipio:mun,ult:ult});
   });
-  radarRenderPacote(cod,nome,churn,naopos);
+  radarRenderPacote(cod,nome,churn,naopos,npTotal);
 }
-function radarRenderPacote(cod,nome,churn,naopos){
+function radarRenderPacote(cod,nome,churn,naopos,npTotal){
   var box=document.getElementById('radarPacoteBox');if(!box)return;
   var dataHoje=new Date().toLocaleDateString('pt-BR');
   var T=['\uD83D\uDCCA *ACOMPANHAMENTO \u2014 '+cod+' '+nome.toUpperCase()+'*','',dataHoje,''];
@@ -1002,18 +1042,43 @@ function radarRenderPacote(cod,nome,churn,naopos){
     T.push('','S\u00e3o '+naopos.length+' clientes da sua carteira sem comprar este m\u00eas. Visite, ofere\u00e7a e garanta o pedido.','');
   }
   T.push('Bora buscar cada um! \uD83D\uDE80','_GERENCION QG_');
-  var texto=T.join('\n');window._radarTexto=texto;
+  window._radarTexto=T.join('\n');
+  window._radarPkg={cod:cod,nome:nome,churn:churn,naopos:naopos,npTotal:npTotal||0};
+  var alerta=churn.length>30?'<div style="background:var(--rd2);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:9px 11px;margin-bottom:12px;font-size:11px;color:var(--rd)">\u26A0 '+churn.length+' no churn parece muito. Confira se colou s\u00f3 os deste vendedor.</div>':'';
   box.style.display='block';
-  box.innerHTML='<div class="card"><div class="ct">Pacote de '+nome+'</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px"><div style="flex:1;min-width:110px;background:var(--rd2);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--rd)">'+churn.length+'</div><div style="font-size:11px;color:var(--t2)">churn (meta \u22649%)</div></div><div style="flex:1;min-width:110px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--am)">'+naopos.length+'</div><div style="font-size:11px;color:var(--t2)">nao positivados</div></div></div><div id="radarCardImgWrap"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn bp" style="flex:1;min-width:150px" onclick="radarGerarCard(\''+cod+'\',\''+nome.replace(/[\'"]/g,'')+'\','+churn.length+','+naopos.length+')">\uD83D\uDCF7 Gerar card</button><a href="https://wa.me/?text='+encodeURIComponent(texto)+'" target="_blank" rel="noopener" class="btn bg" style="flex:1;min-width:130px;text-decoration:none;justify-content:center">\uD83D\uDCAC Texto no WhatsApp</a></div><div style="font-size:11px;color:var(--t3);margin-top:10px;line-height:1.6">O texto tem a lista completa com os c\u00f3digos. Gere o card, baixe e mande no zap do vendedor junto com o texto.</div></div>';
+  box.innerHTML='<div class="card"><div class="ct">Pacote de '+nome+'</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">'
+    +'<div style="flex:1;min-width:110px;background:var(--rd2);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--rd)">'+churn.length+'</div><div style="font-size:11px;color:var(--t2)">churn (meta \u22649%)</div></div>'
+    +'<div style="flex:1;min-width:110px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--am)">'+naopos.length+'</div><div style="font-size:11px;color:var(--t2)">nao positivados'+((npTotal&&npTotal>naopos.length)?'<br><span style="color:var(--t3)">de '+npTotal+' da equipe</span>':'')+'</div></div></div>'
+    +alerta
+    +'<div id="radarCardImgWrap"></div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn bp" style="flex:1;min-width:150px" onclick="radarGerarCard()">\uD83D\uDCF7 Gerar card com as listas</button>'
+    +'<a href="https://wa.me/?text='+encodeURIComponent(window._radarTexto)+'" target="_blank" rel="noopener" class="btn bg" style="flex:1;min-width:130px;text-decoration:none;justify-content:center">\uD83D\uDCAC Texto no WhatsApp</a></div>'
+    +'<div style="font-size:11px;color:var(--t3);margin-top:10px;line-height:1.6">O card agora traz as listas. Gere, baixe e mande no zap do vendedor (o texto tamb\u00e9m tem tudo).</div></div>';
   box.scrollIntoView({behavior:'smooth',block:'start'});
 }
-function radarGerarCard(cod,nome,nChurn,nNaopos){
+function radarGerarCard(){
   if(typeof html2canvas==='undefined'){toast('Aguarde o gerador de imagem e tente de novo.');return;}
+  var p=window._radarPkg;if(!p){toast('Monte o pacote primeiro.');return;}
+  var CAP=40;
+  function listaHTML(arr,tipo){
+    var itens=arr.slice(0,CAP).map(function(x){
+      if(tipo==='churn'){return '<div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><span style="color:#E2E8F0;font-weight:600">'+x.cod+'</span><span style="color:#94A3B8">'+(x.dt||'')+'</span></div>';}
+      return '<div style="font-size:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><div style="color:#E2E8F0;font-weight:600">'+(x.cliente||x.cod)+'</div><div style="color:#94A3B8;font-size:11px">'+[x.municipio,(x.ult?'ult. '+x.ult:'')].filter(Boolean).join(' \u00b7 ')+'</div></div>';
+    }).join('');
+    if(arr.length>CAP)itens+='<div style="font-size:11px;color:#7DD3FC;padding:8px 0 0">+ '+(arr.length-CAP)+' mais na mensagem do WhatsApp</div>';
+    return itens;
+  }
+  var churnSec=p.churn.length?'<div style="padding:2px 28px 4px"><div style="font-size:13px;font-weight:800;color:#FCA5A5;margin:8px 0 6px">\uD83D\uDD34 SEU CHURN \u2014 meta \u2264 9% ('+p.churn.length+')</div>'+listaHTML(p.churn,'churn')+'</div>':'';
+  var npSec=p.naopos.length?'<div style="padding:6px 28px 4px"><div style="font-size:13px;font-weight:800;color:#FCD34D;margin:8px 0 6px">\uD83D\uDFE1 N\u00c3O POSITIVADOS ('+p.naopos.length+')</div>'+listaHTML(p.naopos,'np')+'</div>':'';
   var card=document.createElement('div');
   card.style.cssText='position:fixed;left:-9999px;top:0;width:460px;background:linear-gradient(160deg,#0B1929 0%,#0F1F35 100%);font-family:Inter,sans-serif;border-radius:22px;overflow:hidden';
-  card.innerHTML='<div style="background:linear-gradient(135deg,#1E3A8A,#3B82F6);padding:24px 28px"><div style="font-size:14px;font-weight:800;letter-spacing:2px;color:#fff">\uD83D\uDCE1 ACOMPANHAMENTO</div><div style="font-size:22px;font-weight:900;color:#fff;margin-top:3px">'+cod+' \u2014 '+nome+'</div><div style="font-size:13px;color:rgba(255,255,255,0.75);margin-top:4px;font-weight:600">Sua semana de ca\u00e7a \u00b7 Norte Fluminense</div></div><div style="padding:22px 28px;display:flex;gap:12px"><div style="flex:1;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.35);border-radius:14px;padding:18px;text-align:center"><div style="font-size:34px;font-weight:900;color:#FCA5A5">'+nChurn+'</div><div style="font-size:12px;color:#FCA5A5;font-weight:700;margin-top:2px">clientes em CHURN</div><div style="font-size:11px;color:#94A3B8;margin-top:4px">meta \u2264 9%</div></div><div style="flex:1;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.35);border-radius:14px;padding:18px;text-align:center"><div style="font-size:34px;font-weight:900;color:#FCD34D">'+nNaopos+'</div><div style="font-size:12px;color:#FCD34D;font-weight:700;margin-top:2px">N\u00c3O positivados</div><div style="font-size:11px;color:#94A3B8;margin-top:4px">carteira do m\u00eas</div></div></div><div style="padding:0 28px 24px"><div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:15px 17px"><div style="font-size:13px;color:#D8E4F2;line-height:1.6;font-weight:600">Cliente que some volta com uma <b style="color:#7DD3FC">liga\u00e7\u00e3o</b>, n\u00e3o com desconto. A lista completa com os c\u00f3digos est\u00e1 na mensagem. Corra atr\u00e1s de cada um esta semana! \uD83D\uDE80</div></div><div style="display:flex;align-items:center;gap:8px;margin-top:16px"><div style="font-size:24px;font-weight:900;color:#3B82F6">QG</div><div style="font-size:14px;color:#8098B8">Gerencion \u00b7 Radar de Clientes</div></div></div>';
+  card.innerHTML='<div style="background:linear-gradient(135deg,#1E3A8A,#3B82F6);padding:22px 28px"><div style="font-size:14px;font-weight:800;letter-spacing:2px;color:#fff">\uD83D\uDCE1 ACOMPANHAMENTO</div><div style="font-size:21px;font-weight:900;color:#fff;margin-top:3px">'+p.cod+' \u2014 '+p.nome+'</div><div style="font-size:13px;color:rgba(255,255,255,0.75);margin-top:4px;font-weight:600">Sua semana de ca\u00e7a \u00b7 '+new Date().toLocaleDateString('pt-BR')+'</div></div>'
+    +'<div style="padding:18px 28px 4px;display:flex;gap:12px"><div style="flex:1;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.35);border-radius:14px;padding:14px;text-align:center"><div style="font-size:30px;font-weight:900;color:#FCA5A5">'+p.churn.length+'</div><div style="font-size:11px;color:#FCA5A5;font-weight:700">em CHURN</div></div><div style="flex:1;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.35);border-radius:14px;padding:14px;text-align:center"><div style="font-size:30px;font-weight:900;color:#FCD34D">'+p.naopos.length+'</div><div style="font-size:11px;color:#FCD34D;font-weight:700">N\u00c3O positivados</div></div></div>'
+    +churnSec+npSec
+    +'<div style="padding:10px 28px 24px"><div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:14px 16px"><div style="font-size:12px;color:#D8E4F2;line-height:1.6;font-weight:600">Cliente que some volta com uma <b style="color:#7DD3FC">liga\u00e7\u00e3o</b>, n\u00e3o com desconto. Corra atr\u00e1s de cada um esta semana! \uD83D\uDE80</div></div><div style="display:flex;align-items:center;gap:8px;margin-top:14px"><div style="font-size:22px;font-weight:900;color:#3B82F6">QG</div><div style="font-size:13px;color:#8098B8">Gerencion \u00b7 Radar de Clientes</div></div></div>';
   document.body.appendChild(card);toast('Gerando card...');
-  html2canvas(card,{backgroundColor:null,scale:3,useCORS:true,logging:false}).then(function(canvas){
+  html2canvas(card,{backgroundColor:null,scale:2,useCORS:true,logging:false}).then(function(canvas){
     if(card.parentNode)document.body.removeChild(card);
     var data=canvas.toDataURL('image/png');window._radarImg=data;
     var w=document.getElementById('radarCardImgWrap');

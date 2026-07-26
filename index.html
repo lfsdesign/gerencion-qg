@@ -553,6 +553,13 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
           <div class="fg"><label class="fl">Produto (Codigo + Nome)</label><input id="mixNovoNome" class="inp" placeholder="ex: 12345 - PRODUTO EXEMPLO 1KG"></div>
           <button class="btn bp" onclick="adicionarMixItem()" style="width:100%">+ Adicionar ao Mix Estrategico</button>
         </div>
+        <div class="admin-box" style="border-color:rgba(59,130,246,0.3)">
+          <div class="admin-title" style="color:#3B82F6">&#128260; Substituir a lista inteira</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">Cole a tabela do BI (<b>Departamento &middot; Se&#231;&#227;o &middot; Categoria &middot; Produto</b>). O app <b>apaga a lista atual</b> e deixa s&#243; a nova &mdash; te mostro os n&#250;meros antes de confirmar.</div>
+          <textarea id="mixSubTxt" class="inp" rows="5" placeholder="Cole aqui a lista copiada do BI (colunas separadas por TAB)"></textarea>
+          <button class="btn bs" onclick="analisarSubstituirMix()" style="width:100%;margin-top:8px;border-color:rgba(59,130,246,0.4);color:#3B82F6">&#128269; Conferir antes de substituir</button>
+          <div id="mixSubPreview" style="margin-top:10px"></div>
+        </div>
         <button id="mixInativosBtn" class="btn bs" onclick="toggleMixInativos()" style="width:100%;margin-bottom:14px">Ver itens desativados</button>
         <div id="mixInativosBox" style="display:none;margin-bottom:14px"></div>
       </div>
@@ -568,6 +575,7 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
         </select>
         <button id="mixFocoBtn" class="btn bs" onclick="toggleMixSoFoco()" style="flex-shrink:0">&#127919; S&#243; o Foco do M&#234;s</button>
       </div>
+      <div id="focoShareBox" style="display:none;margin-bottom:14px"></div>
       <div id="mixContador" style="font-size:12px;color:var(--t2);margin-bottom:12px;text-align:right"></div>
       <div id="mixLista"></div>
     </div>
@@ -646,7 +654,9 @@ function renderFocoBloco(focoItens,isAdmin){
   return '<div style="background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(239,68,68,0.06));border:1.5px solid var(--am3);border-radius:16px;padding:20px 18px;margin-bottom:20px">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:22px">&#127919;</span><div style="font-size:16px;font-weight:800;color:var(--am);letter-spacing:.5px">FOCO DO M&#202;S</div></div>'+contador+'</div>'
     +'<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:14px">Encaixe <b style="color:var(--am)">um destes no pedido</b> junto do que o cliente j&#225; pediu. Cada item aqui puxa sua <b style="color:var(--am)">margem</b> e seu <b style="color:var(--am)">SKU/cliente</b> &mdash; os dois KPIs que pagam pr&#234;mio. R$ 2 a mais numa nota de R$ 3.000 o cliente n&#227;o sente; seu b&#244;nus sente.</div>'
-    +linhas+'</div>';
+    +linhas
+    +(isAdmin?'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn bp" style="flex:1;min-width:150px" onclick="compartilharFocoMes()">&#128228; Compartilhar no grupo</button><button class="btn bs" style="flex:1;min-width:120px" onclick="limparFocoMes()">&#128465; Limpar Foco</button></div>':'')
+    +'</div>';
 }
 function renderMix(filtroTexto,filtroDep){
   filtroTexto=(filtroTexto||'').toLowerCase().trim();
@@ -714,6 +724,124 @@ function abrirFocoDoMes(){
   var b=document.getElementById('mixFocoBtn');
   if(b){b.innerHTML='Ver todos os produtos';b.classList.add('bp');b.classList.remove('bs');}
   carregarMix();
+}
+function limparFocoMes(){
+  var n=mixCache.filter(function(p){return p.foco;}).length;
+  if(!n){toast('Nao ha itens no Foco pra limpar.');return;}
+  if(!confirm('Tirar todos os '+n+' itens do Foco do Mes?\n\nIsso NAO apaga nada do catalogo, so limpa o destaque. Depois voce marca os novos.'))return;
+  supaFetch('mix_estrategico?foco=eq.true',{method:'PATCH',body:JSON.stringify({foco:false})}).then(function(){
+    mixCache.forEach(function(p){p.foco=false;});
+    toast('Foco do Mes limpo! Marque os novos.');
+    filtrarMix();
+  }).catch(function(){toast('Erro ao limpar o Foco. Rodou o SQL da coluna foco?');});
+}
+function compartilharFocoMes(){
+  var foco=mixCache.filter(function(p){return p.foco;});
+  if(!foco.length){toast('Marque itens no Foco do Mes antes de compartilhar.');return;}
+  if(typeof html2canvas==='undefined'){toast('Aguarde o gerador de imagem carregar e tente de novo.');return;}
+  var hoje=new Date();
+  var mesNome=hoje.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  mesNome=mesNome.charAt(0).toUpperCase()+mesNome.slice(1);
+  var Lt=['\u{1F3AF} *FOCO DO MES \u2014 ARCOFOODS NORTE FLUMINENSE*','',mesNome,'','Time, esses sao os itens que enchem o bolso de voces este mes \u{1F447}',''];
+  foco.forEach(function(p,i){Lt.push((i+1)+'. '+p.nome);});
+  Lt.push('','Cada um desses sobe sua *margem* e seu *SKU por cliente* \u2014 os dois KPIs que pagam premio. Encaixa UM deles em cada pedido, junto do que o cliente ja quer. R$ 2 a mais numa nota de R$ 3.000 o cliente nem sente; seu bonus sente. \u{1F4B0}','','Bora transformar cada visita em margem! \u{1F680}','_GERENCION QG_');
+  var texto=Lt.join('\n');
+  window._focoTexto=texto;
+  var itensHTML=foco.map(function(p){
+    return '<div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;margin-bottom:8px"><span style="font-size:18px;flex-shrink:0">\u{1F3AF}</span><div style="flex:1;font-size:14px;font-weight:700;color:#F0F6FF;line-height:1.35">'+p.nome+'</div></div>';
+  }).join('');
+  var card=document.createElement('div');
+  card.style.cssText='position:fixed;left:-9999px;top:0;width:460px;background:linear-gradient(160deg,#0B1929 0%,#0F1F35 100%);font-family:Inter,sans-serif;border-radius:22px;overflow:hidden';
+  card.innerHTML='<div style="background:linear-gradient(135deg,#F59E0B,#EF4444);padding:22px 26px">'
+    +'<div style="font-size:12px;font-weight:800;letter-spacing:3px;color:#0A0A0A">\u{1F3AF} FOCO DO MES</div>'
+    +'<div style="font-size:21px;font-weight:900;color:#0A0A0A;margin-top:2px;line-height:1.15">Os itens que pagam seu premio</div>'
+    +'<div style="font-size:12px;color:rgba(0,0,0,0.65);margin-top:4px;font-weight:600">Arcofoods \u00b7 Norte Fluminense \u00b7 '+mesNome+'</div></div>'
+    +'<div style="padding:22px 26px 8px">'+itensHTML+'</div>'
+    +'<div style="padding:4px 26px 22px"><div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:14px 16px"><div style="font-size:13px;color:#FCD34D;line-height:1.6;font-weight:600">Encaixe <b>um destes em cada pedido</b>. Cada item sobe sua <b>margem</b> e seu <b>SKU/cliente</b> \u2014 os KPIs que pagam premio. R$ 2 a mais numa nota de R$ 3.000 ninguem sente; seu bonus sente. \u{1F4B0}</div></div>'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-top:14px"><div style="font-size:20px;font-weight:900;color:#F59E0B">QG</div><div style="font-size:12px;color:#475569">Gerencion \u00b7 Vender mais e melhor</div></div></div>';
+  document.body.appendChild(card);
+  toast('Gerando card...');
+  html2canvas(card,{backgroundColor:null,scale:3,useCORS:true,logging:false}).then(function(canvas){
+    if(card.parentNode)document.body.removeChild(card);
+    var data=canvas.toDataURL('image/png');
+    window._focoImg=data;
+    if(navigator.clipboard){navigator.clipboard.writeText(texto).catch(function(){});}
+    var box=document.getElementById('focoShareBox');
+    if(box){box.style.display='block';
+      box.innerHTML='<div class="card"><div class="ct">Compartilhar Foco do Mes</div>'
+        +'<img src="'+data+'" style="width:100%;border-radius:12px;border:1px solid var(--b);margin-bottom:10px">'
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn bp" style="flex:1;min-width:150px" onclick="baixarFocoImg()">\u{1F4F7} Baixar imagem</button>'
+        +'<a href="https://wa.me/?text='+encodeURIComponent(texto)+'" target="_blank" rel="noopener" class="btn bg" style="flex:1;min-width:130px;text-decoration:none;justify-content:center">\u{1F4AC} Texto no WhatsApp</a></div>'
+        +'<div style="font-size:12px;color:#D8E4F2;line-height:1.6;margin-top:10px;background:var(--s2);border-radius:10px;padding:10px 12px"><b>Como enviar (igual ao QG do Dia):</b><br>1. Baixe a imagem<br>2. Abra o grupo no WhatsApp<br>3. Anexe a imagem \u2014 o texto ja esta copiado, e so colar na legenda</div></div>';
+      box.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+    toast('Card pronto! Imagem gerada e texto copiado.');
+  }).catch(function(){if(card.parentNode)document.body.removeChild(card);toast('Erro ao gerar o card.');});
+}
+function baixarFocoImg(){
+  if(!window._focoImg){toast('Gere o card primeiro.');return;}
+  var a=document.createElement('a');a.download='Foco-do-Mes.png';a.href=window._focoImg;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  toast('Imagem baixada! Agora anexe no grupo.');
+}
+var _mixSubBuffer=null;
+function analisarSubstituirMix(){
+  var txt=(document.getElementById('mixSubTxt')||{value:''}).value;
+  if(!txt.trim()){toast('Cole a lista do BI primeiro.');return;}
+  var linhas=txt.split(/\r?\n/);
+  var itens=[];
+  linhas.forEach(function(l){
+    if(!l.trim())return;
+    var low=l.toLowerCase();
+    if(low.indexOf('departamento')>=0&&low.indexOf('produto')>=0)return;
+    var c=l.split('\t');
+    var dep,sec,prod;
+    if(c.length>=4){dep=(c[0]||'').trim();sec=(c[1]||'').trim();prod=(c[3]||'').trim();}
+    else if(c.length===3){dep=(c[0]||'').trim();sec=(c[1]||'').trim();prod=(c[2]||'').trim();}
+    else return;
+    if(!dep||!prod)return;
+    if(!/\d/.test(prod))return;
+    itens.push({departamento:dep,secao:sec||dep,nome:prod,ativo:true});
+  });
+  var box=document.getElementById('mixSubPreview');
+  if(!itens.length){if(box)box.innerHTML='<div style="background:var(--rd2);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 12px;color:var(--rd);font-size:12px">Nao encontrei produtos validos. Confira se colou com as colunas separadas por TAB (Departamento / Secao / Categoria / Produto).</div>';return;}
+  _mixSubBuffer=itens;
+  var atual=mixCache.length;
+  var deps={};itens.forEach(function(x){deps[x.departamento]=(deps[x.departamento]||0)+1;});
+  var depLinhas=Object.keys(deps).sort().map(function(d){return '<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:var(--t2)"><span>'+d+'</span><span style="color:var(--t);font-weight:700">'+deps[d]+'</span></div>';}).join('');
+  if(box)box.innerHTML='<div style="background:linear-gradient(135deg,rgba(245,158,11,0.14),rgba(239,68,68,0.06));border:1.5px solid var(--am3);border-radius:12px;padding:16px">'
+    +'<div style="font-size:13px;font-weight:800;color:var(--am);margin-bottom:10px">\u26A0\uFE0F Confira antes de substituir</div>'
+    +'<div style="font-size:13px;color:var(--t);line-height:1.7;margin-bottom:12px">Isso vai <b style="color:var(--rd)">apagar os '+atual+' itens atuais</b> e deixar so os <b style="color:var(--gn)">'+itens.length+' novos</b> que voce colou.<br><span style="font-size:12px;color:var(--t2)">Os itens do Foco do Mes tambem serao apagados \u2014 remarque depois.</span></div>'
+    +'<div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px 12px;margin-bottom:12px">'+depLinhas+'</div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn bp" style="flex:1;min-width:150px" onclick="confirmarSubstituirMix()">\u2705 Confirmar e substituir</button>'
+    +'<button class="btn bs" style="flex:1;min-width:100px" onclick="cancelarSubstituirMix()">Cancelar</button></div></div>';
+}
+function cancelarSubstituirMix(){_mixSubBuffer=null;var b=document.getElementById('mixSubPreview');if(b)b.innerHTML='';toast('Substituicao cancelada.');}
+function confirmarSubstituirMix(){
+  if(!_mixSubBuffer||!_mixSubBuffer.length){toast('Confira a lista primeiro.');return;}
+  var itens=_mixSubBuffer;var total=itens.length;
+  toast('Substituindo... aguarde, nao feche o app.');
+  supaFetch('mix_estrategico?nome=not.is.null',{method:'DELETE'}).then(function(r){
+    if(!r.ok)throw new Error();
+    _mixInserirLote(itens,0,total);
+  }).catch(function(){toast('Erro ao limpar a lista antiga. Nada foi alterado.');});
+}
+function _mixInserirLote(itens,i,total){
+  if(i>=total){
+    _mixSubBuffer=null;
+    var t=document.getElementById('mixSubTxt');if(t)t.value='';
+    var p=document.getElementById('mixSubPreview');if(p)p.innerHTML='';
+    mixSoFoco=false;
+    var b=document.getElementById('mixFocoBtn');if(b){b.innerHTML='\u{1F3AF} So o Foco do Mes';b.classList.remove('bp');b.classList.add('bs');}
+    toast('Lista substituida! '+total+' itens carregados.');
+    carregarMix();
+    return;
+  }
+  var lote=itens.slice(i,i+250);
+  supaFetch('mix_estrategico',{method:'POST',body:JSON.stringify(lote)}).then(function(r){
+    if(!r.ok)throw new Error();
+    _mixInserirLote(itens,i+250,total);
+  }).catch(function(){toast('Erro ao inserir parte da lista. Recarregue a tela e confira.');});
 }
 function excluirMixItem(id){if(!confirm('Excluir este item?'))return;supaFetch('mix_estrategico?id=eq.'+id,{method:'DELETE'}).then(function(){toast('Item excluido!');mixCache=mixCache.filter(function(p){return p.id!==id;});filtrarMix();});}
 function desativarMixItem(id){supaFetch('mix_estrategico?id=eq.'+id,{method:'PATCH',body:JSON.stringify({ativo:false})}).then(function(){toast('Item desativado!');mixCache=mixCache.filter(function(p){return p.id!==id;});filtrarMix();});}

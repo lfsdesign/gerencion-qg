@@ -294,6 +294,7 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
     <button class="mb" onclick="ir('premiacao',this);carregarPremiacao()">&#128176; Premia&#231;&#227;o</button>
    <button class="mb" id="menuQGDia" onclick="ir('qgdia',this);setTimeout(preencherDicaAutomatica,100)" style="display:none">&#128227; QG do Dia</button>
    <button class="mb" id="menuRadar" onclick="ir('radar',this);radarInit()" style="display:none">&#128225; Radar</button>
+   <button class="mb" onclick="ir('prospeccao',this);carregarProspeccao()">&#127919; Prospec&#231;&#227;o</button>
   </div>
 
   <div id="main">
@@ -315,6 +316,7 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
         <div class="mcard" onclick="irM('mixestrategico');carregarMix()"><div class="micon">&#11088;</div><div class="mname">Mix Estrat&#233;gico</div><div class="mdesc">Produtos de alta rentabilidade</div></div>
         <div class="mcard" onclick="irM('cotacao');mxAbrirCot()"><div class="micon">&#129534;</div><div class="mname">Cota&#231;&#227;o</div><div class="mdesc" id="cotCardDesc">Monte e envie ao cliente</div></div>
         <div class="mcard" onclick="irM('premiacao');carregarPremiacao()"><div class="micon">&#128176;</div><div class="mname">Minha Premia&#231;&#227;o</div><div class="mdesc">Veja quanto voc&#234; vai ganhar</div></div>
+        <div class="mcard" onclick="irM('prospeccao');carregarProspeccao()"><div class="micon">&#127919;</div><div class="mname">Minha Prospec&#231;&#227;o</div><div class="mdesc">Clientes novos pra voc&#234; fechar</div></div>
       </div>
     </div>
 
@@ -534,6 +536,36 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
         </div>
       </div>
       <div id="biLista" class="tgrid"></div>
+    </div>
+
+    <div id="prospeccao" class="pg">
+      <div class="ph">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <div style="width:40px;height:40px;background:linear-gradient(135deg,#10B981,#3B82F6);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">&#127919;</div>
+          <div><div class="pt">Minha Prospec&#231;&#227;o</div><div class="ps">Oportunidades novas pra voc&#234; ca&#231;ar</div></div>
+        </div>
+        <div id="prospIntro" style="background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(59,130,246,0.08));border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--t2);line-height:1.6"></div>
+      </div>
+      <div id="prospAdmin" style="display:none">
+        <div class="admin-box">
+          <div class="admin-title">&#128274; Coordenador &middot; Cadastrar oportunidade</div>
+          <div class="fg"><label class="fl">Vendedor</label><select id="prospVend" class="inp" onchange="carregarProspeccao()"><option value="">Selecione o vendedor...</option></select></div>
+          <div class="fg"><label class="fl">Nome do estabelecimento</label><input id="prospNome" class="inp" placeholder="ex: Pizzaria Familia Lima"></div>
+          <div class="fg"><label class="fl">Endere&#231;o</label><input id="prospEnd" class="inp" placeholder="Rua, n&#186;, bairro, cidade"></div>
+          <div class="g2"><div class="fg"><label class="fl">Telefone</label><input id="prospTel" class="inp" placeholder="(22) 9...."></div><div class="fg"><label class="fl">CNPJ (opcional)</label><input id="prospCnpj" class="inp" placeholder="00.000.000/0001-00"></div></div>
+          <button class="btn bp" onclick="prospAddOne()" style="width:100%">+ Adicionar oportunidade</button>
+          <div style="border-top:1px solid var(--b);margin:16px 0 12px;padding-top:12px"><div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:8px">Ou cole uma <b>lista de uma vez</b> (um por linha):<br><span style="color:var(--t3)">Nome | Endere&#231;o | Telefone | CNPJ</span></div>
+          <textarea id="prospLote" class="inp" rows="4" placeholder="Pizzaria Familia Lima | Estr. de Sapiatiba, Iguaba Grande | (22) 99251-6785 | 62.431.063/0001-50"></textarea>
+          <button class="btn bs" onclick="prospAddLote()" style="width:100%;margin-top:8px">+ Adicionar lista ao vendedor selecionado</button></div>
+        </div>
+        <div class="admin-box">
+          <div class="admin-title">&#128202; Painel da equipe</div>
+          <div id="prospBoard"></div>
+          <button class="btn bp" onclick="prospGerarAlerta()" style="width:100%;margin-top:12px">&#128227; Gerar alerta pro zap (vendedor selecionado)</button>
+          <div id="prospAlertaWrap" style="margin-top:12px"></div>
+        </div>
+      </div>
+      <div id="prospFilaBox"></div>
     </div>
 
     <div id="radar" class="pg">
@@ -1192,6 +1224,113 @@ function radarBuildCardEl(tipo,p){
   return card;
 }
 function radarBaixarImg(tipo,fn){var d=window._radarImgs&&window._radarImgs[tipo];if(!d){toast('Gere o card primeiro.');return;}var p=window._radarPkg||{};var slug=((p.cod||'')+'-'+(p.nome||'')).replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'_');var a=document.createElement('a');a.download='Radar-'+(slug?slug+'-':'')+fn+'.png';a.href=d;document.body.appendChild(a);a.click();document.body.removeChild(a);toast('Card salvo!');}
+/* ========================= PROSPECCAO ========================= */
+var prospCache=[];
+function prospInitVendSelect(){
+  var sel=document.getElementById('prospVend');
+  if(sel&&!sel.dataset.pronto){
+    var opts='<option value="">Selecione o vendedor...</option>';
+    USERS.filter(function(u){return u.t==='vend';}).forEach(function(u){var cod=(u.cd||'').replace(/\D/g,'');opts+='<option value="'+cod+'|'+u.n+'">'+cod+' - '+u.n+'</option>';});
+    sel.innerHTML=opts;sel.dataset.pronto='1';
+  }
+}
+function prospCodAtual(){if(eu&&eu.t==='coord'){var s=document.getElementById('prospVend');return s&&s.value?s.value.split('|')[0]:'';}return ((eu&&eu.cd)||'').replace(/\D/g,'');}
+function prospNomeAtual(){if(eu&&eu.t==='coord'){var s=document.getElementById('prospVend');return s&&s.value?(s.value.split('|')[1]||''):'';}return (eu&&eu.n)||'';}
+function carregarProspeccao(){
+  prospInitVendSelect();
+  var isCoord=eu&&eu.t==='coord';
+  var intro=document.getElementById('prospIntro');
+  if(intro)intro.innerHTML=isCoord?'<strong style="color:#10B981">\uD83D\uDCA1 Cadastre oportunidades e jogue pra cada vendedor.</strong> Eles veem a fila deles aqui, com Waze e telefone, e marcam quando fecham. Voc\u00ea acompanha no painel.':'<strong style="color:#10B981">\uD83D\uDCA1 Essas s\u00e3o suas oportunidades!</strong> Clientes novos pra voc\u00ea visitar e fechar. Use o Waze pra chegar, e marque aqui quando fechar. Bora crescer! \uD83D\uDE80';
+  var url=isCoord?'prospeccao?order=criado_em.desc':'prospeccao?vendedor_cod=eq.'+prospCodAtual()+'&order=criado_em.desc';
+  supaFetch(url).then(function(r){return r.json();}).then(function(d){prospCache=d||[];if(isCoord)renderProspBoard();renderProspFila();}).catch(function(){var f=document.getElementById('prospFilaBox');if(f)f.innerHTML='<div class="empty">Erro ao carregar. Rodou o SQL da tabela prospeccao?</div>';});
+}
+function prospMapsLink(p){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((p.nome||'')+' '+(p.endereco||''));}
+function prospWazeLink(p){return 'https://waze.com/ul?q='+encodeURIComponent((p.endereco||p.nome||''));}
+function renderProspFila(){
+  var box=document.getElementById('prospFilaBox');if(!box)return;
+  var isCoord=eu&&eu.t==='coord';var cod=prospCodAtual();
+  if(isCoord&&!cod){box.innerHTML='<div class="empty"><div class="eico">\uD83D\uDC46</div>Selecione um vendedor pra ver a fila dele.</div>';return;}
+  var lista=prospCache.filter(function(p){return String(p.vendedor_cod)===String(cod);});
+  var pend=lista.filter(function(p){return p.status==='pendente';});
+  var fech=lista.filter(function(p){return p.status==='fechado';});
+  var rec=lista.filter(function(p){return p.status==='recusado';});
+  var html='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">'
+    +'<div style="flex:1;min-width:90px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#3B82F6">'+pend.length+'</div><div style="font-size:11px;color:var(--t2)">pra ca\u00e7ar</div></div>'
+    +'<div style="flex:1;min-width:90px;background:var(--gn2);border:1px solid rgba(16,185,129,.25);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--gn)">'+fech.length+'</div><div style="font-size:11px;color:var(--t2)">fechados \uD83C\uDF89</div></div>'
+    +'<div style="flex:1;min-width:90px;background:var(--s1);border:1px solid var(--b);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--t3)">'+rec.length+'</div><div style="font-size:11px;color:var(--t2)">n\u00e3o rolou</div></div></div>';
+  if(!pend.length){html+='<div class="empty" style="padding:24px"><div class="eico">\u2705</div>'+(isCoord?'Nenhuma oportunidade pendente pra esse vendedor.':'Voc\u00ea zerou sua fila! Assim que chegar oportunidade nova, aparece aqui.')+'</div>';}
+  else{html+='<div style="font-size:13px;font-weight:800;color:#3B82F6;margin-bottom:10px">\uD83C\uDFAF Pra ca\u00e7ar ('+pend.length+')</div>';pend.forEach(function(p){html+=prospCard(p);});}
+  if(fech.length){html+='<div style="font-size:13px;font-weight:800;color:var(--gn);margin:18px 0 10px">\uD83C\uDF89 Conquistas ('+fech.length+')</div>';fech.forEach(function(p){html+=prospCard(p);});}
+  if(rec.length){html+='<div style="font-size:12px;font-weight:700;color:var(--t3);margin:18px 0 8px">N\u00e3o rolou ('+rec.length+')</div>';rec.forEach(function(p){html+=prospCard(p);});}
+  box.innerHTML=html;
+}
+function prospCard(p){
+  var st=p.status;var borda=st==='fechado'?'var(--gn)':(st==='recusado'?'var(--t3)':'#3B82F6');var acoes='';
+  if(st==='pendente'){
+    acoes='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'
+      +'<a href="'+prospWazeLink(p)+'" target="_blank" rel="noopener" class="btn bs" style="flex:1;min-width:80px;text-decoration:none;justify-content:center">\uD83D\uDDFA\uFE0F Waze</a>'
+      +'<a href="'+prospMapsLink(p)+'" target="_blank" rel="noopener" class="btn bs" style="flex:1;min-width:80px;text-decoration:none;justify-content:center">\uD83D\uDCCD Maps</a>'
+      +(p.telefone?'<a href="tel:'+String(p.telefone).replace(/[^\d+]/g,'')+'" class="btn bs" style="flex:1;min-width:80px;text-decoration:none;justify-content:center">\uD83D\uDCDE Ligar</a>':'')+'</div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">'
+      +'<button class="btn bp" style="flex:1;min-width:110px;background:var(--gn);border-color:var(--gn)" onclick="prospFechar(\''+p.id+'\')">\uD83C\uDF89 Fechei!</button>'
+      +'<button class="btn bs" style="flex:1;min-width:110px" onclick="prospRecusar(\''+p.id+'\')">N\u00e3o rolou</button></div>';
+  }else if(st==='fechado'){acoes='<div style="margin-top:8px;font-size:12px;color:var(--gn);font-weight:700">\u2705 Fechado'+(p.codigo_cliente?' \u2014 c\u00f3digo '+p.codigo_cliente:'')+'</div>';}
+  else{acoes='<div style="margin-top:8px;font-size:12px;color:var(--t3)">'+(p.feedback?'Motivo: '+p.feedback:'N\u00e3o rolou')+(eu&&eu.t==='coord'?' <button onclick="prospReativar(\''+p.id+'\')" style="background:none;border:none;color:#3B82F6;text-decoration:underline;cursor:pointer;font-family:Inter,sans-serif;font-size:11px;padding:0">devolver pra fila</button>':'')+'</div>';}
+  return '<div style="background:var(--s1);border:1px solid var(--b);border-left:3px solid '+borda+';border-radius:12px;padding:14px;margin-bottom:10px"><div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:3px">'+(p.nome||'(sem nome)')+'</div>'+(p.endereco?'<div style="font-size:12px;color:var(--t2);line-height:1.5">\uD83D\uDCCD '+p.endereco+'</div>':'')+(p.telefone?'<div style="font-size:12px;color:var(--t2)">\uD83D\uDCDE '+p.telefone+'</div>':'')+(p.cnpj?'<div style="font-size:11px;color:var(--t3)">CNPJ '+p.cnpj+'</div>':'')+acoes+'</div>';
+}
+function renderProspBoard(){
+  var box=document.getElementById('prospBoard');if(!box)return;var by={};
+  prospCache.forEach(function(p){var k=p.vendedor_cod||'?';if(!by[k])by[k]={nome:p.vendedor_nome||k,pend:0,fech:0,rec:0};if(p.status==='fechado')by[k].fech++;else if(p.status==='recusado')by[k].rec++;else by[k].pend++;});
+  var keys=Object.keys(by).sort();
+  if(!keys.length){box.innerHTML='<div style="font-size:12px;color:var(--t3);padding:8px">Nenhuma oportunidade cadastrada ainda.</div>';return;}
+  box.innerHTML=keys.map(function(k){var b=by[k];return '<div style="display:flex;align-items:center;gap:8px;background:var(--s1);border:1px solid var(--b);border-radius:10px;padding:10px 12px;margin-bottom:8px"><div style="flex:1;font-size:13px;font-weight:700;color:var(--t);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+k+' - '+b.nome+'</div><div style="font-size:12px;color:#3B82F6;font-weight:700;flex-shrink:0">'+b.pend+' fila</div><div style="font-size:12px;color:var(--gn);font-weight:700;flex-shrink:0">'+b.fech+' \uD83C\uDF89</div><div style="font-size:12px;color:var(--t3);flex-shrink:0">'+b.rec+' n\u00e3o</div></div>';}).join('');
+}
+function prospAddOne(){
+  var cod=prospCodAtual(),nome=prospNomeAtual();
+  if(!cod){toast('Selecione o vendedor primeiro.');return;}
+  var estab=document.getElementById('prospNome').value.trim();
+  if(!estab){toast('Preencha o nome do estabelecimento.');return;}
+  var reg={vendedor_cod:cod,vendedor_nome:nome,nome:estab,endereco:document.getElementById('prospEnd').value.trim(),telefone:document.getElementById('prospTel').value.trim(),cnpj:document.getElementById('prospCnpj').value.trim(),status:'pendente'};
+  supaFetch('prospeccao',{method:'POST',body:JSON.stringify(reg)}).then(function(r){if(!r.ok)throw new Error();return r.json();}).then(function(){toast('Oportunidade enviada pro '+cod+'!');['prospNome','prospEnd','prospTel','prospCnpj'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});carregarProspeccao();}).catch(function(){toast('Erro ao salvar. Rodou o SQL da prospeccao?');});
+}
+function prospAddLote(){
+  var cod=prospCodAtual(),nome=prospNomeAtual();
+  if(!cod){toast('Selecione o vendedor primeiro.');return;}
+  var txt=(document.getElementById('prospLote')||{value:''}).value;
+  if(!txt.trim()){toast('Cole a lista primeiro.');return;}
+  var regs=[];
+  txt.split(/\r?\n/).forEach(function(l){if(!l.trim())return;var c=l.split('|').map(function(x){return x.trim();});if(!c[0])return;regs.push({vendedor_cod:cod,vendedor_nome:nome,nome:c[0],endereco:c[1]||'',telefone:c[2]||'',cnpj:c[3]||'',status:'pendente'});});
+  if(!regs.length){toast('Nao encontrei linhas validas.');return;}
+  supaFetch('prospeccao',{method:'POST',body:JSON.stringify(regs)}).then(function(r){if(!r.ok)throw new Error();return r.json();}).then(function(){toast(regs.length+' oportunidades enviadas pro '+cod+'!');document.getElementById('prospLote').value='';carregarProspeccao();}).catch(function(){toast('Erro ao salvar a lista.');});
+}
+function prospFechar(id){var codigo=prompt('Parab\u00e9ns! \uD83C\uDF89 Qual o c\u00f3digo do novo cliente cadastrado?');if(codigo===null)return;supaFetch('prospeccao?id=eq.'+id,{method:'PATCH',body:JSON.stringify({status:'fechado',codigo_cliente:codigo.trim()})}).then(function(r){if(!r.ok)throw new Error();toast('Que massa! Cliente fechado! \uD83C\uDF89');carregarProspeccao();}).catch(function(){toast('Erro ao salvar.');});}
+function prospRecusar(id){var motivo=prompt('Sem problema! Me conta rapidinho o que houve (pra pensarmos juntos):');if(motivo===null)return;supaFetch('prospeccao?id=eq.'+id,{method:'PATCH',body:JSON.stringify({status:'recusado',feedback:motivo.trim()})}).then(function(r){if(!r.ok)throw new Error();toast('Anotado! Vamos pra pr\u00f3xima.');carregarProspeccao();}).catch(function(){toast('Erro ao salvar.');});}
+function prospReativar(id){supaFetch('prospeccao?id=eq.'+id,{method:'PATCH',body:JSON.stringify({status:'pendente',feedback:''})}).then(function(r){if(!r.ok)throw new Error();toast('Devolvido pra fila.');carregarProspeccao();}).catch(function(){toast('Erro.');});}
+function prospGerarAlerta(){
+  var cod=prospCodAtual(),nome=prospNomeAtual();
+  if(!cod){toast('Selecione o vendedor primeiro.');return;}
+  if(typeof html2canvas==='undefined'){toast('Aguarde o gerador de imagem.');return;}
+  var n=prospCache.filter(function(p){return String(p.vendedor_cod)===String(cod)&&p.status==='pendente';}).length;
+  if(!n){toast('Esse vendedor nao tem oportunidades pendentes.');return;}
+  var primeiro=(nome||'').split(' ')[0]||cod;
+  var texto='\uD83C\uDFAF *'+primeiro.toUpperCase()+', chegaram oportunidades novas pra voce!*\n\nSeparei *'+n+' cliente(s) novo(s)* pra voce prospectar \u2014 com endereco, telefone e o caminho no Waze, tudo pronto no QG.\n\n\uD83D\uDC49 Abre o app em *Minha Prospeccao* e da uma olhada. Tem cliente bom te esperando!\n\nQualquer um que voce fechar, marca la e me conta. Bora crescer juntos! \uD83D\uDE80\n_GERENCION QG_';
+  window._prospAlertaTxt=texto;
+  var card=document.createElement('div');
+  card.style.cssText='position:fixed;left:-9999px;top:0;width:460px;background:linear-gradient(160deg,#052e2b 0%,#0B1929 100%);font-family:Inter,sans-serif;border-radius:22px;overflow:hidden';
+  card.innerHTML='<div style="background:linear-gradient(135deg,#10B981,#3B82F6);padding:26px 28px"><div style="font-size:13px;font-weight:800;letter-spacing:2px;color:#fff">\uD83C\uDFAF OPORTUNIDADES NOVAS</div><div style="font-size:26px;font-weight:900;color:#fff;margin-top:4px;line-height:1.1">'+primeiro+', a ca\u00e7a come\u00e7ou!</div></div>'
+    +'<div style="padding:26px 28px"><div style="font-size:60px;font-weight:900;color:#34D399;text-align:center;line-height:1">'+n+'</div><div style="text-align:center;font-size:14px;color:#A7F3D0;font-weight:700;margin-top:2px">clientes novos esperando por voc\u00ea</div>'
+    +'<div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:16px;margin-top:20px;font-size:14px;color:#D8E4F2;line-height:1.6;font-weight:600">Endere\u00e7o, telefone e caminho no Waze \u2014 tudo pronto no seu QG. \u00c9 s\u00f3 abrir <b style="color:#34D399">Minha Prospec\u00e7\u00e3o</b>, escolher e ir fechar. \uD83D\uDE80</div>'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-top:18px"><div style="font-size:22px;font-weight:900;color:#10B981">QG</div><div style="font-size:13px;color:#8098B8">Gerencion \u00b7 T\u00f4 do seu lado</div></div></div>';
+  document.body.appendChild(card);toast('Gerando alerta...');
+  html2canvas(card,{backgroundColor:null,scale:2,useCORS:true,logging:false}).then(function(canvas){
+    if(card.parentNode)document.body.removeChild(card);
+    var data=canvas.toDataURL('image/png');window._prospAlertaImg=data;
+    var w=document.getElementById('prospAlertaWrap');
+    if(w)w.innerHTML='<img src="'+data+'" style="width:100%;border-radius:12px;border:1px solid var(--b);margin-bottom:10px"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn bp" style="flex:1;min-width:130px" onclick="prospBaixarAlerta()">\u2B07\uFE0F Baixar card</button><a href="https://wa.me/?text='+encodeURIComponent(texto)+'" target="_blank" rel="noopener" class="btn bg" style="flex:1;min-width:130px;text-decoration:none;justify-content:center">\uD83D\uDCAC Texto</a></div>';
+    toast('Alerta pronto! Manda no zap dele.');
+  }).catch(function(){if(card.parentNode)document.body.removeChild(card);toast('Erro ao gerar.');});
+}
+function prospBaixarAlerta(){if(!window._prospAlertaImg){toast('Gere o alerta primeiro.');return;}var a=document.createElement('a');a.download='Prospeccao-alerta.png';a.href=window._prospAlertaImg;document.body.appendChild(a);a.click();document.body.removeChild(a);toast('Card salvo!');}
 function toast(m){var e=document.getElementById('toast');e.textContent=m;e.classList.add('on');setTimeout(function(){e.classList.remove('on');},2800);}
 function supaFetch(path,opts){return fetch(SUPA_URL+'/rest/v1/'+path,Object.assign({headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'}},opts));}
 function getDevId(){var id=localStorage.getItem('QG_DEV');if(!id){id='D_'+Math.random().toString(36).substr(2,10).toUpperCase()+'_'+Date.now();localStorage.setItem('QG_DEV',id);}return id;}
@@ -1609,6 +1748,7 @@ if(u.t==='coord'){
     if(menuQG)menuQG.style.display='inline-block';
     var menuR=document.getElementById('menuRadar');
     if(menuR)menuR.style.display='inline-block';
+    var pa=document.getElementById('prospAdmin');if(pa)pa.style.display='block';
     carregarCatalogosAdmin();
     iniciarMetasGrid();
   }

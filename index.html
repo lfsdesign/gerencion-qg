@@ -973,6 +973,7 @@ function radarVendMudou(){
   if(cod!==radarVendAtual){
     radarVendAtual=cod;radarChurnAcc=[];
     var t=document.getElementById('radarChurnTxt');if(t)t.value='';
+    var ta=document.getElementById('radarAcompTxt');if(ta)ta.value='';
     var pb=document.getElementById('radarPacoteBox');if(pb){pb.style.display='none';pb.innerHTML='';}
     radarAtualizarChurnInfo();
   }
@@ -1031,6 +1032,7 @@ function radarMontarPacote(){
   var churn=churnRaw.map(function(x){return {cod:x.cod,dt:x.dt,cliente:(npMap[x.cod]||'')};});
   var acompTxt=(document.getElementById('radarAcompTxt')||{value:''}).value;
   var acomp=acompTxt.trim()?radarParseAcomp(acompTxt,cod):null;
+  if(acompTxt.trim()&&!acomp)toast('Nao achei o acompanhamento do '+cod+' no que voce colou. Confira se e o deste vendedor.');
   radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend,acomp);
 }
 function radarParseAcomp(txt,cod){

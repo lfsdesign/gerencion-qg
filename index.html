@@ -1008,10 +1008,10 @@ function radarMontarPacote(){
   var parts=selV.value.split('|');var cod=parts[0];var nome=parts[1]||'';
   var pend=(document.getElementById('radarChurnTxt')||{value:''}).value;
   if(pend.trim())radarAddChurn();
-  var churn=radarChurnAcc.slice();
+  var churnRaw=radarChurnAcc.slice();
   var naoposTxt=(document.getElementById('radarNaoposTxt')||{value:''}).value;
-  if(!churn.length&&!naoposTxt.trim()){toast('Adicione o churn e/ou cole os nao-positivados.');return;}
-  var naopos=[];var npTotal=0;var npTemVend=false;
+  if(!churnRaw.length&&!naoposTxt.trim()){toast('Adicione o churn e/ou cole os nao-positivados.');return;}
+  var naopos=[];var npTotal=0;var npTemVend=false;var npMap={};
   naoposTxt.split(/\r?\n/).forEach(function(l){
     if(!l.trim())return;var low=l.toLowerCase();
     if(low.indexOf('vendedor')>=0&&low.indexOf('cliente')>=0)return;
@@ -1023,9 +1023,11 @@ function radarMontarPacote(){
     var cc=radarCod(c[off]);var cli=(c[off+1]||'').trim();var mun=(c[off+2]||'').trim();var ult=(c[off+6]||c[off+5]||'').trim();
     if(!cli&&!cc)return;
     npTotal++;
+    if(cc&&cli)npMap[cc]=cli;
     if(temVend){var vc=radarCod((c[0]||'').split('-')[0]);if(cod&&vc&&vc!==cod)return;}
     naopos.push({cod:cc,cliente:cli,municipio:mun,ult:ult});
   });
+  var churn=churnRaw.map(function(x){return {cod:x.cod,dt:x.dt,cliente:(npMap[x.cod]||'')};});
   radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend);
 }
 function radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend){
@@ -1034,12 +1036,12 @@ function radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend){
   var T=['\uD83D\uDCCA *ACOMPANHAMENTO \u2014 '+cod+' '+nome.toUpperCase()+'*','',dataHoje,''];
   if(churn.length){
     T.push('\uD83D\uDD34 *SEU CHURN* (clientes que pararam de comprar)','Meta: churn \u2264 9%. Acompanhe e foque!');
-    churn.forEach(function(x){T.push('\u2022 '+x.cod+(x.dt?' \u2014 ult. compra '+x.dt:''));});
+    churn.forEach(function(x){T.push('\u2022 '+x.cod+(x.cliente?' - '+x.cliente:'')+(x.dt?' \u2014 ult. compra '+x.dt:''));});
     T.push('','S\u00e3o '+churn.length+' clientes. Cliente que some volta com uma liga\u00e7\u00e3o, n\u00e3o com desconto. Corra atr\u00e1s ainda esta semana.','');
   }
   if(naopos.length){
     T.push('\uD83D\uDFE1 *N\u00c3O POSITIVADOS DO M\u00caS*');
-    naopos.forEach(function(x){T.push('\u2022 '+(x.cliente||x.cod)+(x.municipio?' ('+x.municipio+')':'')+(x.ult?' \u2014 ult. '+x.ult:''));});
+    naopos.forEach(function(x){T.push('\u2022 '+(x.cod?x.cod+' - ':'')+(x.cliente||'')+(x.municipio?' ('+x.municipio+')':'')+(x.ult?' \u2014 ult. '+x.ult:''));});
     T.push('','S\u00e3o '+naopos.length+' clientes da sua carteira sem comprar este m\u00eas. Visite, ofere\u00e7a e garanta o pedido.','');
   }
   T.push('Bora buscar cada um! \uD83D\uDE80','_GERENCION QG_');
@@ -1047,9 +1049,11 @@ function radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend){
   window._radarPkg={cod:cod,nome:nome,churn:churn,naopos:naopos,npTotal:npTotal||0};
   var CAPS=60;
   function scrList(arr,tipo){
-    var h=arr.slice(0,CAPS).map(function(x){
-      if(tipo==='churn')return '<div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:6px 2px;border-bottom:1px solid var(--b)"><span style="color:var(--t);font-weight:600">'+x.cod+'</span><span style="color:var(--t3)">'+(x.dt||'')+'</span></div>';
-      return '<div style="font-size:12px;padding:6px 2px;border-bottom:1px solid var(--b)"><div style="color:var(--t);font-weight:600">'+(x.cliente||x.cod)+'</div><div style="color:var(--t3);font-size:11px">'+[x.municipio,(x.ult?'ult. '+x.ult:'')].filter(Boolean).join(' \u00b7 ')+'</div></div>';
+    var h='';
+    if(tipo==='churn')h+='<div style="display:flex;justify-content:space-between;font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--t3);text-transform:uppercase;padding:0 2px 6px;border-bottom:1px solid var(--b2)"><span>C\u00f3digo / Cliente</span><span>\u00daltima compra</span></div>';
+    h+=arr.slice(0,CAPS).map(function(x){
+      if(tipo==='churn')return '<div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:6px 2px;border-bottom:1px solid var(--b)"><span style="color:var(--t);font-weight:600">'+x.cod+(x.cliente?' \u2014 '+x.cliente:'')+'</span><span style="color:var(--t3);flex-shrink:0">'+(x.dt||'')+'</span></div>';
+      return '<div style="font-size:12px;padding:6px 2px;border-bottom:1px solid var(--b)"><div style="color:var(--t);font-weight:600">'+(x.cod?x.cod+' \u2014 ':'')+(x.cliente||'')+'</div><div style="color:var(--t3);font-size:11px">'+[x.municipio,(x.ult?'ult. '+x.ult:'')].filter(Boolean).join(' \u00b7 ')+'</div></div>';
     }).join('');
     if(arr.length>CAPS)h+='<div style="font-size:11px;color:var(--t3);padding:8px 2px 0">+ '+(arr.length-CAPS)+' mais (v\u00e3o todos no card e no texto)</div>';
     return h;
@@ -1076,33 +1080,57 @@ function radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend){
 function radarGerarCard(){
   if(typeof html2canvas==='undefined'){toast('Aguarde o gerador de imagem e tente de novo.');return;}
   var p=window._radarPkg;if(!p){toast('Monte o pacote primeiro.');return;}
-  var CAP=40;
-  function listaHTML(arr,tipo){
-    var itens=arr.slice(0,CAP).map(function(x){
-      if(tipo==='churn'){return '<div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><span style="color:#E2E8F0;font-weight:600">'+x.cod+'</span><span style="color:#94A3B8">'+(x.dt||'')+'</span></div>';}
-      return '<div style="font-size:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><div style="color:#E2E8F0;font-weight:600">'+(x.cliente||x.cod)+'</div><div style="color:#94A3B8;font-size:11px">'+[x.municipio,(x.ult?'ult. '+x.ult:'')].filter(Boolean).join(' \u00b7 ')+'</div></div>';
-    }).join('');
-    if(arr.length>CAP)itens+='<div style="font-size:11px;color:#7DD3FC;padding:8px 0 0">+ '+(arr.length-CAP)+' mais na mensagem do WhatsApp</div>';
-    return itens;
-  }
-  var churnSec=p.churn.length?'<div style="padding:2px 28px 4px"><div style="font-size:13px;font-weight:800;color:#FCA5A5;margin:8px 0 6px">\uD83D\uDD34 SEU CHURN \u2014 meta \u2264 9% ('+p.churn.length+')</div>'+listaHTML(p.churn,'churn')+'</div>':'';
-  var npSec=p.naopos.length?'<div style="padding:6px 28px 4px"><div style="font-size:13px;font-weight:800;color:#FCD34D;margin:8px 0 6px">\uD83D\uDFE1 N\u00c3O POSITIVADOS ('+p.naopos.length+')</div>'+listaHTML(p.naopos,'np')+'</div>':'';
+  var w=document.getElementById('radarCardImgWrap');if(w)w.innerHTML='';
+  window._radarImgs={};
+  var jobs=[];
+  if(p.churn.length)jobs.push('churn');
+  if(p.naopos.length)jobs.push('naopos');
+  if(!jobs.length){toast('Nada pra gerar.');return;}
+  toast('Gerando '+jobs.length+' card(s)...');
+  var i=0;
+  (function next(){
+    if(i>=jobs.length){toast('Card(s) pronto(s)!');return;}
+    var tipo=jobs[i];i++;
+    var card=radarBuildCardEl(tipo,p);
+    document.body.appendChild(card);
+    html2canvas(card,{backgroundColor:null,scale:2,useCORS:true,logging:false}).then(function(canvas){
+      if(card.parentNode)document.body.removeChild(card);
+      var data=canvas.toDataURL('image/png');window._radarImgs[tipo]=data;
+      if(w){
+        var lbl=tipo==='churn'?'Card do Churn':'Card dos N\u00e3o Positivados';
+        var fn=tipo==='churn'?'Churn':'NaoPositivados';
+        var div=document.createElement('div');div.style.marginBottom='14px';
+        div.innerHTML='<div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:6px">'+lbl+'</div><img src="'+data+'" style="width:100%;border-radius:12px;border:1px solid var(--b);margin-bottom:8px"><button class="btn bp" style="width:100%" onclick="radarBaixarImg(\''+tipo+'\',\''+fn+'\')">\u2B07\uFE0F Baixar '+lbl+'</button>';
+        w.appendChild(div);
+      }
+      next();
+    }).catch(function(){if(card.parentNode)document.body.removeChild(card);toast('Erro ao gerar um card.');next();});
+  })();
+}
+function radarBuildCardEl(tipo,p){
   var card=document.createElement('div');
   card.style.cssText='position:fixed;left:-9999px;top:0;width:460px;background:linear-gradient(160deg,#0B1929 0%,#0F1F35 100%);font-family:Inter,sans-serif;border-radius:22px;overflow:hidden';
-  card.innerHTML='<div style="background:linear-gradient(135deg,#1E3A8A,#3B82F6);padding:22px 28px"><div style="font-size:14px;font-weight:800;letter-spacing:2px;color:#fff">\uD83D\uDCE1 ACOMPANHAMENTO</div><div style="font-size:21px;font-weight:900;color:#fff;margin-top:3px">'+p.cod+' \u2014 '+p.nome+'</div><div style="font-size:13px;color:rgba(255,255,255,0.75);margin-top:4px;font-weight:600">Sua semana de ca\u00e7a \u00b7 '+new Date().toLocaleDateString('pt-BR')+'</div></div>'
-    +'<div style="padding:18px 28px 4px;display:flex;gap:12px"><div style="flex:1;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.35);border-radius:14px;padding:14px;text-align:center"><div style="font-size:30px;font-weight:900;color:#FCA5A5">'+p.churn.length+'</div><div style="font-size:11px;color:#FCA5A5;font-weight:700">em CHURN</div></div><div style="flex:1;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.35);border-radius:14px;padding:14px;text-align:center"><div style="font-size:30px;font-weight:900;color:#FCD34D">'+p.naopos.length+'</div><div style="font-size:11px;color:#FCD34D;font-weight:700">N\u00c3O positivados</div></div></div>'
-    +churnSec+npSec
-    +'<div style="padding:10px 28px 24px"><div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:14px 16px"><div style="font-size:12px;color:#D8E4F2;line-height:1.6;font-weight:600">Cliente que some volta com uma <b style="color:#7DD3FC">liga\u00e7\u00e3o</b>, n\u00e3o com desconto. Corra atr\u00e1s de cada um esta semana! \uD83D\uDE80</div></div><div style="display:flex;align-items:center;gap:8px;margin-top:14px"><div style="font-size:22px;font-weight:900;color:#3B82F6">QG</div><div style="font-size:13px;color:#8098B8">Gerencion \u00b7 Radar de Clientes</div></div></div>';
-  document.body.appendChild(card);toast('Gerando card...');
-  html2canvas(card,{backgroundColor:null,scale:2,useCORS:true,logging:false}).then(function(canvas){
-    if(card.parentNode)document.body.removeChild(card);
-    var data=canvas.toDataURL('image/png');window._radarImg=data;
-    var w=document.getElementById('radarCardImgWrap');
-    if(w)w.innerHTML='<img src="'+data+'" style="width:100%;border-radius:12px;border:1px solid var(--b);margin:0 0 10px"><button class="btn bp" style="width:100%;margin-bottom:10px" onclick="radarBaixarCard()">\u2B07\uFE0F Baixar card</button>';
-    toast('Card pronto!');
-  }).catch(function(){if(card.parentNode)document.body.removeChild(card);toast('Erro ao gerar o card.');});
+  var dataHoje=new Date().toLocaleDateString('pt-BR');
+  if(tipo==='churn'){
+    var linhas=p.churn.map(function(x){
+      return '<div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.07)"><span style="color:#E2E8F0;font-weight:600;flex:1">'+x.cod+(x.cliente?' \u2014 '+x.cliente:'')+'</span><span style="color:#94A3B8;flex-shrink:0">'+(x.dt||'-')+'</span></div>';
+    }).join('');
+    card.innerHTML='<div style="background:linear-gradient(135deg,#7F1D1D,#EF4444);padding:22px 28px"><div style="font-size:14px;font-weight:800;letter-spacing:2px;color:#fff">\uD83D\uDD34 SEU CHURN</div><div style="font-size:21px;font-weight:900;color:#fff;margin-top:3px">'+p.cod+' \u2014 '+p.nome+'</div><div style="font-size:13px;color:rgba(255,255,255,0.85);margin-top:4px;font-weight:600">'+p.churn.length+' clientes \u00b7 meta \u2264 9% \u00b7 '+dataHoje+'</div></div>'
+      +'<div style="padding:16px 28px 8px"><div style="display:flex;justify-content:space-between;font-size:11px;font-weight:800;letter-spacing:.5px;color:#FCA5A5;text-transform:uppercase;padding-bottom:8px;border-bottom:2px solid rgba(252,165,165,0.3)"><span>C\u00f3digo / Cliente</span><span>\u00daltima compra</span></div>'+linhas+'</div>'
+      +'<div style="padding:12px 28px 24px"><div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:14px 16px;font-size:12px;color:#D8E4F2;line-height:1.6;font-weight:600">Cliente que some volta com uma <b style="color:#FCA5A5">liga\u00e7\u00e3o</b>, n\u00e3o com desconto. Corra atr\u00e1s de cada um esta semana! \uD83D\uDE80</div><div style="display:flex;align-items:center;gap:8px;margin-top:14px"><div style="font-size:22px;font-weight:900;color:#3B82F6">QG</div><div style="font-size:13px;color:#8098B8">Gerencion \u00b7 Radar de Clientes</div></div></div>';
+  }else{
+    var linhasN=p.naopos.map(function(x){
+      var head=(x.cod?x.cod+' \u2014 ':'')+(x.cliente||'');
+      var sub=[x.municipio,(x.ult?'ult. '+x.ult:'')].filter(Boolean).join(' \u00b7 ');
+      return '<div style="font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.07)"><div style="color:#E2E8F0;font-weight:600">'+head+'</div>'+(sub?'<div style="color:#94A3B8;font-size:11px;margin-top:2px">'+sub+'</div>':'')+'</div>';
+    }).join('');
+    card.innerHTML='<div style="background:linear-gradient(135deg,#92400E,#F59E0B);padding:22px 28px"><div style="font-size:14px;font-weight:800;letter-spacing:2px;color:#fff">\uD83D\uDFE1 NAO POSITIVADOS</div><div style="font-size:21px;font-weight:900;color:#fff;margin-top:3px">'+p.cod+' \u2014 '+p.nome+'</div><div style="font-size:13px;color:rgba(255,255,255,0.9);margin-top:4px;font-weight:600">'+p.naopos.length+' clientes sem comprar este m\u00eas \u00b7 '+dataHoje+'</div></div>'
+      +'<div style="padding:16px 28px 8px"><div style="font-size:11px;font-weight:800;letter-spacing:.5px;color:#FCD34D;text-transform:uppercase;padding-bottom:8px;border-bottom:2px solid rgba(252,211,77,0.3)">C\u00f3digo / Cliente / Local</div>'+linhasN+'</div>'
+      +'<div style="padding:12px 28px 24px"><div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:14px 16px;font-size:12px;color:#D8E4F2;line-height:1.6;font-weight:600">Visite, ofere\u00e7a e garanta o pedido. Positivar cada um pesa no seu pr\u00eamio! \uD83D\uDE80</div><div style="display:flex;align-items:center;gap:8px;margin-top:14px"><div style="font-size:22px;font-weight:900;color:#3B82F6">QG</div><div style="font-size:13px;color:#8098B8">Gerencion \u00b7 Radar de Clientes</div></div></div>';
+  }
+  return card;
 }
-function radarBaixarCard(){if(!window._radarImg){toast('Gere o card primeiro.');return;}var a=document.createElement('a');a.download='Radar-'+Date.now()+'.png';a.href=window._radarImg;document.body.appendChild(a);a.click();document.body.removeChild(a);toast('Card salvo! Anexe no zap do vendedor.');}
+function radarBaixarImg(tipo,fn){var d=window._radarImgs&&window._radarImgs[tipo];if(!d){toast('Gere o card primeiro.');return;}var a=document.createElement('a');a.download='Radar-'+fn+'-'+Date.now()+'.png';a.href=d;document.body.appendChild(a);a.click();document.body.removeChild(a);toast('Card salvo! Anexe no zap.');}
 function toast(m){var e=document.getElementById('toast');e.textContent=m;e.classList.add('on');setTimeout(function(){e.classList.remove('on');},2800);}
 function supaFetch(path,opts){return fetch(SUPA_URL+'/rest/v1/'+path,Object.assign({headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'}},opts));}
 function getDevId(){var id=localStorage.getItem('QG_DEV');if(!id){id='D_'+Math.random().toString(36).substr(2,10).toUpperCase()+'_'+Date.now();localStorage.setItem('QG_DEV',id);}return id;}

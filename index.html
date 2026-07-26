@@ -1033,20 +1033,15 @@ function radarMontarPacote(){
 function radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend){
   var box=document.getElementById('radarPacoteBox');if(!box)return;
   var dataHoje=new Date().toLocaleDateString('pt-BR');
-  var T=['\uD83D\uDCCA *ACOMPANHAMENTO \u2014 '+cod+' '+nome.toUpperCase()+'*','',dataHoje,''];
-  if(churn.length){
-    T.push('\uD83D\uDD34 *SEU CHURN* (clientes que pararam de comprar)','Meta: churn \u2264 9%. Acompanhe e foque!');
-    churn.forEach(function(x){T.push('\u2022 '+x.cod+(x.cliente?' - '+x.cliente:'')+(x.dt?' \u2014 ult. compra '+x.dt:''));});
-    T.push('','S\u00e3o '+churn.length+' clientes. Cliente que some volta com uma liga\u00e7\u00e3o, n\u00e3o com desconto. Corra atr\u00e1s ainda esta semana.','');
-  }
-  if(naopos.length){
-    T.push('\uD83D\uDFE1 *N\u00c3O POSITIVADOS DO M\u00caS*');
-    naopos.forEach(function(x){T.push('\u2022 '+(x.cod?x.cod+' - ':'')+(x.cliente||'')+(x.municipio?' ('+x.municipio+')':'')+(x.ult?' \u2014 ult. '+x.ult:''));});
-    T.push('','S\u00e3o '+naopos.length+' clientes da sua carteira sem comprar este m\u00eas. Visite, ofere\u00e7a e garanta o pedido.','');
-  }
-  T.push('Bora buscar cada um! \uD83D\uDE80','_GERENCION QG_');
-  window._radarTexto=T.join('\n');
   window._radarPkg={cod:cod,nome:nome,churn:churn,naopos:naopos,npTotal:npTotal||0};
+  var Tc=['\uD83D\uDD34 *SEU CHURN \u2014 '+cod+' '+nome.toUpperCase()+'*','',dataHoje,'Meta: churn \u2264 9%. Acompanhe e foque!',''];
+  churn.forEach(function(x){Tc.push('\u2022 '+x.cod+(x.cliente?' - '+x.cliente:'')+(x.dt?' \u2014 ult. compra '+x.dt:''));});
+  Tc.push('','S\u00e3o '+churn.length+' clientes. Cliente que some volta com uma liga\u00e7\u00e3o, n\u00e3o com desconto. Corra atr\u00e1s esta semana! \uD83D\uDE80','_GERENCION QG_');
+  window._radarTxtChurn=Tc.join('\n');
+  var Tn=['\uD83D\uDFE1 *N\u00c3O POSITIVADOS \u2014 '+cod+' '+nome.toUpperCase()+'*','',dataHoje,''];
+  naopos.forEach(function(x){Tn.push('\u2022 '+(x.cod?x.cod+' - ':'')+(x.cliente||'')+(x.municipio?' ('+x.municipio+')':'')+(x.ult?' \u2014 ult. '+x.ult:''));});
+  Tn.push('','S\u00e3o '+naopos.length+' clientes da sua carteira sem comprar este m\u00eas. Visite, ofere\u00e7a e garanta o pedido! \uD83D\uDE80','_GERENCION QG_');
+  window._radarTxtNaopos=Tn.join('\n');
   var CAPS=60;
   function scrList(arr,tipo){
     var h='';
@@ -1063,49 +1058,40 @@ function radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend){
     if(npTemVend)diag='<div style="font-size:11px;color:var(--gn);margin-bottom:10px">\u2713 Separei os '+naopos.length+' n\u00e3o-positivados do '+cod+' (de '+npTotal+' colados).</div>';
     else diag='<div style="background:var(--rd2);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--rd);line-height:1.5">\u26A0 N\u00e3o achei a coluna <b>VENDEDOR</b> no que voc\u00ea colou, ent\u00e3o considerei todos os '+npTotal+' como do '+nome+'. Se colou de v\u00e1rios vendedores, cole a lista do BI <b>com a coluna VENDEDOR</b> \u2014 a\u00ed eu separo sozinho.</div>';
   }
-  var churnAlerta=churn.length>30?'<div style="background:var(--rd2);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--rd);line-height:1.5">\u26A0 '+churn.length+' no churn parece muito pra um vendedor. O churn n\u00e3o tem coluna de vendedor \u2014 confira se colou s\u00f3 os do '+nome+' (use o "limpar" e recomece se preciso).</div>':'';
+  var churnAlerta=churn.length>30?'<div style="background:var(--rd2);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--rd);line-height:1.5">\u26A0 '+churn.length+' no churn parece muito pra um vendedor. O churn n\u00e3o tem coluna de vendedor \u2014 confira se colou s\u00f3 os do '+nome+' (use o "limpar").</div>':'';
+  var secChurn=churn.length?('<div style="border-top:1px solid var(--b);margin-top:6px;padding-top:14px">'
+    +'<div style="font-size:13px;font-weight:800;color:var(--rd);margin-bottom:8px">\uD83D\uDD34 Churn do '+cod+' \u00b7 '+churn.length+'</div>'
+    +churnAlerta+scrList(churn,'churn')
+    +'<div id="radarWrapChurn" style="margin-top:12px"></div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn bp" style="flex:1;min-width:140px" onclick="radarGerarCard(\'churn\')">\uD83D\uDDBC\uFE0F Gerar card do churn</button><a href="https://wa.me/?text='+encodeURIComponent(window._radarTxtChurn)+'" target="_blank" rel="noopener" class="btn bg" style="flex:1;min-width:130px;text-decoration:none;justify-content:center">\uD83D\uDCAC Texto do churn</a></div></div>'):'';
+  var secNp=naopos.length?('<div style="border-top:1px solid var(--b);margin-top:18px;padding-top:14px">'
+    +'<div style="font-size:13px;font-weight:800;color:var(--am);margin-bottom:8px">\uD83D\uDFE1 N\u00e3o positivados do '+cod+' \u00b7 '+naopos.length+'</div>'
+    +diag+scrList(naopos,'np')
+    +'<div id="radarWrapNaopos" style="margin-top:12px"></div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn bp" style="flex:1;min-width:140px" onclick="radarGerarCard(\'naopos\')">\uD83D\uDDBC\uFE0F Gerar card dos nao-pos</button><a href="https://wa.me/?text='+encodeURIComponent(window._radarTxtNaopos)+'" target="_blank" rel="noopener" class="btn bg" style="flex:1;min-width:130px;text-decoration:none;justify-content:center">\uD83D\uDCAC Texto dos nao-pos</a></div></div>'):'';
   box.style.display='block';
   box.innerHTML='<div class="card"><div class="ct">Pacote de '+cod+' - '+nome+'</div>'
-    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px">'
     +'<div style="flex:1;min-width:110px;background:var(--rd2);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--rd)">'+churn.length+'</div><div style="font-size:11px;color:var(--t2)">em churn</div></div>'
     +'<div style="flex:1;min-width:110px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--am)">'+naopos.length+'</div><div style="font-size:11px;color:var(--t2)">nao positivados'+((npTotal&&npTotal>naopos.length)?'<br><span style="color:var(--t3)">de '+npTotal+' colados</span>':'')+'</div></div></div>'
-    +churnAlerta+diag
-    +(churn.length?'<div style="font-size:12px;font-weight:800;color:var(--rd);margin:6px 0 4px">\uD83D\uDD34 Churn do '+cod+'</div>'+scrList(churn,'churn'):'')
-    +(naopos.length?'<div style="font-size:12px;font-weight:800;color:var(--am);margin:16px 0 4px">\uD83D\uDFE1 N\u00e3o positivados do '+cod+'</div>'+scrList(naopos,'np'):'')
-    +'<div id="radarCardImgWrap" style="margin-top:16px"></div>'
-    +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn bp" style="flex:1;min-width:150px" onclick="radarGerarCard()">\uD83D\uDCF7 Gerar card</button>'
-    +'<a href="https://wa.me/?text='+encodeURIComponent(window._radarTexto)+'" target="_blank" rel="noopener" class="btn bg" style="flex:1;min-width:130px;text-decoration:none;justify-content:center">\uD83D\uDCAC Texto no WhatsApp</a></div></div>';
+    +secChurn+secNp+'</div>';
   box.scrollIntoView({behavior:'smooth',block:'start'});
 }
-function radarGerarCard(){
+function radarGerarCard(tipo){
   if(typeof html2canvas==='undefined'){toast('Aguarde o gerador de imagem e tente de novo.');return;}
   var p=window._radarPkg;if(!p){toast('Monte o pacote primeiro.');return;}
-  var w=document.getElementById('radarCardImgWrap');if(w)w.innerHTML='';
-  window._radarImgs={};
-  var jobs=[];
-  if(p.churn.length)jobs.push('churn');
-  if(p.naopos.length)jobs.push('naopos');
-  if(!jobs.length){toast('Nada pra gerar.');return;}
-  toast('Gerando '+jobs.length+' card(s)...');
-  var i=0;
-  (function next(){
-    if(i>=jobs.length){toast('Card(s) pronto(s)!');return;}
-    var tipo=jobs[i];i++;
-    var card=radarBuildCardEl(tipo,p);
-    document.body.appendChild(card);
-    html2canvas(card,{backgroundColor:null,scale:2,useCORS:true,logging:false}).then(function(canvas){
-      if(card.parentNode)document.body.removeChild(card);
-      var data=canvas.toDataURL('image/png');window._radarImgs[tipo]=data;
-      if(w){
-        var lbl=tipo==='churn'?'Card do Churn':'Card dos N\u00e3o Positivados';
-        var fn=tipo==='churn'?'Churn':'NaoPositivados';
-        var div=document.createElement('div');div.style.marginBottom='14px';
-        div.innerHTML='<div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:6px">'+lbl+'</div><img src="'+data+'" style="width:100%;border-radius:12px;border:1px solid var(--b);margin-bottom:8px"><button class="btn bp" style="width:100%" onclick="radarBaixarImg(\''+tipo+'\',\''+fn+'\')">\u2B07\uFE0F Baixar '+lbl+'</button>';
-        w.appendChild(div);
-      }
-      next();
-    }).catch(function(){if(card.parentNode)document.body.removeChild(card);toast('Erro ao gerar um card.');next();});
-  })();
+  if((tipo==='churn'&&!p.churn.length)||(tipo==='naopos'&&!p.naopos.length)){toast('Lista vazia.');return;}
+  var wrap=document.getElementById(tipo==='churn'?'radarWrapChurn':'radarWrapNaopos');
+  var card=radarBuildCardEl(tipo,p);
+  document.body.appendChild(card);toast('Gerando card...');
+  html2canvas(card,{backgroundColor:null,scale:2,useCORS:true,logging:false}).then(function(canvas){
+    if(card.parentNode)document.body.removeChild(card);
+    var data=canvas.toDataURL('image/png');
+    window._radarImgs=window._radarImgs||{};window._radarImgs[tipo]=data;
+    var fn=tipo==='churn'?'Churn':'NaoPositivados';
+    if(wrap)wrap.innerHTML='<img src="'+data+'" style="width:100%;border-radius:12px;border:1px solid var(--b);margin-bottom:8px"><button class="btn bp" style="width:100%" onclick="radarBaixarImg(\''+tipo+'\',\''+fn+'\')">\u2B07\uFE0F Baixar card</button>';
+    toast('Card pronto!');
+  }).catch(function(){if(card.parentNode)document.body.removeChild(card);toast('Erro ao gerar o card.');});
 }
 function radarBuildCardEl(tipo,p){
   var card=document.createElement('div');

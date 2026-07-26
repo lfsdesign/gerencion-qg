@@ -549,7 +549,13 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
         <button class="btn bs" onclick="prospToggleGuia()" style="margin-top:8px;width:100%">&#10067; Como usar (passo a passo)</button>
         <div id="prospGuiaFull" style="display:none;margin-top:10px"></div>
       </div>
+      <div id="prospPreviewBar"></div>
       <div id="prospAdmin" style="display:none">
+        <div class="admin-box" style="border-color:rgba(59,130,246,0.3)">
+          <div class="admin-title" style="color:#3B82F6">&#128269; Ver como o vendedor v&#234;</div>
+          <div style="font-size:11px;color:var(--t2);margin-bottom:10px">Clique num nome pra ver a tela exatamente como ele v&#234; &mdash; &#233; s&#243; simula&#231;&#227;o, n&#227;o altera nada.</div>
+          <div id="prospVerComo" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+        </div>
         <div class="admin-box">
           <div class="admin-title">&#128274; Coordenador &middot; Cadastrar oportunidade</div>
           <div class="fg"><label class="fl">Vendedor</label><select id="prospVend" class="inp" onchange="carregarProspeccao()"><option value="">Selecione o vendedor...</option></select></div>
@@ -1274,11 +1280,21 @@ function carregarProspeccao(){
   prospSetGuia();
   prospCarregarExcluir();
   var isCoord=eu&&eu.t==='coord';
+  var pa=document.getElementById('prospAdmin');if(pa)pa.style.display=isCoord?'block':'none';
+  var pbar=document.getElementById('prospPreviewBar');
+  if(pbar)pbar.innerHTML=(_euReal&&eu&&eu.t==='vend')?('<div style="background:#3B82F6;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><span style="font-size:12px;font-weight:700;color:#fff">\uD83D\uDC41\uFE0F Vendo como '+eu.n+' \u2014 simula\u00e7\u00e3o</span><button onclick="prospVoltarCoordenador()" style="padding:6px 14px;background:#fff;border:none;border-radius:8px;color:#3B82F6;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">Voltar ao coordenador</button></div>'):'';
+  if(isCoord)prospInitVerComo();
   var intro=document.getElementById('prospIntro');
-  if(intro)intro.innerHTML=isCoord?'<strong style="color:#10B981">\uD83D\uDCA1 Cadastre oportunidades e jogue pra cada vendedor.</strong> Eles veem a fila deles aqui, com Waze e telefone, e marcam quando fecham. Voc\u00ea acompanha no painel.':'<strong style="color:#10B981">\uD83D\uDCA1 Essas s\u00e3o suas oportunidades!</strong> Clientes novos pra voc\u00ea visitar e fechar. Use o Waze pra chegar, e marque aqui quando fechar. Bora crescer! \uD83D\uDE80';
+  if(intro)intro.innerHTML=isCoord?'<strong style="color:#10B981">\uD83D\uDCA1 Cadastre oportunidades e jogue pra cada vendedor.</strong> Eles veem a fila deles aqui, com Waze e telefone, e marcam quando fecham. Voc\u00ea acompanha no painel.':'';
   var url=isCoord?'prospeccao?order=criado_em.desc':'prospeccao?vendedor_cod=eq.'+prospCodAtual()+'&order=criado_em.desc';
   supaFetch(url).then(function(r){return r.json();}).then(function(d){prospCache=d||[];if(isCoord)renderProspBoard();renderProspFila();}).catch(function(){var f=document.getElementById('prospFilaBox');if(f)f.innerHTML='<div class="empty">Erro ao carregar. Rodou o SQL da tabela prospeccao?</div>';});
 }
+function prospInitVerComo(){
+  var box=document.getElementById('prospVerComo');if(!box)return;
+  box.innerHTML=USERS.filter(function(u){return u.t==='vend';}).map(function(u){return '<button onclick="prospPreviewComoVendedor(\''+u.c+'\')" style="padding:7px 12px;background:var(--s1);border:1px solid var(--b2);border-radius:8px;color:var(--t);font-size:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">'+u.n+'</button>';}).join('');
+}
+function prospPreviewComoVendedor(codigo){var alvo=USERS.find(function(x){return x.c===codigo&&x.t==='vend';});if(!alvo){toast('Vendedor nao encontrado.');return;}if(!_euReal)_euReal=eu;eu=alvo;try{window.scrollTo(0,0);}catch(e){}carregarProspeccao();}
+function prospVoltarCoordenador(){if(_euReal){eu=_euReal;_euReal=null;}carregarProspeccao();toast('Voltou a ser coordenador.');}
 function prospSetGuia(){
   var isCoord=eu&&eu.t==='coord';
   var fixa=document.getElementById('prospGuiaFixa');var full=document.getElementById('prospGuiaFull');
@@ -1314,7 +1330,18 @@ function renderProspFila(){
   var pend=lista.filter(function(p){return p.status==='pendente';});
   var fech=lista.filter(function(p){return p.status==='fechado';});
   var rec=lista.filter(function(p){return p.status==='recusado';});
-  var html='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">'
+  var boasvindas='';
+  if(!isCoord){
+    var primeiro=((eu&&eu.n)||'').split(' ')[0]||'';
+    var msgTop=pend.length?('Voc\u00ea tem <b style="color:#34D399">'+pend.length+' oportunidade'+(pend.length>1?'s':'')+'</b> esperando pra fechar. Bora! \uD83D\uDE80'):'No momento sua fila est\u00e1 zerada \u2014 assim que chegar cliente novo, aparece aqui. \uD83D\uDC4A';
+    boasvindas='<div style="background:linear-gradient(135deg,rgba(16,185,129,0.18),rgba(59,130,246,0.1));border:1px solid rgba(16,185,129,0.35);border-radius:14px;padding:16px 18px;margin-bottom:16px">'
+      +'<div style="font-size:17px;font-weight:900;color:var(--t);margin-bottom:4px">\uD83D\uDC4B Bora, '+(primeiro||'time')+'!</div>'
+      +'<div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:12px">'+msgTop+'</div>'
+      +'<div style="background:rgba(0,0,0,0.15);border-radius:10px;padding:12px 14px">'
+      +'<div style="font-size:11px;font-weight:800;letter-spacing:.5px;color:#34D399;text-transform:uppercase;margin-bottom:8px">Como funciona</div>'
+      +'<div style="font-size:12px;color:var(--t);line-height:1.7">1\uFE0F\u20E3 Toque no <b>Waze</b> ou <b>Maps</b> pra chegar, e no <b>Ligar</b> pra falar antes.<br>2\uFE0F\u20E3 Visite e <b>ofere\u00e7a</b> \u2014 apresente, mostre o valor.<br>3\uFE0F\u20E3 Fechou? toque <b>\uD83C\uDF89 Fechei!</b> e ponha o c\u00f3digo. N\u00e3o rolou? conte rapidinho.</div></div></div>';
+  }
+  var html=boasvindas+'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">'
     +'<div style="flex:1;min-width:90px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#3B82F6">'+pend.length+'</div><div style="font-size:11px;color:var(--t2)">pra ca\u00e7ar</div></div>'
     +'<div style="flex:1;min-width:90px;background:var(--gn2);border:1px solid rgba(16,185,129,.25);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--gn)">'+fech.length+'</div><div style="font-size:11px;color:var(--t2)">fechados \uD83C\uDF89</div></div>'
     +'<div style="flex:1;min-width:90px;background:var(--s1);border:1px solid var(--b);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--t3)">'+rec.length+'</div><div style="font-size:11px;color:var(--t2)">n\u00e3o rolou</div></div></div>';

@@ -1145,7 +1145,7 @@ function radarGerarCard(tipo){
     if(card.parentNode)document.body.removeChild(card);
     var data=canvas.toDataURL('image/png');
     window._radarImgs=window._radarImgs||{};window._radarImgs[tipo]=data;
-    var fn=tipo==='churn'?'Churn':'NaoPositivados';
+    var fn=tipo==='churn'?'Churn':(tipo==='acomp'?'Acompanhamento':'NaoPositivados');
     if(wrap)wrap.innerHTML='<img src="'+data+'" style="width:100%;border-radius:12px;border:1px solid var(--b);margin-bottom:8px"><button class="btn bp" style="width:100%" onclick="radarBaixarImg(\''+tipo+'\',\''+fn+'\')">\u2B07\uFE0F Baixar card</button>';
     toast('Card pronto!');
   }).catch(function(){if(card.parentNode)document.body.removeChild(card);toast('Erro ao gerar o card.');});

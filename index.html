@@ -568,11 +568,6 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
         <input id="mixBusca" class="inp" placeholder="&#128269; Buscar produto ou codigo..." oninput="filtrarMix()" style="flex:1;min-width:200px">
         <select id="mixDep" class="inp" onchange="filtrarMix()" style="flex:1;min-width:140px">
           <option value="">Todos os departamentos</option>
-          <option value="Bebidas Alcoolicas">Bebidas Alcoolicas</option>
-          <option value="Bebidas N&#227;o Alcoolicas">Bebidas Nao Alcoolicas</option>
-          <option value="Congelados e Resfriados">Congelados e Resfriados</option>
-          <option value="Limpeza/Higiene">Limpeza/Higiene</option>
-          <option value="Mercearia Seca">Mercearia Seca</option>
         </select>
         <button id="mixFocoBtn" class="btn bs" onclick="toggleMixSoFoco()" style="flex-shrink:0">&#127919; S&#243; o Foco do M&#234;s</button>
       </div>
@@ -632,10 +627,29 @@ function carregarMix(){
     return r.json();
   }).then(function(data){
     mixCache=data||[];
+    preencherMixDep();
     filtrarMix();
   }).catch(function(e){
     document.getElementById('mixLista').innerHTML='<div class="empty">Erro ao carregar Mix Estrategico.</div>';
   });
+}
+function preencherMixDep(){
+  var sel=document.getElementById('mixDep');
+  if(!sel)return;
+  var atual=sel.value;
+  var deps={};
+  mixCache.forEach(function(p){if(p.departamento)deps[p.departamento]=(deps[p.departamento]||0)+1;});
+  var nomes=Object.keys(deps).sort();
+  sel.innerHTML='';
+  var o0=document.createElement('option');o0.value='';o0.textContent='Todos os departamentos';sel.appendChild(o0);
+  nomes.forEach(function(d){
+    var o=document.createElement('option');
+    o.value=d;
+    o.textContent=d+' ('+deps[d]+')';
+    if(d===atual)o.selected=true;
+    sel.appendChild(o);
+  });
+  if(atual&&nomes.indexOf(atual)<0)sel.value='';
 }
 
 function renderFocoBloco(focoItens,isAdmin){

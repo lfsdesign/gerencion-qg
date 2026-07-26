@@ -1011,13 +1011,14 @@ function radarMontarPacote(){
   var churn=radarChurnAcc.slice();
   var naoposTxt=(document.getElementById('radarNaoposTxt')||{value:''}).value;
   if(!churn.length&&!naoposTxt.trim()){toast('Adicione o churn e/ou cole os nao-positivados.');return;}
-  var naopos=[];var npTotal=0;
+  var naopos=[];var npTotal=0;var npTemVend=false;
   naoposTxt.split(/\r?\n/).forEach(function(l){
     if(!l.trim())return;var low=l.toLowerCase();
     if(low.indexOf('vendedor')>=0&&low.indexOf('cliente')>=0)return;
     if(low.trim().indexOf('total')===0)return;
     var c=l.split('\t');
     var temVend=/\d{2,}\s*-/.test(c[0]||'');
+    if(temVend)npTemVend=true;
     var off=temVend?1:0;
     var cc=radarCod(c[off]);var cli=(c[off+1]||'').trim();var mun=(c[off+2]||'').trim();var ult=(c[off+6]||c[off+5]||'').trim();
     if(!cli&&!cc)return;
@@ -1025,9 +1026,9 @@ function radarMontarPacote(){
     if(temVend){var vc=radarCod((c[0]||'').split('-')[0]);if(cod&&vc&&vc!==cod)return;}
     naopos.push({cod:cc,cliente:cli,municipio:mun,ult:ult});
   });
-  radarRenderPacote(cod,nome,churn,naopos,npTotal);
+  radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend);
 }
-function radarRenderPacote(cod,nome,churn,naopos,npTotal){
+function radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend){
   var box=document.getElementById('radarPacoteBox');if(!box)return;
   var dataHoje=new Date().toLocaleDateString('pt-BR');
   var T=['\uD83D\uDCCA *ACOMPANHAMENTO \u2014 '+cod+' '+nome.toUpperCase()+'*','',dataHoje,''];
@@ -1044,17 +1045,32 @@ function radarRenderPacote(cod,nome,churn,naopos,npTotal){
   T.push('Bora buscar cada um! \uD83D\uDE80','_GERENCION QG_');
   window._radarTexto=T.join('\n');
   window._radarPkg={cod:cod,nome:nome,churn:churn,naopos:naopos,npTotal:npTotal||0};
-  var alerta=churn.length>30?'<div style="background:var(--rd2);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:9px 11px;margin-bottom:12px;font-size:11px;color:var(--rd)">\u26A0 '+churn.length+' no churn parece muito. Confira se colou s\u00f3 os deste vendedor.</div>':'';
+  var CAPS=60;
+  function scrList(arr,tipo){
+    var h=arr.slice(0,CAPS).map(function(x){
+      if(tipo==='churn')return '<div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:6px 2px;border-bottom:1px solid var(--b)"><span style="color:var(--t);font-weight:600">'+x.cod+'</span><span style="color:var(--t3)">'+(x.dt||'')+'</span></div>';
+      return '<div style="font-size:12px;padding:6px 2px;border-bottom:1px solid var(--b)"><div style="color:var(--t);font-weight:600">'+(x.cliente||x.cod)+'</div><div style="color:var(--t3);font-size:11px">'+[x.municipio,(x.ult?'ult. '+x.ult:'')].filter(Boolean).join(' \u00b7 ')+'</div></div>';
+    }).join('');
+    if(arr.length>CAPS)h+='<div style="font-size:11px;color:var(--t3);padding:8px 2px 0">+ '+(arr.length-CAPS)+' mais (v\u00e3o todos no card e no texto)</div>';
+    return h;
+  }
+  var diag='';
+  if(naopos.length){
+    if(npTemVend)diag='<div style="font-size:11px;color:var(--gn);margin-bottom:10px">\u2713 Separei os '+naopos.length+' n\u00e3o-positivados do '+cod+' (de '+npTotal+' colados).</div>';
+    else diag='<div style="background:var(--rd2);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--rd);line-height:1.5">\u26A0 N\u00e3o achei a coluna <b>VENDEDOR</b> no que voc\u00ea colou, ent\u00e3o considerei todos os '+npTotal+' como do '+nome+'. Se colou de v\u00e1rios vendedores, cole a lista do BI <b>com a coluna VENDEDOR</b> \u2014 a\u00ed eu separo sozinho.</div>';
+  }
+  var churnAlerta=churn.length>30?'<div style="background:var(--rd2);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--rd);line-height:1.5">\u26A0 '+churn.length+' no churn parece muito pra um vendedor. O churn n\u00e3o tem coluna de vendedor \u2014 confira se colou s\u00f3 os do '+nome+' (use o "limpar" e recomece se preciso).</div>':'';
   box.style.display='block';
-  box.innerHTML='<div class="card"><div class="ct">Pacote de '+nome+'</div>'
+  box.innerHTML='<div class="card"><div class="ct">Pacote de '+cod+' - '+nome+'</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">'
-    +'<div style="flex:1;min-width:110px;background:var(--rd2);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--rd)">'+churn.length+'</div><div style="font-size:11px;color:var(--t2)">churn (meta \u22649%)</div></div>'
-    +'<div style="flex:1;min-width:110px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--am)">'+naopos.length+'</div><div style="font-size:11px;color:var(--t2)">nao positivados'+((npTotal&&npTotal>naopos.length)?'<br><span style="color:var(--t3)">de '+npTotal+' da equipe</span>':'')+'</div></div></div>'
-    +alerta
-    +'<div id="radarCardImgWrap"></div>'
-    +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn bp" style="flex:1;min-width:150px" onclick="radarGerarCard()">\uD83D\uDCF7 Gerar card com as listas</button>'
-    +'<a href="https://wa.me/?text='+encodeURIComponent(window._radarTexto)+'" target="_blank" rel="noopener" class="btn bg" style="flex:1;min-width:130px;text-decoration:none;justify-content:center">\uD83D\uDCAC Texto no WhatsApp</a></div>'
-    +'<div style="font-size:11px;color:var(--t3);margin-top:10px;line-height:1.6">O card agora traz as listas. Gere, baixe e mande no zap do vendedor (o texto tamb\u00e9m tem tudo).</div></div>';
+    +'<div style="flex:1;min-width:110px;background:var(--rd2);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--rd)">'+churn.length+'</div><div style="font-size:11px;color:var(--t2)">em churn</div></div>'
+    +'<div style="flex:1;min-width:110px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--am)">'+naopos.length+'</div><div style="font-size:11px;color:var(--t2)">nao positivados'+((npTotal&&npTotal>naopos.length)?'<br><span style="color:var(--t3)">de '+npTotal+' colados</span>':'')+'</div></div></div>'
+    +churnAlerta+diag
+    +(churn.length?'<div style="font-size:12px;font-weight:800;color:var(--rd);margin:6px 0 4px">\uD83D\uDD34 Churn do '+cod+'</div>'+scrList(churn,'churn'):'')
+    +(naopos.length?'<div style="font-size:12px;font-weight:800;color:var(--am);margin:16px 0 4px">\uD83D\uDFE1 N\u00e3o positivados do '+cod+'</div>'+scrList(naopos,'np'):'')
+    +'<div id="radarCardImgWrap" style="margin-top:16px"></div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn bp" style="flex:1;min-width:150px" onclick="radarGerarCard()">\uD83D\uDCF7 Gerar card</button>'
+    +'<a href="https://wa.me/?text='+encodeURIComponent(window._radarTexto)+'" target="_blank" rel="noopener" class="btn bg" style="flex:1;min-width:130px;text-decoration:none;justify-content:center">\uD83D\uDCAC Texto no WhatsApp</a></div></div>';
   box.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function radarGerarCard(){

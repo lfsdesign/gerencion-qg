@@ -558,7 +558,7 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
         </div>
         <div class="admin-box">
           <div class="admin-title">&#128274; Coordenador &middot; Cadastrar oportunidade</div>
-          <div class="fg"><label class="fl">Vendedor</label><select id="prospVend" class="inp" onchange="carregarProspeccao()"><option value="">Selecione o vendedor...</option></select></div>
+          <div class="fg"><label class="fl">Vendedor</label><select id="prospVend" class="inp" onchange="prospTrocarVend()"><option value="">Selecione o vendedor...</option></select></div>
           <div class="fg"><label class="fl">Nome do estabelecimento</label><input id="prospNome" class="inp" placeholder="ex: Pizzaria Familia Lima"></div>
           <div class="fg"><label class="fl">Endere&#231;o</label><input id="prospEnd" class="inp" placeholder="Rua, n&#186;, bairro, cidade"></div>
           <div class="g2"><div class="fg"><label class="fl">Telefone</label><input id="prospTel" class="inp" placeholder="(22) 9...."></div><div class="fg"><label class="fl">CNPJ (opcional)</label><input id="prospCnpj" class="inp" placeholder="00.000.000/0001-00"></div></div>
@@ -578,7 +578,8 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
         <div class="admin-box">
           <div class="admin-title">&#128202; Painel da equipe</div>
           <div id="prospBoard"></div>
-          <button class="btn bp" onclick="prospGerarAlerta()" style="width:100%;margin-top:12px">&#128227; Gerar alerta pro zap (vendedor selecionado)</button>
+          <button class="btn bs" onclick="prospRemoverDuplicadas()" style="width:100%;margin-top:12px;border-color:rgba(245,158,11,0.4);color:#F59E0B">&#129529; Remover duplicadas (vendedor selecionado)</button>
+          <button class="btn bp" onclick="prospGerarAlerta()" style="width:100%;margin-top:8px">&#128227; Gerar alerta pro zap (vendedor selecionado)</button>
           <div id="prospAlertaWrap" style="margin-top:12px"></div>
         </div>
       </div>
@@ -1275,6 +1276,11 @@ function prospInitVendSelect(){
 }
 function prospCodAtual(){if(eu&&eu.t==='coord'){var s=document.getElementById('prospVend');return s&&s.value?s.value.split('|')[0]:'';}return ((eu&&eu.cd)||'').replace(/\D/g,'');}
 function prospNomeAtual(){if(eu&&eu.t==='coord'){var s=document.getElementById('prospVend');return s&&s.value?(s.value.split('|')[1]||''):'';}return (eu&&eu.n)||'';}
+function prospTrocarVend(){
+  ['prospLote','prospExclTxt','prospNome','prospEnd','prospTel','prospCnpj'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  var w=document.getElementById('prospAlertaWrap');if(w)w.innerHTML='';
+  carregarProspeccao();
+}
 function carregarProspeccao(){
   prospInitVendSelect();
   prospSetGuia();
@@ -1366,7 +1372,8 @@ function prospCard(p){
       +'<button class="btn bs" style="flex:1;min-width:110px" onclick="prospRecusar(\''+p.id+'\')">N\u00e3o rolou</button></div>';
   }else if(st==='fechado'){acoes='<div style="margin-top:8px;font-size:12px;color:var(--gn);font-weight:700">\u2705 Fechado'+(p.codigo_cliente?' \u2014 c\u00f3digo '+p.codigo_cliente:'')+'</div>';}
   else{acoes='<div style="margin-top:8px;font-size:12px;color:var(--t3)">'+(p.feedback?'Motivo: '+p.feedback:'N\u00e3o rolou')+(eu&&eu.t==='coord'?' <button onclick="prospReativar(\''+p.id+'\')" style="background:none;border:none;color:#3B82F6;text-decoration:underline;cursor:pointer;font-family:Inter,sans-serif;font-size:11px;padding:0">devolver pra fila</button>':'')+'</div>';}
-  return '<div style="background:var(--s1);border:1px solid var(--b);border-left:3px solid '+borda+';border-radius:12px;padding:14px;margin-bottom:10px"><div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:3px">'+(p.nome||'(sem nome)')+selo+'</div>'+(p.endereco?'<div style="font-size:12px;color:var(--t2);line-height:1.5">\uD83D\uDCCD '+p.endereco+'</div>':'')+(p.telefone?'<div style="font-size:12px;color:var(--t2)">\uD83D\uDCDE '+p.telefone+'</div>':'')+(p.cnpj?'<div style="font-size:11px;color:var(--t3)">CNPJ '+p.cnpj+'</div>':'')+lembrete+acoes+'</div>';
+  var delBtn=(eu&&eu.t==='coord')?'<button onclick="prospExcluir(\''+p.id+'\')" title="Apagar da fila" style="position:absolute;top:10px;right:10px;background:var(--rd2);border:1px solid rgba(239,68,68,.25);color:var(--rd);border-radius:8px;width:30px;height:30px;font-size:14px;cursor:pointer;font-family:Inter,sans-serif;line-height:1;padding:0">\uD83D\uDDD1\uFE0F</button>':'';
+  return '<div style="position:relative;background:var(--s1);border:1px solid var(--b);border-left:3px solid '+borda+';border-radius:12px;padding:14px;'+(delBtn?'padding-right:48px;':'')+'margin-bottom:10px">'+delBtn+'<div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:3px">'+(p.nome||'(sem nome)')+selo+'</div>'+(p.endereco?'<div style="font-size:12px;color:var(--t2);line-height:1.5">\uD83D\uDCCD '+p.endereco+'</div>':'')+(p.telefone?'<div style="font-size:12px;color:var(--t2)">\uD83D\uDCDE '+p.telefone+'</div>':'')+(p.cnpj?'<div style="font-size:11px;color:var(--t3)">CNPJ '+p.cnpj+'</div>':'')+lembrete+acoes+'</div>';
 }
 function renderProspBoard(){
   var box=document.getElementById('prospBoard');if(!box)return;var by={};
@@ -1374,6 +1381,39 @@ function renderProspBoard(){
   var keys=Object.keys(by).sort();
   if(!keys.length){box.innerHTML='<div style="font-size:12px;color:var(--t3);padding:8px">Nenhuma oportunidade cadastrada ainda.</div>';return;}
   box.innerHTML=keys.map(function(k){var b=by[k];return '<div style="display:flex;align-items:center;gap:8px;background:var(--s1);border:1px solid var(--b);border-radius:10px;padding:10px 12px;margin-bottom:8px"><div style="flex:1;font-size:13px;font-weight:700;color:var(--t);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+k+' - '+b.nome+'</div><div style="font-size:12px;color:#3B82F6;font-weight:700;flex-shrink:0">'+b.pend+' fila</div><div style="font-size:12px;color:var(--gn);font-weight:700;flex-shrink:0">'+b.fech+' \uD83C\uDF89</div><div style="font-size:12px;color:var(--t3);flex-shrink:0">'+b.rec+' n\u00e3o</div></div>';}).join('');
+}
+function prospChave(p){
+  var num=(p.cnpj||'').replace(/\D/g,'');
+  if(num.length>=8)return 'c:'+num;
+  return 'n:'+((p.nome||'').trim().toLowerCase())+'|'+((p.endereco||'').trim().toLowerCase());
+}
+function prospChavesNaFila(cod){
+  var set=new Set();
+  prospCache.forEach(function(p){if(String(p.vendedor_cod)===String(cod))set.add(prospChave(p));});
+  return set;
+}
+function prospExcluir(id){
+  if(!confirm('Tirar este cliente da fila? (a\u00e7\u00e3o n\u00e3o volta)'))return;
+  supaFetch('prospeccao?id=eq.'+id,{method:'DELETE'}).then(function(r){if(!r.ok)throw new Error();toast('Removido da fila.');carregarProspeccao();}).catch(function(){toast('Erro ao remover.');});
+}
+function prospRemoverDuplicadas(){
+  var cod=prospCodAtual();
+  if(!cod){toast('Selecione o vendedor primeiro.');return;}
+  var lista=prospCache.filter(function(p){return String(p.vendedor_cod)===String(cod);});
+  if(!lista.length){toast('Esse vendedor n\u00e3o tem itens na fila.');return;}
+  var prio={fechado:3,recusado:2,pendente:1};
+  var grupos={};
+  lista.forEach(function(p){var k=prospChave(p);(grupos[k]=grupos[k]||[]).push(p);});
+  var apagar=[];
+  Object.keys(grupos).forEach(function(k){
+    var g=grupos[k];if(g.length<2)return;
+    g.sort(function(a,b){return (prio[b.status]||0)-(prio[a.status]||0);});
+    for(var i=1;i<g.length;i++)apagar.push(g[i].id);
+  });
+  if(!apagar.length){toast('Nenhuma duplicata encontrada. \uD83D\uDC4D');return;}
+  if(!confirm('Encontrei '+apagar.length+' duplicata(s) na fila do '+cod+'.\nApagar as repetidas e deixar uma de cada?'))return;
+  var url='prospeccao?id=in.('+apagar.join(',')+')';
+  supaFetch(url,{method:'DELETE'}).then(function(r){if(!r.ok)throw new Error();toast(apagar.length+' duplicata(s) removida(s)! \u2705');carregarProspeccao();}).catch(function(){toast('Erro ao remover duplicadas.');});
 }
 function prospAddOne(){
   var cod=prospCodAtual(),nome=prospNomeAtual();
@@ -1383,6 +1423,8 @@ function prospAddOne(){
   var cnpjVal=document.getElementById('prospCnpj').value.trim();
   var cnpjNum=cnpjVal.replace(/\D/g,'');
   if(cnpjNum&&prospExcluirSet.has(cnpjNum)){toast('Esse j\u00e1 \u00e9 cliente (est\u00e1 na mem\u00f3ria). N\u00e3o adicionei.');return;}
+  var _chave=prospChave({cnpj:cnpjVal,nome:estab,endereco:document.getElementById('prospEnd').value.trim()});
+  if(prospChavesNaFila(cod).has(_chave)){toast('Esse j\u00e1 est\u00e1 na fila do '+cod+'. N\u00e3o dupliquei.');return;}
   var tipo=(document.getElementById('prospTipo')||{value:'novo'}).value||'novo';
   var reg={vendedor_cod:cod,vendedor_nome:nome,nome:estab,endereco:document.getElementById('prospEnd').value.trim(),telefone:document.getElementById('prospTel').value.trim(),cnpj:cnpjVal,tipo:tipo,status:'pendente'};
   supaFetch('prospeccao',{method:'POST',body:JSON.stringify(reg)}).then(function(r){if(!r.ok)throw new Error();return r.json();}).then(function(){toast('Oportunidade enviada pro '+cod+'!');['prospNome','prospEnd','prospTel','prospCnpj'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});carregarProspeccao();}).catch(function(){toast('Erro ao salvar. Rodou o SQL da prospeccao?');});
@@ -1392,10 +1434,13 @@ function prospAddLote(){
   if(!cod){toast('Selecione o vendedor primeiro.');return;}
   var txt=(document.getElementById('prospLote')||{value:''}).value;
   if(!txt.trim()){toast('Cole a lista primeiro.');return;}
-  var regs=[];var pulados=0;
-  txt.split(/\r?\n/).forEach(function(l){if(!l.trim())return;var c=l.split('|').map(function(x){return x.trim();});var tipo='novo';if(c[0]&&(c[0].toUpperCase()==='R'||c[0].toUpperCase()==='REATIVAR')){tipo='reativar';c=c.slice(1);}if(!c[0])return;var num=(c[3]||'').replace(/\D/g,'');if(num&&prospExcluirSet.has(num)){pulados++;return;}regs.push({vendedor_cod:cod,vendedor_nome:nome,nome:c[0],endereco:c[1]||'',telefone:c[2]||'',cnpj:c[3]||'',tipo:tipo,status:'pendente'});});
-  if(!regs.length){toast(pulados?'Todos j\u00e1 eram clientes (pulei '+pulados+').':'Nao encontrei linhas validas.');return;}
-  supaFetch('prospeccao',{method:'POST',body:JSON.stringify(regs)}).then(function(r){if(r.ok){toast(regs.length+' enviada(s) pro '+cod+(pulados?' \u00b7 '+pulados+' j\u00e1 eram clientes':'')+'!');document.getElementById('prospLote').value='';carregarProspeccao();return;}return r.text().then(function(t){if(r.status===400||(t||'').toLowerCase().indexOf('tipo')>=0){toast('Falta a coluna "tipo". Rode o SQL do tipo no Supabase, aguarde 1 min e tente de novo.');}else{toast('Erro '+r.status+' ao salvar a lista.');}});}).catch(function(){toast('Sem conexao ao salvar. Tente de novo.');});
+  var regs=[];var pulados=0;var jafila=0;
+  var chavesFila=prospChavesNaFila(cod);
+  var chavesLote=new Set();
+  txt.split(/\r?\n/).forEach(function(l){if(!l.trim())return;var c=l.split('|').map(function(x){return x.trim();});var tipo='novo';if(c[0]&&(c[0].toUpperCase()==='R'||c[0].toUpperCase()==='REATIVAR')){tipo='reativar';c=c.slice(1);}if(!c[0])return;var num=(c[3]||'').replace(/\D/g,'');if(num&&prospExcluirSet.has(num)){pulados++;return;}var reg={vendedor_cod:cod,vendedor_nome:nome,nome:c[0],endereco:c[1]||'',telefone:c[2]||'',cnpj:c[3]||'',tipo:tipo,status:'pendente'};var ch=prospChave(reg);if(chavesFila.has(ch)||chavesLote.has(ch)){jafila++;return;}chavesLote.add(ch);regs.push(reg);});
+  if(!regs.length){toast((jafila||pulados)?('Nada novo: '+(jafila?jafila+' j\u00e1 na fila':'')+(jafila&&pulados?', ':'')+(pulados?pulados+' j\u00e1 clientes':'')+'.'):'Nao encontrei linhas validas.');return;}
+  var extra=(pulados?' \u00b7 '+pulados+' j\u00e1 clientes':'')+(jafila?' \u00b7 '+jafila+' j\u00e1 na fila (n\u00e3o dupliquei)':'');
+  supaFetch('prospeccao',{method:'POST',body:JSON.stringify(regs)}).then(function(r){if(r.ok){toast(regs.length+' enviada(s) pro '+cod+extra+'!');document.getElementById('prospLote').value='';carregarProspeccao();return;}return r.text().then(function(t){if(r.status===400||(t||'').toLowerCase().indexOf('tipo')>=0){toast('Falta a coluna "tipo". Rode o SQL do tipo no Supabase, aguarde 1 min e tente de novo.');}else{toast('Erro '+r.status+' ao salvar a lista.');}});}).catch(function(){toast('Sem conexao ao salvar. Tente de novo.');});
 }
 function prospFechar(id){var codigo=prompt('Parab\u00e9ns! \uD83C\uDF89 Qual o c\u00f3digo do novo cliente cadastrado?');if(codigo===null)return;supaFetch('prospeccao?id=eq.'+id,{method:'PATCH',body:JSON.stringify({status:'fechado',codigo_cliente:codigo.trim()})}).then(function(r){if(!r.ok)throw new Error();toast('Que massa! Cliente fechado! \uD83C\uDF89');carregarProspeccao();}).catch(function(){toast('Erro ao salvar.');});}
 function prospRecusar(id){var motivo=prompt('Sem problema! Me conta rapidinho o que houve (pra pensarmos juntos):');if(motivo===null)return;supaFetch('prospeccao?id=eq.'+id,{method:'PATCH',body:JSON.stringify({status:'recusado',feedback:motivo.trim()})}).then(function(r){if(!r.ok)throw new Error();toast('Anotado! Vamos pra pr\u00f3xima.');carregarProspeccao();}).catch(function(){toast('Erro ao salvar.');});}

@@ -250,6 +250,102 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
 .mx-line{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--mxs2);border:1px solid var(--mxb);border-radius:8px;padding:8px 10px;margin-bottom:6px}
 .mx-line span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;font-size:12px;color:var(--mxt)}
 .mx-line button{background:none;border:none;color:var(--mxt3);cursor:pointer;font-size:15px}
+/* ===== BRASILEIRAO DE VENDAS ===== */
+.bras-intro{background:linear-gradient(135deg,rgba(16,185,129,.16),rgba(245,158,11,.10));border:1px solid rgba(16,185,129,.3);border-radius:12px;padding:14px 16px;font-size:13px;color:var(--t2);line-height:1.6;}
+.bras-abas{display:flex;gap:6px;margin-bottom:16px;background:var(--s2);padding:5px;border-radius:12px;}
+.bras-aba{flex:1;padding:10px 6px;border:none;background:transparent;color:var(--t2);font-family:'Inter',sans-serif;font-weight:600;font-size:12px;border-radius:9px;cursor:pointer;transition:all .15s;}
+.bras-aba.on{background:var(--am);color:#0A0A0A;}
+.bras-sim{background:var(--bl2);border:1px solid rgba(59,130,246,.35);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--t);margin-bottom:14px;line-height:1.5;}
+.bras-ciclos{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.bras-ciclo{flex:1;min-width:90px;padding:10px 8px;border:1px solid var(--b);background:var(--s1);border-radius:11px;cursor:pointer;text-align:center;transition:all .15s;color:var(--t2);}
+.bras-ciclo.on{border-color:var(--am);background:var(--am2);}
+.bras-ciclo span{display:block;font-weight:800;font-size:13px;color:var(--t);}
+.bras-ciclo.on span{color:var(--am);}
+.bras-ciclo small{display:block;font-size:10px;color:var(--t3);margin-top:2px;}
+.bras-hero{background:linear-gradient(135deg,#0A5C3E,#083B6B);border:1px solid rgba(16,185,129,.4);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 8px 24px rgba(0,0,0,.25);}
+.bras-hero-top{display:flex;align-items:center;justify-content:space-between;gap:14px;}
+.bras-hero-lbl{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.7);}
+.bras-hero-pts{font-size:42px;font-weight:900;color:#fff;line-height:1;margin-top:4px;}
+.bras-hero-pts small{font-size:16px;font-weight:700;color:rgba(255,255,255,.7);}
+.bras-reg-on{margin-top:8px;font-size:12px;font-weight:700;color:#FCD34D;}
+.bras-hero-pos{text-align:center;flex-shrink:0;}
+.bras-hero-pos{font-size:30px;}
+.bras-pos-num{font-size:26px;font-weight:900;color:#FCD34D;line-height:1;}
+.bras-pos-lbl{font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;}
+.bras-tab{display:flex;flex-direction:column;gap:4px;}
+.bras-tr{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:8px;padding:10px 12px;background:var(--s2);border-radius:9px;border-left:3px solid transparent;}
+.bras-tr.lider{border-left-color:var(--gn);background:rgba(16,185,129,.08);}
+.bras-tr.reb{border-left-color:var(--rd);}
+.bras-tr.me{outline:2px solid var(--am);background:var(--am2);}
+.bras-tr-pos{font-weight:800;font-size:14px;color:var(--t2);text-align:center;}
+.bras-tr-nome{font-weight:600;font-size:13px;color:var(--t);}
+.bras-tr-pts{font-weight:900;font-size:16px;color:var(--am);}
+.bras-voce{font-size:9px;background:var(--am);color:#000;padding:1px 6px;border-radius:20px;font-weight:800;vertical-align:middle;margin-left:4px;}
+.bras-legenda{margin-top:10px;font-size:11px;color:var(--t3);display:flex;gap:14px;align-items:center;}
+.bras-legenda .dot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:middle;}
+.bras-legenda .dot.lider{background:var(--gn);}
+.bras-legenda .dot.reb{background:var(--rd);}
+.bras-selo-lenda{font-size:9px;font-weight:800;background:var(--am);color:#000;padding:2px 7px;border-radius:20px;margin-left:7px;letter-spacing:.3px;}
+.bras-selo-craque{font-size:9px;font-weight:700;background:var(--s2);color:var(--t2);padding:2px 7px;border-radius:20px;margin-left:7px;border:1px solid var(--b);}
+.bras-op{padding:11px 0;border-bottom:1px solid var(--b);}
+.bras-op:last-child{border-bottom:none;}
+.bras-op-h{display:flex;align-items:center;margin-bottom:3px;}
+.bras-op-t{font-size:12.5px;color:var(--t2);line-height:1.5;}
+.bras-op-t b{color:var(--t);}
+.bras-dica{margin-top:12px;background:var(--am2);border:1px solid var(--am3);border-radius:9px;padding:10px 12px;font-size:12px;color:var(--t);line-height:1.55;}
+.bras-gat{display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:9px;margin-bottom:6px;background:var(--s2);}
+.bras-gat.ok{background:var(--gn2);border:1px solid rgba(16,185,129,.3);}
+.bras-gat.no{background:var(--rd2);border:1px solid rgba(239,68,68,.25);}
+.bras-gat-ic{font-size:16px;line-height:1.2;}
+.bras-gat-t{font-size:13px;font-weight:600;color:var(--t);}
+.bras-gat-s{font-size:11px;color:var(--t2);margin-top:2px;}
+.bras-pp{padding:11px 0;border-bottom:1px solid var(--b);}
+.bras-pp:last-child{border-bottom:none;}
+.bras-pp-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+.bras-pp-top b{font-size:13px;color:var(--t);}
+.bras-pp-pts{font-size:13px;font-weight:900;color:var(--am);}
+.bras-pp-zero{font-size:11px;color:var(--t3);}
+.bras-pp-ind{display:flex;gap:6px;flex-wrap:wrap;}
+.bras-chip{font-size:11px;padding:3px 8px;border-radius:7px;background:var(--s2);color:var(--t2);border:1px solid var(--b);}
+.bras-chip.ok{background:var(--gn2);color:#6EE7B7;border-color:rgba(16,185,129,.3);}
+.bras-chip.quase{background:var(--am2);color:#FCD34D;border-color:var(--am3);}
+.bras-chip.baixo{background:var(--rd2);color:#FCA5A5;border-color:rgba(239,68,68,.25);}
+.bras-chip.na{opacity:.5;}
+.bras-chip b{color:inherit;}
+.bras-tgs{display:flex;gap:8px;flex-wrap:wrap;}
+.bras-tg{flex:1;min-width:90px;padding:11px 8px;border:1px solid var(--b2);background:var(--s2);color:var(--t2);border-radius:10px;font-family:'Inter',sans-serif;font-weight:700;font-size:12px;cursor:pointer;transition:all .15s;}
+.bras-tg.on{background:var(--gn2);border-color:var(--gn);color:#6EE7B7;}
+.bras-gargalo{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--b);font-size:13px;color:var(--t);}
+.bras-gargalo:last-child{border-bottom:none;}
+.bras-grid-head{display:grid;grid-template-columns:1fr 50px 50px 50px;gap:6px;padding:6px 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);}
+.bras-grid-head span:not(:first-child){text-align:center;}
+.bras-grow{display:grid;grid-template-columns:1fr 50px 50px 50px;gap:6px;align-items:center;padding:5px 4px;border-bottom:1px solid var(--b);}
+.bras-grow.lenda{background:var(--am2);border-radius:7px;}
+.bras-gn{font-size:12px;color:var(--t);display:flex;align-items:center;}
+.bras-gi{width:100%;padding:7px 4px;background:var(--s1);border:1px solid var(--b);border-radius:7px;color:var(--t);font-family:'Inter',sans-serif;font-size:13px;text-align:center;outline:none;}
+.bras-gi:focus{border-color:var(--am);}
+.bras-grid-geral{margin-top:12px;padding-top:12px;border-top:1px dashed var(--b2);}
+.bras-geral-row{display:grid;grid-template-columns:1fr 80px;gap:8px;align-items:center;margin-bottom:6px;font-size:12px;color:var(--t2);}
+.bras-code{background:var(--s2);border:1px solid var(--b);border-radius:5px;padding:1px 6px;font-size:11px;color:var(--am);font-family:monospace;}
+.bras-tut-h{font-size:15px;font-weight:800;color:var(--am);margin:18px 0 8px;}
+.bras-tut-h:first-child{margin-top:0;}
+.bras-tut-p{font-size:13px;color:var(--t2);line-height:1.65;margin-bottom:8px;}
+.bras-tut-p b{color:var(--t);}
+.bras-tut-tabela{margin:10px 0;border:1px solid var(--b);border-radius:10px;overflow:hidden;}
+.bras-tut-tr{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;font-size:12px;text-align:center;}
+.bras-tut-tr span{padding:8px 4px;border-bottom:1px solid var(--b);color:var(--t);}
+.bras-tut-tr span:first-child{font-weight:700;color:var(--t2);text-align:left;padding-left:10px;}
+.bras-tut-tr.th span{background:var(--s2);font-weight:800;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--t2);}
+.bras-tut-tr:last-child span{border-bottom:none;}
+.bras-tut-lista{display:flex;flex-direction:column;gap:9px;margin:6px 0;}
+.bras-tut-lista>div{font-size:13px;color:var(--t2);line-height:1.6;background:var(--s2);padding:11px 13px;border-radius:9px;}
+.bras-tut-lista b{color:var(--t);}
+.bras-tut-passo{display:flex;gap:11px;align-items:flex-start;margin-bottom:9px;}
+.bras-tut-n{font-size:18px;flex-shrink:0;width:34px;height:34px;background:var(--s2);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.bras-tut-t{font-size:13px;font-weight:700;color:var(--t);}
+.bras-tut-d{font-size:12px;color:var(--t2);line-height:1.5;margin-top:1px;}
+.bras-tut-fim{margin-top:16px;text-align:center;font-size:14px;font-weight:800;color:var(--gn);}
+@media(max-width:480px){.bras-hero-pts{font-size:36px;}}
 </style>
 </head>
 <body>
@@ -295,6 +391,7 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
    <button class="mb" id="menuQGDia" onclick="ir('qgdia',this);setTimeout(preencherDicaAutomatica,100)" style="display:none">&#128227; QG do Dia</button>
    <button class="mb" id="menuRadar" onclick="ir('radar',this);radarInit()" style="display:none">&#128225; Radar</button>
    <button class="mb" onclick="ir('prospeccao',this);carregarProspeccao()">&#127919; Prospec&#231;&#227;o</button>
+   <button class="mb" onclick="ir('brasileirao',this);carregarBrasileirao()">&#9917; Brasileir&#227;o</button>
   </div>
 
   <div id="main">
@@ -317,6 +414,7 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
         <div class="mcard" onclick="irM('cotacao');mxAbrirCot()"><div class="micon">&#129534;</div><div class="mname">Cota&#231;&#227;o</div><div class="mdesc" id="cotCardDesc">Monte e envie ao cliente</div></div>
         <div class="mcard" onclick="irM('premiacao');carregarPremiacao()"><div class="micon">&#128176;</div><div class="mname">Minha Premia&#231;&#227;o</div><div class="mdesc">Veja quanto voc&#234; vai ganhar</div></div>
         <div class="mcard" onclick="irM('prospeccao');carregarProspeccao()"><div class="micon">&#127919;</div><div class="mname">Minha Prospec&#231;&#227;o</div><div class="mdesc">Clientes novos pra voc&#234; fechar</div></div>
+        <div class="mcard" onclick="irM('brasileirao');carregarBrasileirao()"><div class="micon">&#9917;</div><div class="mname">Brasileir&#227;o de Vendas</div><div class="mdesc">A copa da Arcofoods &middot; suba na tabela</div></div>
       </div>
     </div>
 
@@ -573,6 +671,18 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
       <div id="prospFilaBox"></div>
     </div>
 
+    <div id="brasileirao" class="pg">
+      <div class="ph">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <div style="width:40px;height:40px;background:linear-gradient(135deg,#10B981,#F59E0B);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">&#9917;</div>
+          <div><div class="pt">Brasileir&#227;o de Vendas</div><div class="ps">Arcofoods 2026 &middot; bora ganhar essa copa!</div></div>
+        </div>
+        <div class="bras-intro"><strong style="color:var(--gn)">&#127942; Cada venda vale ponto, cada ponto sobe na tabela.</strong> Foque nos <b style="color:var(--am)">Lendas (valem 3x)</b>, passe da meta e feche os gatilhos. O time que mais pontua leva a taça.</div>
+        <button id="brasTutBtn" class="btn bs" onclick="brasTutorialToggle()" style="margin-top:10px;width:100%">&#10067; Como funciona? (tutorial completo)</button>
+        <div id="brasTutorial" class="card" style="display:none;margin-top:10px" data-done=""></div>
+      </div>
+      <div id="brasBody"><div class="loading">Carregando o Brasileir&#227;o&#8230;</div></div>
+    </div>
     <div id="radar" class="pg">
       <div class="ph">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
@@ -4509,6 +4619,627 @@ function salvarPix(){
   a.download = 'PIX-Arcofoods.png';
   a.click();
   toast('Imagem salva! Envie pelo WhatsApp.');
+}
+
+/* ====== BRASILEIRAO DE VENDAS (modulo) ====== */
+/* ================== BRASILEIRÃO DE VENDAS 2026 ================== */
+/* Depende de globais já existentes no QG: supaFetch, toast, mxE, qgJson, USERS, eu, SUPA_KEY */
+
+var BRAS_CFG=null;                 // config global (patrocinadores, ciclos, gatilhos, regional)
+var BRAS_LANC=[];                  // cache de lançamentos
+var BRAS_CICLO='c1';               // ciclo selecionado na tela
+var BRAS_VERCOD=null;              // coordenador simulando um vendedor
+var BRAS_ADMIN_ABA='painel';       // aba do coordenador: 'painel' | 'lancar' | 'config'
+var BRAS_GERAL='__GERAL__';        // patrocinador sentinela p/ guardar % geral (gatilhos)
+
+function brasVendedores(){return USERS.filter(function(u){return u.t==='vend';});}
+function brasEhCoord(){return eu&&eu.t==='coord';}
+function brasCodAtual(){ if(brasEhCoord())return BRAS_VERCOD; return eu?eu.c:null; }
+function brasNorm(s){return String(s==null?'':s).toUpperCase().replace(/[^A-Z0-9]/g,'');}
+function brasNum(v){ if(v==null||v==='')return null; var n=parseFloat(String(v).replace('%','').replace(/\./g,'').replace(',','.').replace(/[^0-9.\-]/g,'')); return isNaN(n)?null:n; }
+function brasNumSimples(v){ if(v==null||v==='')return null; var n=parseFloat(String(v).replace('%','').replace(',','.').replace(/[^0-9.\-]/g,'')); return isNaN(n)?null:n; }
+
+function brasDefaults(){
+  return {
+    patrocinadores:[
+      {cod:'5191',nome:'Miolo',cota:'craque'},
+      {cod:'4197',nome:'Fruteb',cota:'craque'},
+      {cod:'594', nome:'Sococo',cota:'craque'},
+      {cod:'993', nome:'Nestle',cota:'craque'},
+      {cod:'5084',nome:'Superbom',cota:'craque'},
+      {cod:'4414',nome:'Predilecta',cota:'craque'},
+      {cod:'5951',nome:'UnileverPro',cota:'craque'},
+      {cod:'2023',nome:'Bunge',cota:'craque'},
+      {cod:'5824',nome:'Master Food',cota:'craque'},
+      {cod:'7596',nome:'Riclan',cota:'craque'},
+      {cod:'5163',nome:'Daus',cota:'craque'},
+      {cod:'2604',nome:'Cargill',cota:'lenda'},
+      {cod:'5432',nome:'Icofort',cota:'lenda'},
+      {cod:'6266',nome:'Qualimax',cota:'lenda'},
+      {cod:'7464',nome:'Lactalis',cota:'lenda'},
+      {cod:'7839',nome:'Barry',cota:'lenda'},
+      {cod:'7912',nome:'Tres Coracoes',cota:'lenda'},
+      {cod:'951', nome:'Unilever',cota:'lenda'}
+    ],
+    ciclos:[
+      {id:'c1',nome:'Ciclo 1',meses:'Ago / Set / Out'},
+      {id:'c2',nome:'Ciclo 2',meses:'Nov / Dez'}
+    ],
+    gatilhos:{fat_pct:90,pos_pct:95,min_pts:0},
+    regional:{c1:{fat:false,pos:false,sku:false},c2:{fat:false,pos:false,sku:false}}
+  };
+}
+
+function brasMergeCfg(v){
+  var d=brasDefaults();
+  if(!v||typeof v!=='object')return d;
+  return {
+    patrocinadores:(Array.isArray(v.patrocinadores)&&v.patrocinadores.length)?v.patrocinadores:d.patrocinadores,
+    ciclos:(Array.isArray(v.ciclos)&&v.ciclos.length)?v.ciclos:d.ciclos,
+    gatilhos:Object.assign({},d.gatilhos,v.gatilhos||{}),
+    regional:Object.assign({},d.regional,v.regional||{})
+  };
+}
+
+/* ---------- pontuação ---------- */
+var BRAS_TAB={fat:{100:50,110:75,120:100},pos:{100:100,110:125,120:150},sku:{100:50,110:75,120:100}};
+function brasTier(pct){ pct=+pct||0; return pct>=120?120:pct>=110?110:pct>=100?100:0; }
+function brasPts(tipo,pct){ var t=brasTier(pct); return t?BRAS_TAB[tipo][t]:0; }
+
+function brasRowsDe(cod,ciclo){
+  return BRAS_LANC.filter(function(r){return r.vendedor_cod===cod && r.ciclo===ciclo && r.patroc_cod!==BRAS_GERAL;});
+}
+function brasRowGeral(cod,ciclo){
+  return BRAS_LANC.find(function(r){return r.vendedor_cod===cod && r.ciclo===ciclo && r.patroc_cod===BRAS_GERAL;});
+}
+
+// Calcula os pontos de um vendedor num ciclo, patrocinador por patrocinador
+function brasCalc(cod,ciclo){
+  var out={total:0,itens:[]};
+  if(!BRAS_CFG)return out;
+  BRAS_CFG.patrocinadores.forEach(function(p){
+    var r=BRAS_LANC.find(function(x){return x.vendedor_cod===cod&&x.ciclo===ciclo&&x.patroc_cod===p.cod;});
+    var fat=r?brasNumSimples(r.fat_pct):null, pos=r?brasNumSimples(r.pos_pct):null, sku=r?brasNumSimples(r.sku_pct):null;
+    var pf=brasPts('fat',fat), pp=brasPts('pos',pos), ps=brasPts('sku',sku);
+    var base=pf+pp+ps;
+    var mult=(p.cota==='lenda')?3:1;
+    var pts=base*mult;
+    out.total+=pts;
+    out.itens.push({cod:p.cod,nome:p.nome,cota:p.cota,mult:mult,fat:fat,pos:pos,sku:sku,pf:pf,pp:pp,ps:ps,base:base,pts:pts,temLanc:!!r});
+  });
+  return out;
+}
+
+function brasRegionalAtivo(ciclo){
+  var r=BRAS_CFG&&BRAS_CFG.regional&&BRAS_CFG.regional[ciclo];
+  return !!(r&&r.fat&&r.pos&&r.sku);
+}
+function brasTotalComRegional(cod,ciclo){
+  var base=brasCalc(cod,ciclo).total;
+  return brasRegionalAtivo(ciclo)?Math.round(base*1.5):base;
+}
+function brasTotalGeral(cod){ // soma de todos os ciclos, com regional aplicado por ciclo
+  var t=0; BRAS_CFG.ciclos.forEach(function(c){t+=brasTotalComRegional(cod,c.id);}); return t;
+}
+
+function brasRanking(ciclo){ // ciclo id ou 'geral'
+  var arr=brasVendedores().map(function(u){
+    var pts=(ciclo==='geral')?brasTotalGeral(u.c):brasTotalComRegional(u.c,ciclo);
+    return {cod:u.c,nome:u.n,cd:u.cd,pts:pts};
+  });
+  arr.sort(function(a,b){return b.pts-a.pts;});
+  return arr;
+}
+
+/* ---------- gatilhos (elegibilidade) ---------- */
+function brasGatilhos(cod,ciclo){
+  var g=BRAS_CFG.gatilhos, rows=brasRowsDe(cod,ciclo), ger=brasRowGeral(cod,ciclo);
+  var fatG=ger?brasNumSimples(ger.fat_pct):null, posG=ger?brasNumSimples(ger.pos_pct):null, estimado=false;
+  if(fatG==null&&rows.length){var v=rows.map(function(r){return brasNumSimples(r.fat_pct);}).filter(function(x){return x!=null;});fatG=v.length?(v.reduce(function(a,b){return a+b;},0)/v.length):null;estimado=true;}
+  if(posG==null&&rows.length){var w=rows.map(function(r){return brasNumSimples(r.pos_pct);}).filter(function(x){return x!=null;});posG=w.length?(w.reduce(function(a,b){return a+b;},0)/w.length):null;estimado=true;}
+  var calc=brasCalc(cod,ciclo);
+  var comLanc=calc.itens.filter(function(i){return i.temLanc;});
+  var abaixo=comLanc.filter(function(i){return i.pts< (g.min_pts||0);});
+  return {
+    g1:{ok:fatG!=null&&fatG>=g.fat_pct, val:fatG, alvo:g.fat_pct},
+    g2:{ok:posG!=null&&posG>=g.pos_pct, val:posG, alvo:g.pos_pct},
+    g3:{ok:(g.min_pts||0)===0? true : abaixo.length===0, alvo:g.min_pts||0, abaixo:abaixo.length, ativo:(g.min_pts||0)>0},
+    estimado:estimado
+  };
+}
+
+/* ---------- onde ganhar mais rápido ---------- */
+function brasOportunidades(cod,ciclo){
+  var calc=brasCalc(cod,ciclo), ops=[];
+  calc.itens.forEach(function(i){
+    var tag=(i.cota==='lenda')?'lenda':'craque';
+    // Lenda ainda sem pontuar nada = maior peso
+    if(i.cota==='lenda' && i.pts===0){
+      ops.push({peso:600,cota:tag,nome:i.nome,tipo:'zerado',txt:'Lenda ainda sem ponto — bater 100% nos 3 indicadores vale <b>+600 pts</b> (3x).',ganho:200*i.mult});
+    }
+    // Cada indicador que dá pra melhorar
+    [['fat','Faturamento',i.fat,i.pf],['pos','Positivação',i.pos,i.pp],['sku','SKU por PDV',i.sku,i.ps]].forEach(function(x){
+      var tipo=x[0], lbl=x[1], pct=x[2], ptsAtual=x[3];
+      if(pct==null)return;
+      if(pct<100){ // falta pouco pra pontuar
+        if(pct>=90){var ganho=(BRAS_TAB[tipo][100])*i.mult; ops.push({peso:ganho+ (i.cota==='lenda'?300:0),cota:tag,nome:i.nome,tipo:'quase',txt:lbl+' em '+brasFmtPct(pct)+' — faltam <b>'+brasFmtPct(100-pct)+'</b> pra ligar <b>+'+ganho+' pts</b>.',ganho:ganho});}
+      } else if(pct<120){ // próximo degrau
+        var prox=pct<110?110:120; var delta=(BRAS_TAB[tipo][prox]-BRAS_TAB[tipo][brasTier(pct)])*i.mult;
+        if(delta>0)ops.push({peso:delta+(i.cota==='lenda'?200:0),cota:tag,nome:i.nome,tipo:'degrau',txt:lbl+' em '+brasFmtPct(pct)+' — chega a <b>'+prox+'%</b> e leva <b>+'+delta+' pts</b>.',ganho:delta});
+      }
+    });
+  });
+  ops.sort(function(a,b){return b.peso-a.peso;});
+  return ops.slice(0,6);
+}
+function brasFmtPct(v){ if(v==null)return '-'; var n=Math.round(v*10)/10; return (n%1===0?n.toFixed(0):n.toFixed(1))+'%'; }
+
+/* ================== CARGA ================== */
+function carregarBrasileirao(){
+  var body=document.getElementById('brasBody');
+  if(body&&!BRAS_CFG)body.innerHTML='<div class="loading">Carregando o Brasileirão…</div>';
+  return brasLoadCfg().then(brasLoadLanc).then(function(){
+    if(brasEhCoord()&&!BRAS_VERCOD){} // coord começa no painel
+    brasRender();
+  }).catch(function(){
+    if(body)body.innerHTML='<div class="empty"><div class="eico">&#9917;</div>Não consegui carregar. Rodou o SQL da tabela <b>bras_lancamentos</b>?</div>';
+  });
+}
+function brasLoadCfg(){
+  return supaFetch('qg_config?chave=eq.bras_config').then(qgJson).then(function(d){
+    BRAS_CFG=brasMergeCfg(Array.isArray(d)&&d.length?d[0].valor:null);
+  }).catch(function(){BRAS_CFG=brasDefaults();});
+}
+function brasLoadLanc(){
+  return supaFetch('bras_lancamentos?order=vendedor_cod.asc,patroc_cod.asc').then(qgJson).then(function(d){
+    BRAS_LANC=Array.isArray(d)?d:[];
+  }).catch(function(){BRAS_LANC=[];});
+}
+function brasSalvarCfg(){
+  toast('Salvando configuração…');
+  return supaFetch('qg_config',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},
+    body:JSON.stringify({chave:'bras_config',valor:BRAS_CFG})})
+   .then(function(r){if(!r.ok)throw new Error();toast('Configuração salva! ✅');})
+   .catch(function(){toast('Erro ao salvar configuração.');});
+}
+
+/* ================== RENDER PRINCIPAL ================== */
+function brasSetCiclo(c){BRAS_CICLO=c;brasRender();}
+function brasVerComo(cod){BRAS_VERCOD=cod||null;brasRender();window.scrollTo(0,0);}
+function brasAba(a){BRAS_ADMIN_ABA=a;brasRender();}
+
+function brasRender(){
+  var body=document.getElementById('brasBody'); if(!body||!BRAS_CFG)return;
+  var h='';
+  if(brasEhCoord()){
+    h+=brasBarraCoord();
+    if(BRAS_VERCOD){ h+=brasCartaoSimulando(); h+=brasTelaVendedor(BRAS_VERCOD); }
+    else if(BRAS_ADMIN_ABA==='lancar'){ h+=brasTelaLancar(); }
+    else if(BRAS_ADMIN_ABA==='config'){ h+=brasTelaConfig(); }
+    else { h+=brasTelaPainel(); }
+  } else {
+    h+=brasTelaVendedor(eu?eu.c:null);
+  }
+  body.innerHTML=h;
+}
+
+/* ---------- barra do coordenador ---------- */
+function brasBarraCoord(){
+  function b(a,lbl){return '<button class="bras-aba'+(BRAS_ADMIN_ABA===a&&!BRAS_VERCOD?' on':'')+'" onclick="brasVerComo(null);brasAba(\''+a+'\')">'+lbl+'</button>';}
+  return '<div class="bras-abas">'+b('painel','&#128202; Painel')+b('lancar','&#9997;&#65039; Lançar números')+b('config','&#9881;&#65039; Configurar')+'</div>';
+}
+function brasCartaoSimulando(){
+  var u=USERS.find(function(x){return x.c===BRAS_VERCOD;});
+  return '<div class="bras-sim">&#128065;&#65039; Você está vendo como <b>'+(u?mxE(u.n):BRAS_VERCOD)+'</b> vê — é só simulação. <button class="btn bs" style="margin-left:8px;padding:5px 12px;font-size:12px" onclick="brasVerComo(null)">Voltar ao painel</button></div>';
+}
+
+/* ---------- seletor de ciclo ---------- */
+function brasSeletorCiclo(incGeral){
+  var h='<div class="bras-ciclos">';
+  BRAS_CFG.ciclos.forEach(function(c){
+    h+='<button class="bras-ciclo'+(BRAS_CICLO===c.id?' on':'')+'" onclick="brasSetCiclo(\''+c.id+'\')"><span>'+mxE(c.nome)+'</span><small>'+mxE(c.meses)+'</small></button>';
+  });
+  if(incGeral)h+='<button class="bras-ciclo'+(BRAS_CICLO==='geral'?' on':'')+'" onclick="brasSetCiclo(\'geral\')"><span>Geral</span><small>Campanha toda</small></button>';
+  h+='</div>';
+  return h;
+}
+
+/* ================== TELA DO VENDEDOR ================== */
+function brasTelaVendedor(cod){
+  if(!cod)return '<div class="empty">Sem vendedor.</div>';
+  var u=USERS.find(function(x){return x.c===cod;});
+  var nome=u?u.n:cod;
+  var cicloId=(BRAS_CICLO==='geral')?BRAS_CFG.ciclos[0].id:BRAS_CICLO;
+  var h='';
+
+  // seletor ciclo
+  h+=brasSeletorCiclo(true);
+
+  // cabeçalho com pontuação
+  var rk=brasRanking(BRAS_CICLO);
+  var pos=rk.findIndex(function(x){return x.cod===cod;})+1;
+  var pts=(BRAS_CICLO==='geral')?brasTotalGeral(cod):brasTotalComRegional(cod,BRAS_CICLO);
+  var reg=(BRAS_CICLO!=='geral')&&brasRegionalAtivo(BRAS_CICLO);
+  var medal=pos===1?'&#129351;':pos===2?'&#129352;':pos===3?'&#129353;':'';
+  h+='<div class="bras-hero">'
+    +'<div class="bras-hero-top"><div>'
+    +'<div class="bras-hero-lbl">Sua pontuação'+(BRAS_CICLO==='geral'?' na campanha':' no '+brasNomeCiclo(BRAS_CICLO))+'</div>'
+    +'<div class="bras-hero-pts">'+pts+' <small>pts</small></div>'
+    +(reg?'<div class="bras-reg-on">&#128293; Bônus regional +50% aplicado!</div>':'')
+    +'</div><div class="bras-hero-pos">'+medal+'<div class="bras-pos-num">'+(pos||'-')+'&ordm;</div><div class="bras-pos-lbl">de '+rk.length+'</div></div></div>'
+    +'</div>';
+
+  // tabela do brasileirão
+  h+=brasTabelaClassificacao(cod);
+
+  // onde ganhar mais rápido
+  if(BRAS_CICLO!=='geral'){
+    var ops=brasOportunidades(cod,BRAS_CICLO);
+    h+='<div class="card"><div class="ct">&#128293; Onde você ganha mais rápido</div>';
+    if(!ops.length){h+='<div class="empty" style="padding:20px">Assim que chegarem os primeiros números, mostro aqui os pontos mais fáceis de pegar.</div>';}
+    else{
+      ops.forEach(function(o){
+        var cor=o.cota==='lenda'?'var(--am)':'var(--t2)';
+        var selo=o.cota==='lenda'?'<span class="bras-selo-lenda">LENDA 3x</span>':'<span class="bras-selo-craque">Craque</span>';
+        h+='<div class="bras-op"><div class="bras-op-h"><b style="color:'+cor+'">'+mxE(o.nome)+'</b>'+selo+'</div><div class="bras-op-t">'+o.txt+'</div></div>';
+      });
+      h+='<div class="bras-dica">&#128161; Cada ponto num <b>Lenda vale 3x</b>. Priorize os Lendas e empurre a <b>positivação</b> acima de 100% — é o que mais rende.</div>';
+    }
+    h+='</div>';
+  }
+
+  // checklist de gatilhos
+  if(BRAS_CICLO!=='geral'){
+    var g=brasGatilhos(cod,BRAS_CICLO);
+    function lin(ok,txt,sub){return '<div class="bras-gat '+(ok?'ok':'no')+'"><span class="bras-gat-ic">'+(ok?'&#9989;':'&#10060;')+'</span><div><div class="bras-gat-t">'+txt+'</div>'+(sub?'<div class="bras-gat-s">'+sub+'</div>':'')+'</div></div>';}
+    h+='<div class="card"><div class="ct">&#127942; Meta Gatilho (pra valer prêmio)</div>';
+    h+=lin(g.g1.ok,'Faturamento &ge; '+g.g1.alvo+'%', g.g1.val!=null?('Você está em '+brasFmtPct(g.g1.val)+(g.estimado?' (estimado)':'')):'Sem dado ainda');
+    h+=lin(g.g2.ok,'Positivação &ge; '+g.g2.alvo+'%', g.g2.val!=null?('Você está em '+brasFmtPct(g.g2.val)+(g.estimado?' (estimado)':'')):'Sem dado ainda');
+    if(g.g3.ativo)h+=lin(g.g3.ok,'Mínimo de '+g.g3.alvo+' pts por patrocinador', g.g3.ok?'Tudo certo':(g.g3.abaixo+' patrocinador(es) abaixo do mínimo'));
+    else h+=lin(true,'Mínimo de pontos por indústria','O coordenador ainda vai configurar o valor');
+    h+='</div>';
+  }
+
+  // placar por patrocinador
+  h+=brasPlacarPatrocinadores(cod,BRAS_CICLO);
+  return h;
+}
+
+function brasNomeCiclo(id){var c=BRAS_CFG.ciclos.find(function(x){return x.id===id;});return c?c.nome:id;}
+
+function brasTabelaClassificacao(destCod){
+  var rk=brasRanking(BRAS_CICLO);
+  var h='<div class="card"><div class="ct">&#127942; Tabela do Brasileirão &middot; '+(BRAS_CICLO==='geral'?'Campanha':mxE(brasNomeCiclo(BRAS_CICLO)))+'</div><div class="bras-tab">';
+  rk.forEach(function(r,i){
+    var zona=i===0?'lider':(i>=rk.length-2?'reb':'');
+    var medal=i===0?'&#129351;':i===1?'&#129352;':i===2?'&#129353;':(i+1)+'&ordm;';
+    var me=(r.cod===destCod)?' me':'';
+    h+='<div class="bras-tr'+me+' '+zona+'"><div class="bras-tr-pos">'+medal+'</div><div class="bras-tr-nome">'+mxE(r.nome)+(r.cod===destCod?' <span class="bras-voce">você</span>':'')+'</div><div class="bras-tr-pts">'+r.pts+'</div></div>';
+  });
+  h+='</div><div class="bras-legenda"><span class="dot lider"></span>Líder <span class="dot reb"></span>Zona de atenção</div></div>';
+  return h;
+}
+
+function brasPlacarPatrocinadores(cod,ciclo){
+  if(ciclo==='geral')ciclo=BRAS_CFG.ciclos[0].id;
+  var calc=brasCalc(cod,ciclo);
+  var lendas=calc.itens.filter(function(i){return i.cota==='lenda';});
+  var craques=calc.itens.filter(function(i){return i.cota==='craque';});
+  function bloco(titulo,arr,cor){
+    var h='<div class="ct" style="margin-top:6px;color:'+cor+'">'+titulo+'</div>';
+    arr.forEach(function(i){
+      var badge=i.pts>0?'<span class="bras-pp-pts">'+i.pts+' pts</span>':'<span class="bras-pp-zero">— sem ponto</span>';
+      h+='<div class="bras-pp"><div class="bras-pp-top"><b>'+mxE(i.nome)+'</b>'+badge+'</div>'
+        +'<div class="bras-pp-ind">'+brasChip('Fat',i.fat,i.pf)+brasChip('Pos',i.pos,i.pp)+brasChip('SKU',i.sku,i.ps)+'</div></div>';
+    });
+    return h;
+  }
+  var h='<div class="card"><div class="ct">&#128203; Seu placar por patrocinador &middot; '+mxE(brasNomeCiclo(ciclo))+'</div>';
+  h+=bloco('&#127941; Lendas (valem 3x)',lendas,'var(--am)');
+  h+=bloco('&#9917; Craques (valem 1x)',craques,'var(--t2)');
+  h+='</div>';
+  return h;
+}
+function brasChip(lbl,pct,pts){
+  var cls=pct==null?'na':(pct>=100?'ok':(pct>=90?'quase':'baixo'));
+  return '<span class="bras-chip '+cls+'">'+lbl+' '+(pct==null?'—':brasFmtPct(pct))+(pts?' <b>+'+pts+'</b>':'')+'</span>';
+}
+
+/* ================== PAINEL DO COORDENADOR ================== */
+function brasTelaPainel(){
+  var h=brasSeletorCiclo(true);
+  // termômetro regional
+  h+=brasTermometroRegional();
+  // classificação
+  h+=brasTabelaClassificacao(null);
+  // simular
+  h+='<div class="admin-box"><div class="admin-title">&#128065;&#65039; Ver como cada vendedor vê</div><div style="font-size:11px;color:var(--t2);margin-bottom:10px">Toque num nome pra abrir a tela dele (só simulação).</div><div style="display:flex;flex-wrap:wrap;gap:6px">';
+  brasVendedores().forEach(function(u){h+='<button class="btn bs" style="font-size:12px;padding:7px 11px" onclick="brasVerComo(\''+u.c+'\')">'+mxE(u.n.split(' ')[0])+'</button>';});
+  h+='</div></div>';
+  // gargalos
+  h+=brasGargalos();
+  return h;
+}
+
+function brasTermometroRegional(){
+  if(BRAS_CICLO==='geral')return '';
+  var r=(BRAS_CFG.regional&&BRAS_CFG.regional[BRAS_CICLO])||{fat:false,pos:false,sku:false};
+  var ativo=r.fat&&r.pos&&r.sku;
+  function tg(k,lbl){return '<button class="bras-tg'+(r[k]?' on':'')+'" onclick="brasToggleRegional(\''+k+'\')">'+(r[k]?'&#9989; ':'')+lbl+'</button>';}
+  return '<div class="admin-box" style="border-color:'+(ativo?'rgba(16,185,129,.5)':'rgba(99,102,241,.3)')+'">'
+    +'<div class="admin-title" style="color:'+(ativo?'var(--gn)':'var(--pu)')+'">&#128293; Multiplicador Regional (+50% pra todos)</div>'
+    +'<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">Marque os indicadores em que a <b>regional inteira</b> bateu a meta. Quando os <b>três</b> ficarem verdes, <b>todo mundo ganha +50%</b> neste ciclo.</div>'
+    +'<div class="bras-tgs">'+tg('fat','Faturamento')+tg('pos','Positivação')+tg('sku','SKU por PDV')+'</div>'
+    +'<div style="margin-top:10px;font-weight:700;color:'+(ativo?'var(--gn)':'var(--t3)')+'">'+(ativo?'&#127881; Bônus ATIVO — +50% aplicado a todos neste ciclo!':'Faltam indicadores pra destravar o +50%.')+'</div>'
+    +'</div>';
+}
+function brasToggleRegional(k){
+  if(!BRAS_CFG.regional[BRAS_CICLO])BRAS_CFG.regional[BRAS_CICLO]={fat:false,pos:false,sku:false};
+  BRAS_CFG.regional[BRAS_CICLO][k]=!BRAS_CFG.regional[BRAS_CICLO][k];
+  brasSalvarCfg().then(brasRender);
+}
+
+function brasGargalos(){
+  if(BRAS_CICLO==='geral')return '';
+  var ciclo=BRAS_CICLO;
+  // por patrocinador: quantos vendedores ainda não pontuaram
+  var linhas=BRAS_CFG.patrocinadores.map(function(p){
+    var semPonto=0,total=brasVendedores().length;
+    brasVendedores().forEach(function(u){
+      var i=brasCalc(u.c,ciclo).itens.find(function(x){return x.cod===p.cod;});
+      if(!i||i.pts===0)semPonto++;
+    });
+    return {nome:p.nome,cota:p.cota,semPonto:semPonto,total:total};
+  }).filter(function(x){return x.semPonto>0;});
+  linhas.sort(function(a,b){return (b.cota==='lenda')-(a.cota==='lenda')||b.semPonto-a.semPonto;});
+  var h='<div class="admin-box"><div class="admin-title">&#128680; Gargalos do time — onde tem ponto parado</div>';
+  if(!linhas.length){h+='<div style="font-size:13px;color:var(--gn)">Todo mundo pontuando em todos os patrocinadores. 🔥</div>';}
+  else{
+    linhas.slice(0,8).forEach(function(l){
+      var selo=l.cota==='lenda'?'<span class="bras-selo-lenda">LENDA 3x</span>':'';
+      h+='<div class="bras-gargalo"><b>'+mxE(l.nome)+'</b>'+selo+'<span style="margin-left:auto;color:var(--rd);font-weight:700">'+l.semPonto+'/'+l.total+' sem ponto</span></div>';
+    });
+    h+='<div class="bras-dica" style="margin-top:10px">&#128161; Priorize cobrar os <b>Lendas</b> da lista — cada um vale 3x.</div>';
+  }
+  h+='</div>';
+  return h;
+}
+
+/* ================== LANÇAR NÚMEROS ================== */
+function brasTelaLancar(){
+  var h='';
+  h+='<div class="admin-box"><div class="admin-title">&#9997;&#65039; Lançar números — passo a passo</div>'
+    +'<div style="font-size:12px;color:var(--t2);line-height:1.7">'
+    +'<b>1.</b> Escolha o <b>ciclo</b> e o <b>vendedor</b>.<br>'
+    +'<b>2.</b> Para cada patrocinador, digite o <b>% da meta</b> em Faturamento, Positivação e SKU/PDV (ex.: <b>112</b> = bateu 112% da meta).<br>'
+    +'<b>3.</b> Toque em <b>Salvar</b>. Pronto — o placar de todo mundo atualiza na hora.<br>'
+    +'<span style="color:var(--t3)">Deixe em branco o que ainda não tem número. Abaixo de 100% não pontua (é o esperado).</span>'
+    +'</div></div>';
+
+  // seletor ciclo + vendedor
+  h+='<div class="admin-box">';
+  h+='<div class="fg"><label class="fl">Ciclo</label><select id="brasLancCiclo" class="inp" onchange="brasRenderGrid()">';
+  BRAS_CFG.ciclos.forEach(function(c){h+='<option value="'+c.id+'"'+(c.id===BRAS_CICLO?' selected':'')+'>'+mxE(c.nome)+' ('+mxE(c.meses)+')</option>';});
+  h+='</select></div>';
+  h+='<div class="fg"><label class="fl">Vendedor</label><select id="brasLancVend" class="inp" onchange="brasRenderGrid()"><option value="">Selecione…</option>';
+  brasVendedores().forEach(function(u){h+='<option value="'+u.c+'">'+mxE(u.cd+' — '+u.n)+'</option>';});
+  h+='</select></div>';
+  h+='<div id="brasGrid"></div>';
+  h+='</div>';
+
+  // colar do BI
+  h+='<div class="admin-box" style="border-color:rgba(16,185,129,.3)">'
+    +'<div class="admin-title" style="color:var(--gn)">&#128203; Colar do BI (rápido, vários de uma vez)</div>'
+    +'<div style="font-size:12px;color:var(--t2);line-height:1.7;margin-bottom:8px">Cole uma linha por vendedor+patrocinador, no formato:<br>'
+    +'<code class="bras-code">Vendedor ; Patrocinador ; Fat% ; Pos% ; SKU%</code><br>'
+    +'<span style="color:var(--t3)">Ex.: <code class="bras-code">RCA 017 ; Cargill ; 105 ; 112 ; 98</code> — aceita separar por <b>;</b> ou <b>Tab</b>. O vendedor é reconhecido pelo código (RCA 017) ou nome.</span></div>'
+    +'<div class="fg"><label class="fl">Ciclo do lote</label><select id="brasBICiclo" class="inp">';
+  BRAS_CFG.ciclos.forEach(function(c){h+='<option value="'+c.id+'"'+(c.id===BRAS_CICLO?' selected':'')+'>'+mxE(c.nome)+'</option>';});
+  h+='</select></div>'
+    +'<textarea id="brasBITxt" class="inp" rows="5" placeholder="RCA 017 ; Cargill ; 105 ; 112 ; 98&#10;RCA 017 ; Nestle ; 100 ; 101 ; 100"></textarea>'
+    +'<button class="btn bp" style="width:100%;margin-top:8px" onclick="brasColarBI()">&#128228; Ler e salvar o lote</button>'
+    +'<div id="brasBIRes" style="font-size:12px;margin-top:10px"></div>'
+    +'</div>';
+  // precisa renderizar grid depois de inserir no DOM
+  setTimeout(brasRenderGrid,30);
+  return h;
+}
+
+function brasRenderGrid(){
+  var box=document.getElementById('brasGrid'); if(!box)return;
+  var cod=(document.getElementById('brasLancVend')||{}).value||'';
+  var ciclo=(document.getElementById('brasLancCiclo')||{}).value||BRAS_CFG.ciclos[0].id;
+  if(!cod){box.innerHTML='<div class="empty" style="padding:20px">Selecione um vendedor pra lançar os números.</div>';return;}
+  var ger=brasRowGeral(cod,ciclo);
+  var h='<div class="bras-grid-head"><span>Patrocinador</span><span>Fat%</span><span>Pos%</span><span>SKU%</span></div>';
+  BRAS_CFG.patrocinadores.forEach(function(p){
+    var r=BRAS_LANC.find(function(x){return x.vendedor_cod===cod&&x.ciclo===ciclo&&x.patroc_cod===p.cod;});
+    var selo=p.cota==='lenda'?'<span class="bras-selo-lenda">3x</span>':'';
+    function inp(k,v){return '<input class="bras-gi" id="bg_'+p.cod+'_'+k+'" inputmode="decimal" value="'+(v==null?'':v)+'" placeholder="—">';}
+    h+='<div class="bras-grow'+(p.cota==='lenda'?' lenda':'')+'"><span class="bras-gn">'+mxE(p.nome)+selo+'</span>'
+      +inp('fat',r?r.fat_pct:'')+inp('pos',r?r.pos_pct:'')+inp('sku',r?r.sku_pct:'')+'</div>';
+  });
+  h+='<div class="bras-grid-geral"><div style="font-size:11px;color:var(--t2);margin-bottom:6px">% <b>geral</b> do vendedor no ciclo (usado nos gatilhos de elegibilidade — opcional):</div>'
+    +'<div class="bras-geral-row"><span>Faturamento geral %</span><input class="bras-gi" id="bg_geral_fat" inputmode="decimal" value="'+(ger&&ger.fat_pct!=null?ger.fat_pct:'')+'" placeholder="ex: 92"></div>'
+    +'<div class="bras-geral-row"><span>Positivação geral %</span><input class="bras-gi" id="bg_geral_pos" inputmode="decimal" value="'+(ger&&ger.pos_pct!=null?ger.pos_pct:'')+'" placeholder="ex: 96"></div></div>';
+  h+='<button class="btn bp" style="width:100%;margin-top:12px" onclick="brasSalvarGrid()">&#128190; Salvar números do vendedor</button>';
+  box.innerHTML=h;
+}
+
+function brasSalvarGrid(){
+  var cod=(document.getElementById('brasLancVend')||{}).value||'';
+  var ciclo=(document.getElementById('brasLancCiclo')||{}).value||BRAS_CFG.ciclos[0].id;
+  if(!cod){toast('Selecione um vendedor.');return;}
+  var u=USERS.find(function(x){return x.c===cod;});
+  var regs=[];
+  BRAS_CFG.patrocinadores.forEach(function(p){
+    var f=brasNumSimples((document.getElementById('bg_'+p.cod+'_fat')||{}).value);
+    var o=brasNumSimples((document.getElementById('bg_'+p.cod+'_pos')||{}).value);
+    var s=brasNumSimples((document.getElementById('bg_'+p.cod+'_sku')||{}).value);
+    if(f!=null||o!=null||s!=null)regs.push({ciclo:ciclo,vendedor_cod:cod,vendedor_nome:u?u.n:cod,patroc_cod:p.cod,patroc_nome:p.nome,fat_pct:f,pos_pct:o,sku_pct:s});
+  });
+  var gf=brasNumSimples((document.getElementById('bg_geral_fat')||{}).value);
+  var gp=brasNumSimples((document.getElementById('bg_geral_pos')||{}).value);
+  if(gf!=null||gp!=null)regs.push({ciclo:ciclo,vendedor_cod:cod,vendedor_nome:u?u.n:cod,patroc_cod:BRAS_GERAL,patroc_nome:'GERAL',fat_pct:gf,pos_pct:gp,sku_pct:null});
+  brasSalvarLote(cod,ciclo,regs,function(){toast('Números salvos! ✅');});
+}
+
+// apaga o que existe do (ciclo,vendedor) e insere de novo — evita duplicidade
+function brasSalvarLote(cod,ciclo,regs,cb){
+  toast('Salvando…');
+  supaFetch('bras_lancamentos?vendedor_cod=eq.'+encodeURIComponent(cod)+'&ciclo=eq.'+encodeURIComponent(ciclo),{method:'DELETE'})
+  .then(function(){
+    if(!regs.length){BRAS_LANC=BRAS_LANC.filter(function(r){return !(r.vendedor_cod===cod&&r.ciclo===ciclo);});return brasLoadLanc();}
+    return supaFetch('bras_lancamentos',{method:'POST',body:JSON.stringify(regs)}).then(function(r){if(!r.ok)throw new Error();return brasLoadLanc();});
+  })
+  .then(function(){if(cb)cb();brasRender();})
+  .catch(function(){toast('Erro ao salvar. Rodou o SQL da tabela bras_lancamentos?');});
+}
+
+function brasColarBI(){
+  var txt=(document.getElementById('brasBITxt')||{}).value||'';
+  var ciclo=(document.getElementById('brasBICiclo')||{}).value||BRAS_CFG.ciclos[0].id;
+  var res=document.getElementById('brasBIRes');
+  var linhas=txt.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  if(!linhas.length){toast('Cole as linhas primeiro.');return;}
+  var porVend={}, naoReco=[];
+  linhas.forEach(function(l){
+    var parts=l.split(/[\t;]+/).map(function(x){return x.trim();});
+    if(parts.length<2){naoReco.push(l);return;}
+    var vend=brasAchaVend(parts[0]); var patr=brasAchaPatr(parts[1]);
+    if(!vend||!patr){naoReco.push(l);return;}
+    var f=brasNumSimples(parts[2]),o=brasNumSimples(parts[3]),s=brasNumSimples(parts[4]);
+    if(!porVend[vend.c])porVend[vend.c]={u:vend,regs:[]};
+    porVend[vend.c].regs.push({ciclo:ciclo,vendedor_cod:vend.c,vendedor_nome:vend.n,patroc_cod:patr.cod,patroc_nome:patr.nome,fat_pct:f,pos_pct:o,sku_pct:s});
+  });
+  var vends=Object.keys(porVend);
+  if(!vends.length){res.innerHTML='<span style="color:var(--rd)">Nenhuma linha reconhecida. Confira o formato: Vendedor ; Patrocinador ; Fat% ; Pos% ; SKU%</span>';return;}
+  // mescla com o que já existe do vendedor no ciclo (não apaga patrocinadores fora do lote)
+  toast('Processando lote…');
+  var cadeia=Promise.resolve(); var totalRegs=0;
+  vends.forEach(function(vc){
+    cadeia=cadeia.then(function(){
+      var existentes=BRAS_LANC.filter(function(r){return r.vendedor_cod===vc&&r.ciclo===ciclo;});
+      var mapa={}; existentes.forEach(function(r){mapa[r.patroc_cod]=r;});
+      porVend[vc].regs.forEach(function(r){mapa[r.patroc_cod]={ciclo:r.ciclo,vendedor_cod:r.vendedor_cod,vendedor_nome:r.vendedor_nome,patroc_cod:r.patroc_cod,patroc_nome:r.patroc_nome,fat_pct:r.fat_pct,pos_pct:r.pos_pct,sku_pct:r.sku_pct};});
+      var finais=Object.keys(mapa).map(function(k){return mapa[k];});
+      totalRegs+=porVend[vc].regs.length;
+      return new Promise(function(ok,err){brasSalvarLoteRaw(vc,ciclo,finais,ok,err);});
+    });
+  });
+  cadeia.then(function(){return brasLoadLanc();}).then(function(){
+    brasRender();
+    var msg='<span style="color:var(--gn)">✅ '+totalRegs+' lançamento(s) salvos em '+vends.length+' vendedor(es).</span>';
+    if(naoReco.length)msg+='<br><span style="color:var(--am)">⚠️ '+naoReco.length+' linha(s) não reconhecida(s):</span><br><span style="color:var(--t3);font-size:11px">'+naoReco.slice(0,5).map(mxE).join('<br>')+'</span>';
+    if(res)res.innerHTML=msg;
+    var t=document.getElementById('brasBITxt'); if(t)t.value='';
+    toast('Lote salvo! ✅');
+  }).catch(function(){toast('Erro ao salvar o lote. Rodou o SQL da tabela?');});
+}
+function brasSalvarLoteRaw(cod,ciclo,regs,ok,err){
+  supaFetch('bras_lancamentos?vendedor_cod=eq.'+encodeURIComponent(cod)+'&ciclo=eq.'+encodeURIComponent(ciclo),{method:'DELETE'})
+  .then(function(){ if(!regs.length)return {ok:true}; return supaFetch('bras_lancamentos',{method:'POST',body:JSON.stringify(regs)}); })
+  .then(function(r){ if(r&&r.ok===false)throw new Error(); ok&&ok(); })
+  .catch(function(){err&&err();});
+}
+function brasAchaVend(s){var n=brasNorm(s);return USERS.find(function(u){return u.t==='vend'&&(brasNorm(u.cd)===n||brasNorm(u.c)===n||brasNorm(u.n)===n||n.indexOf(brasNorm(u.n.split(' ')[0]))>=0&&brasNorm(u.n.split(' ')[0]).length>2);});}
+function brasAchaPatr(s){var n=brasNorm(s);return BRAS_CFG.patrocinadores.find(function(p){return brasNorm(p.nome)===n||brasNorm(p.cod)===n||(n.length>2&&brasNorm(p.nome).indexOf(n)>=0)||(n.length>2&&n.indexOf(brasNorm(p.nome))>=0);});}
+
+/* ================== CONFIGURAR ================== */
+function brasTelaConfig(){
+  var g=BRAS_CFG.gatilhos;
+  var patrTxt=BRAS_CFG.patrocinadores.map(function(p){return p.nome+' | '+(p.cota==='lenda'?'Lenda':'Craque')+' | '+p.cod;}).join('\n');
+  var h='';
+  h+='<div class="admin-box"><div class="admin-title">&#127942; Gatilhos de elegibilidade</div>'
+    +'<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">São as condições da <b>Habilidade Especial</b>. Ajuste conforme a Arcofoods definir.</div>'
+    +'<div class="g2"><div class="fg"><label class="fl">Faturamento mínimo (%)</label><input id="brasGfat" class="inp" inputmode="decimal" value="'+g.fat_pct+'"></div>'
+    +'<div class="fg"><label class="fl">Positivação mínima (%)</label><input id="brasGpos" class="inp" inputmode="decimal" value="'+g.pos_pct+'"></div></div>'
+    +'<div class="fg"><label class="fl">Mínimo de pontos por patrocinador (0 = desligado)</label><input id="brasGmin" class="inp" inputmode="numeric" value="'+g.min_pts+'"></div>'
+    +'<button class="btn bp" style="width:100%" onclick="brasSalvarGatilhos()">&#128190; Salvar gatilhos</button></div>';
+
+  h+='<div class="admin-box"><div class="admin-title">&#127775; Patrocinadores (Craque = 1x, Lenda = 3x)</div>'
+    +'<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:8px">Um por linha, no formato <code class="bras-code">Nome | Craque ou Lenda | Código</code>. Só mexa se a Arcofoods mudar a lista.</div>'
+    +'<textarea id="brasPatrTxt" class="inp" rows="8">'+mxE(patrTxt)+'</textarea>'
+    +'<button class="btn bs" style="width:100%;margin-top:8px" onclick="brasSalvarPatrocinadores()">&#128190; Salvar lista de patrocinadores</button></div>';
+
+  h+='<div class="admin-box"><div class="admin-title">&#128197; Ciclos da campanha</div>';
+  BRAS_CFG.ciclos.forEach(function(c,i){
+    h+='<div class="g2" style="margin-bottom:8px"><div class="fg" style="margin:0"><label class="fl">Nome</label><input class="inp" id="brasC'+i+'nome" value="'+mxE(c.nome)+'"></div><div class="fg" style="margin:0"><label class="fl">Meses</label><input class="inp" id="brasC'+i+'mes" value="'+mxE(c.meses)+'"></div></div>';
+  });
+  h+='<button class="btn bs" style="width:100%;margin-top:4px" onclick="brasSalvarCiclos()">&#128190; Salvar ciclos</button></div>';
+  return h;
+}
+function brasSalvarGatilhos(){
+  BRAS_CFG.gatilhos={fat_pct:brasNumSimples((document.getElementById('brasGfat')||{}).value)||0,pos_pct:brasNumSimples((document.getElementById('brasGpos')||{}).value)||0,min_pts:Math.round(brasNumSimples((document.getElementById('brasGmin')||{}).value)||0)};
+  brasSalvarCfg().then(brasRender);
+}
+function brasSalvarPatrocinadores(){
+  var txt=(document.getElementById('brasPatrTxt')||{}).value||'';
+  var arr=txt.split('\n').map(function(l){return l.trim();}).filter(Boolean).map(function(l){
+    var p=l.split('|').map(function(x){return x.trim();});
+    var cota=/lenda/i.test(p[1]||'')?'lenda':'craque';
+    return {nome:p[0]||'?',cota:cota,cod:p[2]||brasNorm(p[0]).slice(0,6)};
+  });
+  if(!arr.length){toast('Lista vazia.');return;}
+  BRAS_CFG.patrocinadores=arr; brasSalvarCfg().then(brasRender);
+}
+function brasSalvarCiclos(){
+  BRAS_CFG.ciclos=BRAS_CFG.ciclos.map(function(c,i){
+    return {id:c.id,nome:((document.getElementById('brasC'+i+'nome')||{}).value||c.nome).trim(),meses:((document.getElementById('brasC'+i+'mes')||{}).value||c.meses).trim()};
+  });
+  brasSalvarCfg().then(brasRender);
+}
+
+/* ================== TUTORIAL ================== */
+function brasTutorialToggle(){
+  var el=document.getElementById('brasTutorial'); if(!el)return;
+  var abrir=el.style.display==='none';
+  el.style.display=abrir?'block':'none';
+  if(abrir&&!el.getAttribute('data-done')){el.innerHTML=brasTutorialHtml();el.setAttribute('data-done','1');}
+  var b=document.getElementById('brasTutBtn'); if(b)b.innerHTML=abrir?'&#10060; Fechar o tutorial':'&#10067; Como funciona? (tutorial completo)';
+  if(abrir)el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function brasTutorialHtml(){
+  var coord=brasEhCoord();
+  function passo(n,t,d){return '<div class="bras-tut-passo"><div class="bras-tut-n">'+n+'</div><div><div class="bras-tut-t">'+t+'</div><div class="bras-tut-d">'+d+'</div></div></div>';}
+  var h='';
+  h+='<div class="bras-tut-h">&#9917; O que é o Brasileirão de Vendas?</div>';
+  h+='<div class="bras-tut-p">É a nossa campanha em formato de futebol. Cada vendedor é um time na <b>tabela do Brasileirão</b>. Você ganha <b>pontos</b> vendendo bem em cada <b>patrocinador</b> (as marcas), e quem faz mais pontos sobe na tabela. No fim, o time que mais pontua ganha. 🏆</div>';
+
+  h+='<div class="bras-tut-h">&#128176; Como eu ganho pontos?</div>';
+  h+='<div class="bras-tut-p">Em <b>cada patrocinador</b> você tem 3 metas: <b>Faturamento</b>, <b>Positivação</b> e <b>SKU por PDV</b>. Bateu a meta, ganha ponto. Quanto mais você passa da meta, mais ponto:</div>';
+  h+='<div class="bras-tut-tabela"><div class="bras-tut-tr th"><span>Bateu</span><span>Positivação</span><span>SKU/PDV</span><span>Faturamento</span></div>'
+    +'<div class="bras-tut-tr"><span>100%</span><span>+100</span><span>+50</span><span>+50</span></div>'
+    +'<div class="bras-tut-tr"><span>110%</span><span>+125</span><span>+75</span><span>+75</span></div>'
+    +'<div class="bras-tut-tr"><span>120%</span><span>+150</span><span>+100</span><span>+100</span></div></div>';
+  h+='<div class="bras-tut-p" style="color:var(--am)"><b>&#127941; O pulo do gato:</b> patrocinador <b>Lenda vale 3x</b> os pontos! Um Lenda a 100% = <b>600 pts</b>. Um Craque a 100% = 200 pts. <b>Foque nos Lendas.</b></div>';
+
+  h+='<div class="bras-tut-h">&#128293; Como GANHAR a campanha (a estratégia)</div>';
+  h+='<div class="bras-tut-lista">'
+    +'<div>1&#65039;&#8419; <b>Ataque os Lendas primeiro.</b> Cada ponto vale 3x. Lenda esquecido = 600 pts jogados fora.</div>'
+    +'<div>2&#65039;&#8419; <b>Empurre a Positivação.</b> É a meta que mais dá ponto (+100 já na base) e a que mais cresce ao passar de 100%.</div>'
+    +'<div>3&#65039;&#8419; <b>Bônus regional (+50%):</b> se a regional inteira bater as 3 metas, <b>todo mundo</b> ganha +50%. A gente ganha junto.</div>'
+    +'<div>4&#65039;&#8419; <b>Feche os gatilhos:</b> 90% de faturamento e 95% de positivação no geral — sem isso o prêmio não conta.</div>'
+    +'</div>';
+
+  h+='<div class="bras-tut-h">&#128241; O que tem em cada parte da tela</div>';
+  if(coord){
+    h+=passo('&#128202;','Painel','A tabela do Brasileirão, o termômetro do bônus regional e os gargalos do time (onde tem ponto parado).');
+    h+=passo('&#9997;&#65039;','Lançar números','Onde você coloca os % de cada vendedor. Pode digitar na grade ou colar do BI. É o que faz o placar existir.');
+    h+=passo('&#9881;&#65039;','Configurar','Ajusta patrocinadores, ciclos e os gatilhos, caso a Arcofoods mude alguma regra.');
+    h+=passo('&#128065;&#65039;','Ver como vendedor','Abre a tela exatamente como cada vendedor vê — pra você conferir e cobrar.');
+  } else {
+    h+=passo('&#127942;','Sua pontuação e posição','Lá no topo: quantos pontos você tem e em que lugar da tabela está.');
+    h+=passo('&#128203;','Tabela do Brasileirão','A classificação de todo mundo. Seu nome fica destacado. Mira no topo!');
+    h+=passo('&#128293;','Onde você ganha mais rápido','Suas melhores jogadas do momento: Lenda parado, meta quase virando, próximo degrau de pontos.');
+    h+=passo('&#9989;','Meta Gatilho','O checklist que garante seu prêmio. Deixe tudo verde.');
+    h+=passo('&#128203;','Placar por patrocinador','Seu detalhe marca por marca, com os Lendas destacados.');
+  }
+
+  h+='<div class="bras-tut-h">&#128197; E os dois ciclos?</div>';
+  h+='<div class="bras-tut-p">A campanha tem <b>Ciclo 1 (Ago/Set/Out)</b> e <b>Ciclo 2 (Nov/Dez)</b>. Use os botões de ciclo lá em cima pra trocar, ou <b>Geral</b> pra ver a campanha inteira somada.</div>';
+  h+='<div class="bras-tut-fim">Bora subir essa tabela, time! &#9917;&#128293;</div>';
+  return h;
 }
 
 </script>

@@ -3010,7 +3010,7 @@ function garantirContatoCoord(data){
   var existe=(data||[]).some(ehCoord);
   if(existe) return Promise.resolve(data);
   var novo={tipo:'arcofoods',empresa:COORD_MARCADOR,nome:'Leandro Felipe',telefone:'21971922229',email:''};
-  return supaFetch('contatos',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(novo)})
+  return supaFetch('contatos',{method:'POST',body:JSON.stringify(novo)})
     .then(function(r){return r.json();})
     .then(function(inseridos){
       var arr=(data||[]).slice();

@@ -2914,28 +2914,29 @@ var skus=(document.getElementById('negSkus')||{value:''}).value.trim();
 var ctx=(document.getElementById('negCtx')||{value:''}).value.trim();
 var ps=(typeof coletarProds==='function')?coletarProds():[];
 var linhas=ps.map(function(p){
-  var t=parseFloat(p.t)||0,v=parseFloat(p.v)||0;
-  var pct=t>0?((t-v)/t*100):0;
-  return '- '+(p.n||'produto')+': '+(p.q||'?')+' '+(p.u||'')+' | tabela R$ '+t.toFixed(4)+' | pedido R$ '+v.toFixed(4)+' | '+pct.toFixed(1)+'%';
+  var t=parseFloat(p.t)||0,v=parseFloat(p.v)||0,id=parseFloat(p.i)||0;
+  var pct=t>0?((t-id)/t*100):0;
+  var qtd=(p.q||'?')+' '+(p.u||'');
+  return '- '+(p.n||'produto')+': '+qtd+' | preco de tabela R$ '+t.toFixed(2)+' | preco que pratico hoje R$ '+v.toFixed(2)+' | preco que PRECISO aprovar R$ '+id.toFixed(2)+' | desconto sobre a tabela '+pct.toFixed(1)+'%';
 }).join('\n');
 var tot=ps.reduce(function(a,p){return a+Math.abs(p.tot||0);},0);
-var med=ps.length?ps.reduce(function(a,p){return a+Math.abs(p.pct||0);},0)/ps.length:0;
+var med=ps.length?ps.reduce(function(a,p){var t=parseFloat(p.t)||0,id=parseFloat(p.i)||0;var d=t>0?((t-id)/t*100):0;return a+Math.abs(d);},0)/ps.length:0;
 
 function pick(a){return a[Math.floor(Math.random()*a.length)];}
 var ANGULO=pick([
- 'No apoio, cite que o concorrente ja esta com proposta na mesa.',
- 'No apoio, cite o peso e a recorrencia de compra desse cliente.',
- 'No apoio, cite que o pedido esta em aberto e a decisao e agora.',
- 'No apoio, cite o risco de perder espaco no mix e nao recuperar depois.',
- 'No apoio, cite que o valor do desconto e pequeno perto do que a conta gera.',
- 'No apoio, cite que essa conta e referencia para outras da mesma praca.'
+ 'No apoio, lembre de forma leve que o concorrente esta ativo na conta e essa condicao ajuda a manter o cliente conosco.',
+ 'No apoio, destaque de forma positiva a recorrencia de compra desse cliente e o quanto ele vale no longo prazo.',
+ 'No apoio, mencione que o pedido ja esta montado e so depende dessa condicao para fechar.',
+ 'No apoio, comente que garantir esse espaco no mix agora facilita muito as proximas compras da conta.',
+ 'No apoio, ressalte que o investimento no desconto e pequeno perto do retorno que essa conta traz.',
+ 'No apoio, lembre que esse cliente e uma boa referencia para outras contas da mesma regiao.'
 ]);
 var FECHO=pick([
- 'Termine pedindo a aprovacao ainda hoje, com cordialidade e firmeza, e informando que fecho o pedido na sequencia.',
- 'Termine solicitando uma posicao imediata, de forma educada, e se colocando a disposicao para ajustar agora mesmo.',
- 'Termine pedindo a decisao hoje e propondo, com cordialidade, aprovar apenas os itens mais criticos caso o total nao seja possivel.',
- 'Termine pedindo aprovacao imediata, de forma respeitosa, e informando que acompanho o resultado e reporto em seguida.',
- 'Termine pedindo retorno ainda nesta data, com educacao, explicando que o cliente esta com decisao aberta neste momento.'
+ 'Termine pedindo a aprovacao ainda hoje de um jeito gentil e confiante, agradecendo e dizendo que ja fecho o pedido na sequencia.',
+ 'Termine pedindo um retorno hoje de forma simpatica, se colocando a disposicao para ajustar o que for preciso juntos.',
+ 'Termine sugerindo, com leveza, que se o total nao der para aprovar, da para comecar pelos itens mais importantes, e pedindo a posicao hoje.',
+ 'Termine agradecendo o apoio, pedindo a aprovacao hoje e dizendo que acompanha o resultado e retorna com o fechamento.',
+ 'Termine pedindo, de forma cordial, um retorno ainda hoje, explicando que o cliente esta esperando para decidir.'
 ]);
 var VAR=Math.random().toString(36).slice(2,7);
 
@@ -2951,15 +2952,15 @@ var prompt='Escreva uma mensagem CURTA que EU vou enviar para o Supply/Pricing d
 +'=== REGRAS (execucao '+VAR+') ===\n'
 +'1. ENTRE 100 E 120 PALAVRAS, em DOIS paragrafos curtos. Deixe UMA LINHA EM BRANCO entre os dois paragrafos. Nao ultrapasse. Quem le tem pressa e o texto precisa respirar.\n'
 +'2. Escreva em PRIMEIRA PESSOA, como se eu mesmo tivesse escrito: "preciso", "estou", "consigo", "sugiro", "fecho". Nunca terceira pessoa, nunca linguagem de relatorio.\n'
-+'3. A PRIMEIRA FRASE ja deve trazer o pedido e o numero: o que preciso, em quantos SKUs, para qual cliente e o impacto em R$. Se a pessoa ler so essa linha, precisa entender tudo.\n'
-+'4. PARAGRAFO 1: o pedido, os numeros e a situacao concreta da conta. Pode citar os itens mais relevantes e o percentual, sem listar tudo.\n'
-+'5. PARAGRAFO 2: o apoio e o fechamento. '+ANGULO+' Deixe claro, sem drama, o que a empresa perde se a condicao nao sair: nao apenas este pedido, mas presenca na conta e espaco no mix, que raramente volta pelo mesmo preco.\n'
++'3. A PRIMEIRA FRASE ja deve trazer o pedido e o numero: para qual cliente, em quantos SKUs, e o impacto em R$. Se a pessoa ler so essa linha, precisa entender tudo.\n'
++'4. PARAGRAFO 1: o pedido, os numeros e a situacao da conta, de forma amigavel. Ao citar um item de exemplo, use SEMPRE o "preco que PRECISO aprovar" como o valor pedido (ex: de R$ X praticado hoje para R$ Y que preciso aprovar). NUNCA apresente o preco praticado hoje como se fosse o pedido. Cite no maximo dois itens e resuma o resto.\n'
++'5. PARAGRAFO 2: o apoio e o fechamento, em tom amigavel e colaborativo. '+ANGULO+' Mostre o lado positivo de aprovar (manter o cliente, garantir o espaco no mix, fortalecer a conta) em vez de ameacar com perdas. Nada de drama nem de tom de ameaca.\n'
 +'6. '+FECHO+'\n'
 +'7. Sem saudacao longa, sem subtitulos, sem topicos, sem assinatura. Texto corrido em dois paragrafos, com uma linha em branco separando o primeiro do segundo (uma quebra de linha dupla). Nunca junte os dois paragrafos em bloco unico.\n'
 +'8. Nao liste os itens um a um em formato de tabela. Cite no maximo dois itens de exemplo e resuma o resto.\n\n'
 +'=== TOM ===\n'
-+'- Direto, seguro e respeitoso. Como colega que precisa de uma decisao, nao como quem pede favor.\n'
-+'- A urgencia vem do numero e do risco real, nunca de adjetivo ou drama.\n'
++'- Direto, simpatico e respeitoso. Como um colega parceiro pedindo apoio para fechar um bom negocio juntos, com leveza e confianca.\n'
++'- A urgencia vem do pedido em aberto e do numero, transmitida de forma amigavel, nunca com drama, pressao agressiva ou tom de ameaca.\n'
 +'- Proibido: desespero, imploro, ultima chance, por favor, por gentileza, urgentissimo.\n'
 +'- PROIBIDO pedir retorno de forma passiva. Nunca escreva "assim que possivel", "quando puder", "no aguardo", "fico no aguardo", "qualquer coisa me avisa", "se possivel". O pedido de decisao e para HOJE, dito com educacao e firmeza.\n'
 +'- Nao classifique o canal do cliente (nao diga food service, varejo, atacado) a menos que esteja no contexto.\n'

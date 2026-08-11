@@ -2995,7 +2995,16 @@ function verPix(){var b=document.getElementById('pixBox');b.style.display=b.styl
 function copiarPix(){var ls=['Dados Bancarios Arcofoods','Tipo de Chave: CNPJ','Chave PIX: 08.365.731/0001-42','Banco: Itau','Agencia: 0530','C/c: 55341-1'];navigator.clipboard&&navigator.clipboard.writeText(ls.join('\n')).then(function(){toast('Dados PIX copiados!');});}
 
 var COORD_MARCADOR='COORD 40';
-function ehCoord(c){return c && (c.empresa===COORD_MARCADOR || (c.nome&&c.nome.indexOf('Leandro Felipe')!==-1&&(c.empresa||'').indexOf('COORD')!==-1));}
+function ehCoord(c){
+  if(!c)return false;
+  function norm(s){return String(s||'').toLowerCase().replace(/[\s\.]/g,'');}
+  var nome=norm(c.nome), emp=norm(c.empresa);
+  // Sobe pro topo se nome ou empresa indicar o coordenador (Leandro / COORD / COORD40)
+  return nome.indexOf('leandro')!==-1
+      || emp.indexOf('leandro')!==-1
+      || emp.indexOf('coord')!==-1
+      || nome.indexOf('coord40')!==-1;
+}
 function garantirContatoCoord(data){
   // Se o coordenador ainda nao existe no banco, cria automaticamente (uma unica vez).
   var existe=(data||[]).some(ehCoord);
@@ -3016,8 +3025,15 @@ function carregarContatos(){
     window._CONTATOS = data||[];
     var arc = (data||[]).filter(function(c){return c.tipo!=='fornecedor';});
     var for_ = (data||[]).filter(function(c){return c.tipo==='fornecedor';});
-    // Coordenador sempre em primeiro na lista Arcofoods
-    arc.sort(function(a,b){var ca=ehCoord(a)?0:1, cb=ehCoord(b)?0:1; return ca-cb;});
+    // Coordenador sempre em primeiro na lista Arcofoods (se houver mais de um, o mais antigo em cima)
+    arc.sort(function(a,b){
+      var ca=ehCoord(a)?0:1, cb=ehCoord(b)?0:1;
+      if(ca!==cb)return ca-cb;
+      // desempate: mantém a ordem de criação original
+      var ta=a.criado_em?new Date(a.criado_em).getTime():0;
+      var tb=b.criado_em?new Date(b.criado_em).getTime():0;
+      return ta-tb;
+    });
     var isAdmin = eu && eu.t==='coord';
 
     function renderCard(c){

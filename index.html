@@ -486,11 +486,6 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
       </div>
       <div id="grupoArcofoods">
         <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--am);margin:16px 0 10px 4px">&#11088; Arcofoods</div>
-        <div class="contcard">
-          <div class="contep">Coordenador Regional</div>
-          <div class="contnm">Leandro Felipe &middot; COORD 40</div>
-          <div class="contlinks"><a href="https://wa.me/5521971922229?text=Ola%20Leandro!" target="_blank" class="cwpp">&#128172; WhatsApp</a></div>
-        </div>
         <div id="listaArcofoods"></div>
       </div>
       <div id="grupoFornecedores" style="display:none">
@@ -510,14 +505,6 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
           <div class="fg"><label class="fl">Imagem (opcional)</label><input type="file" id="campImg" accept="image/*" class="inp" style="padding:8px"></div>
           <button class="btn bp" onclick="salvarCampanha()" style="width:100%">+ Publicar Campanha</button>
         </div>
-      </div>
-      <div id="biCampBox" style="background:linear-gradient(135deg,rgba(99,102,241,0.18),rgba(59,130,246,0.12));border:1.5px solid rgba(99,102,241,0.4);border-radius:16px;padding:22px 18px;margin-bottom:18px">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-          <div style="width:44px;height:44px;background:linear-gradient(135deg,#6366f1,#3B82F6);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">&#128200;</div>
-          <div><div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#818cf8;margin-bottom:2px">PAINEL INTERATIVO</div><div style="font-size:17px;font-weight:700;color:var(--t)">BI de Campanhas</div></div>
-        </div>
-        <div style="font-size:13px;color:var(--t2);margin-bottom:16px;line-height:1.6">Acompanhe em tempo real o desempenho das campanhas, metas e resultados da equipe.</div>
-        <a href="https://app.powerbi.com/view?r=eyJrIjoiZmMxNjg0ZmYtZjY3OS00MWYyLWE5ZGEtYzA3MDNkM2RlOGY2IiwidCI6IjZlOGU5MWQ2LWQyY2QtNDA4MC05MTFlLTlhODE3NjNhOTA0ZiJ9" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#6366f1,#3B82F6);border:none;border-radius:12px;padding:14px;color:#fff;font-weight:700;font-size:14px;text-decoration:none">&#128200; Abrir BI de Campanhas &rarr;</a>
       </div>
       <div id="listaCampanhas"><div class="loading">Carregando campanhas...</div></div>
     </div>
@@ -603,12 +590,13 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
       </div>
       <div class="admin-box">
         <div class="admin-title" style="color:#3B82F6">&#128228; Montar pacote do vendedor</div>
+        <div style="background:rgba(16,185,129,0.10);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:11px 13px;margin-bottom:12px;font-size:12px;color:var(--t);line-height:1.6">&#9989; <b style="color:var(--gn)">Pode colar tudo de uma vez.</b> Em <b>N&#227;o positivados</b> e <b>Acompanhamento</b>, cole a lista com <b>todos os vendedores</b> &mdash; o Radar filtra sozinho o vendedor selecionado acima (desde que cada linha tenha o c&#243;digo/nome do vendedor). S&#243; o <b>Churn</b> &#233; individual, colado por vendedor.</div>
         <div class="fg"><label class="fl">Vendedor</label><select id="radarVend" class="inp" onchange="radarVendMudou()"><option value="">Selecione o vendedor...</option></select></div>
-        <div class="fg"><label class="fl">Churn detalhado (c&#243;digos deste vendedor)</label><textarea id="radarChurnTxt" class="inp" rows="3" placeholder="Cole o churn detalhado deste vendedor (CodCli + data)"></textarea>
+        <div class="fg"><label class="fl">Churn detalhado <span style="color:var(--am);font-weight:700">&#183; individual deste vendedor</span></label><textarea id="radarChurnTxt" class="inp" rows="3" placeholder="Cole o churn detalhado SOMENTE deste vendedor (CodCli + data)"></textarea>
         <button class="btn bs" onclick="radarAddChurn()" style="width:100%;margin-top:6px">&#10133; Adicionar ao churn deste vendedor</button>
         <div id="radarChurnInfo" style="font-size:12px;color:var(--t2);margin-top:8px;display:none"></div></div>
-        <div class="fg"><label class="fl">N&#227;o positivados</label><textarea id="radarNaoposTxt" class="inp" rows="3" placeholder="Cole os n&#227;o-positivados (pode colar de todos, o Radar filtra este vendedor)"></textarea></div>
-        <div class="fg"><label class="fl">Acompanhamento (KPIs)</label><textarea id="radarAcompTxt" class="inp" rows="3" placeholder="Cole o acompanhamento (pode colar de todos, o Radar filtra este vendedor)"></textarea></div>
+        <div class="fg"><label class="fl">N&#227;o positivados <span style="color:var(--gn);font-weight:700">&#183; pode colar de todos</span></label><textarea id="radarNaoposTxt" class="inp" rows="3" placeholder="Cole os n&#227;o-positivados de TODOS os vendedores &mdash; o Radar filtra este vendedor"></textarea></div>
+        <div class="fg"><label class="fl">Acompanhamento (KPIs) <span style="color:var(--gn);font-weight:700">&#183; pode colar de todos</span></label><textarea id="radarAcompTxt" class="inp" rows="3" placeholder="Cole o acompanhamento de TODOS os vendedores &mdash; o Radar filtra este vendedor"></textarea></div>
         <button class="btn bp" onclick="radarMontarPacote()" style="width:100%;margin-top:4px">&#128228; Montar pacote pronto</button>
         <div id="radarPacoteBox" style="display:none;margin-top:14px"></div>
       </div>
@@ -624,6 +612,18 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
         <div id="mixTotalSelo" style="display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:var(--s1);border:1px solid var(--b2);border-radius:20px;padding:7px 14px;font-size:12px;font-weight:700;color:var(--t)">&#128230; carregando itens...</div>
       </div>
       <div id="adminMix" style="display:none">
+        <div class="admin-box" style="border-color:rgba(245,158,11,0.3)">
+          <div class="admin-title">&#127919; Per&#237;odo do Foco</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">Escolha como o destaque aparece para a equipe. O r&#243;tulo muda em todos os lugares (bot&#227;o, bloco, imagem e mensagem do grupo).</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="focoPeriodoSel" class="inp" style="flex:1;min-width:180px">
+              <option value="semana">Foco da Semana</option>
+              <option value="quinzena">Foco da Quinzena</option>
+              <option value="mes" selected>Foco do M&#234;s</option>
+            </select>
+            <button class="btn bp" onclick="salvarFocoPeriodo()" style="flex-shrink:0">Salvar</button>
+          </div>
+        </div>
         <div class="admin-box">
           <div class="admin-title">&#128274; Area do Coordenador - Adicionar Item</div>
           <div class="g2">
@@ -648,7 +648,7 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
         <select id="mixDep" class="inp" onchange="filtrarMix()" style="flex:1;min-width:140px">
           <option value="">Todos os departamentos</option>
         </select>
-        <button id="mixFocoBtn" class="btn bs" onclick="toggleMixSoFoco()" style="flex-shrink:0">&#127919; S&#243; o Foco do M&#234;s</button>
+        <button id="mixFocoBtn" class="btn bs" onclick="toggleMixSoFoco()" style="flex-shrink:0">&#127919; S&#243; o Foco</button>
       </div>
       <div id="focoShareBox" style="display:none;margin-bottom:14px"></div>
       <div id="mixContador" style="font-size:12px;color:var(--t2);margin-bottom:12px;text-align:right"></div>
@@ -699,17 +699,52 @@ var eu=null;var prods=[];var tipoAtual=null;
 var mixCache=[];
 var mixSoFoco=false;
 
+/* ===== Rótulo do Foco (editável: Semana / Quinzena / Mês) ===== */
+var FOCO_OPCOES={semana:'Foco da Semana',quinzena:'Foco da Quinzena',mes:'Foco do M\u00eas'};
+var FOCO_PERIODO='mes'; // padrão
+function focoLabel(){return FOCO_OPCOES[FOCO_PERIODO]||FOCO_OPCOES.mes;}
+function focoLabelUpper(){return focoLabel().toUpperCase();}
+function carregarFocoLabel(){
+  return supaFetch('qg_config?chave=eq.foco_label').then(function(r){return r.json();}).then(function(d){
+    if(Array.isArray(d)&&d.length&&d[0].valor&&d[0].valor.periodo&&FOCO_OPCOES[d[0].valor.periodo]){
+      FOCO_PERIODO=d[0].valor.periodo;
+    }
+  }).catch(function(){});
+}
+function aplicarFocoLabelNaTela(){
+  // Atualiza os textos visíveis que dependem do rótulo
+  var btn=document.getElementById('mixFocoBtn');
+  if(btn){btn.innerHTML=mixSoFoco?'Ver todos os produtos':('&#127919; S\u00f3 o '+focoLabel());}
+  var sel=document.getElementById('focoPeriodoSel');
+  if(sel)sel.value=FOCO_PERIODO;
+}
+function salvarFocoPeriodo(){
+  var sel=document.getElementById('focoPeriodoSel');
+  if(!sel)return;
+  var novo=sel.value;
+  if(!FOCO_OPCOES[novo]){toast('Op\u00e7\u00e3o inv\u00e1lida.');return;}
+  FOCO_PERIODO=novo;
+  toast('Salvando...');
+  supaFetch('qg_config',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},
+    body:JSON.stringify({chave:'foco_label',valor:{periodo:novo}})})
+   .then(function(){toast('Foco atualizado para "'+focoLabel()+'"!');aplicarFocoLabelNaTela();filtrarMix();})
+   .catch(function(){toast('Erro ao salvar.');});
+}
+
 function carregarMix(){
   document.getElementById('mixLista').innerHTML='<div class="loading">Carregando Mix Estrategico...</div>';
+  carregarFocoLabel().then(function(){
   supaFetch('mix_estrategico?ativo=eq.true&order=departamento.asc,secao.asc,nome.asc').then(function(r){
     if(!r.ok){return r.text().then(function(t){throw new Error('HTTP '+r.status+': '+t);});}
     return r.json();
   }).then(function(data){
     mixCache=data||[];
     preencherMixDep();
+    aplicarFocoLabelNaTela();
     filtrarMix();
   }).catch(function(e){
     document.getElementById('mixLista').innerHTML='<div class="empty">Erro ao carregar Mix Estrategico.</div>';
+  });
   });
 }
 function preencherMixDep(){
@@ -735,7 +770,7 @@ function renderFocoBloco(focoItens,isAdmin){
   if(!focoItens.length){
     if(isAdmin){
       return '<div style="background:linear-gradient(135deg,rgba(245,158,11,0.12),var(--s1));border:1px dashed var(--am3);border-radius:16px;padding:18px;margin-bottom:20px;text-align:center">'
-        +'<div style="font-size:15px;font-weight:800;color:var(--am);margin-bottom:6px">&#127919; Foco do M&#234;s vazio</div>'
+        +'<div style="font-size:15px;font-weight:800;color:var(--am);margin-bottom:6px">&#127919; '+focoLabel()+' vazio</div>'
         +'<div style="font-size:12px;color:var(--t2);line-height:1.6">Marque de 10 a 15 itens abaixo com o bot&#227;o <b style="color:var(--am)">&#127919; Foco</b>. Eles sobem pra c&#225; no topo, em destaque, pra equipe focar no que paga pr&#234;mio.</div></div>';
     }
     return '';
@@ -746,7 +781,7 @@ function renderFocoBloco(focoItens,isAdmin){
   }).join('');
   var contador=isAdmin?'<span style="font-size:11px;color:'+(focoItens.length>15?'var(--rd)':'var(--t3)')+';font-weight:700">'+focoItens.length+' de 15</span>':'';
   return '<div style="background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(239,68,68,0.06));border:1.5px solid var(--am3);border-radius:16px;padding:20px 18px;margin-bottom:20px">'
-    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:22px">&#127919;</span><div style="font-size:16px;font-weight:800;color:var(--am);letter-spacing:.5px">FOCO DO M&#202;S</div></div>'+contador+'</div>'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:22px">&#127919;</span><div style="font-size:16px;font-weight:800;color:var(--am);letter-spacing:.5px">'+focoLabelUpper()+'</div></div>'+contador+'</div>'
     +'<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:14px"><b style="color:var(--am)">Ofere&#231;a estes itens em toda visita</b>: apresente, mostre o valor e convide o cliente a levar. Cada um puxa sua <b style="color:var(--am)">margem</b> e seu <b style="color:var(--am)">SKU/cliente</b> &mdash; os dois KPIs que pagam pr&#234;mio. Oferecer com convic&#231;&#227;o &#233; vender: quanto mais voc&#234; oferece, mais o cliente leva.</div>'
     +linhas
     +(isAdmin?'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn bp" style="flex:1;min-width:150px" onclick="compartilharFocoMes()">&#128228; Compartilhar no grupo</button><button class="btn bs" style="flex:1;min-width:120px" onclick="limparFocoMes()">&#128465; Limpar Foco</button></div>':'')
@@ -761,8 +796,8 @@ function renderMix(filtroTexto,filtroDep){
   var focoItens=mixCache.filter(function(p){return p.foco;});
   // Modo "Só o Foco do Mês": mostra apenas o bloco de destaque
   if(mixSoFoco){
-    document.getElementById('mixLista').innerHTML=renderFocoBloco(focoItens,isAdmin)||'<div class="empty"><div class="eico">&#127919;</div>Nenhum item no Foco do M&#234;s ainda.</div>';
-    document.getElementById('mixContador').textContent=focoItens.length+' item(ns) no Foco do M&#234;s';
+    document.getElementById('mixLista').innerHTML=renderFocoBloco(focoItens,isAdmin)||'<div class="empty"><div class="eico">&#127919;</div>Nenhum item no '+focoLabel()+' ainda.</div>';
+    document.getElementById('mixContador').textContent=focoItens.length+' item(ns) no '+focoLabel();
     return;
   }
   var grupos={};
@@ -811,7 +846,7 @@ function toggleFocoMix(id,novo){
 function toggleMixSoFoco(){
   mixSoFoco=!mixSoFoco;
   var b=document.getElementById('mixFocoBtn');
-  if(b){b.innerHTML=mixSoFoco?'Ver todos os produtos':'&#127919; So o Foco do Mes';b.classList.toggle('bp',mixSoFoco);b.classList.toggle('bs',!mixSoFoco);}
+  if(b){b.innerHTML=mixSoFoco?'Ver todos os produtos':('&#127919; S\u00f3 o '+focoLabel());b.classList.toggle('bp',mixSoFoco);b.classList.toggle('bs',!mixSoFoco);}
   filtrarMix();
 }
 function abrirFocoDoMes(){
@@ -833,12 +868,12 @@ function limparFocoMes(){
 }
 function compartilharFocoMes(){
   var foco=mixCache.filter(function(p){return p.foco;});
-  if(!foco.length){toast('Marque itens no Foco do Mes antes de compartilhar.');return;}
+  if(!foco.length){toast('Marque itens no '+focoLabel()+' antes de compartilhar.');return;}
   if(typeof html2canvas==='undefined'){toast('Aguarde o gerador de imagem carregar e tente de novo.');return;}
   var hoje=new Date();
   var mesNome=hoje.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
   mesNome=mesNome.charAt(0).toUpperCase()+mesNome.slice(1);
-  var Lt=['\u{1F3AF} *FOCO DO MÊS \u2014 ARCOFOODS NORTE FLUMINENSE*','',mesNome,'','Time, esses são os itens que enchem o bolso de vocês este mês \u{1F447}',''];
+  var Lt=['\u{1F3AF} *'+focoLabelUpper()+' \u2014 ARCOFOODS NORTE FLUMINENSE*','',mesNome,'','Time, esses são os itens que enchem o bolso de vocês este mês \u{1F447}',''];
   foco.forEach(function(p,i){Lt.push((i+1)+'. '+p.nome);});
   Lt.push('','Ofereçam estes itens em cada visita: apresentem, mostrem o valor e convidem o cliente a levar. Cada um sobe sua *margem* e seu *SKU por cliente* \u2014 os KPIs que pagam prêmio. Vender é oferecer: quanto mais você oferece com convicção, mais o cliente leva. \u{1F4B0}','','Bora oferecer mais e vender melhor! \u{1F680}','_GERENCION QG_');
   var texto=Lt.join('\n');
@@ -849,7 +884,7 @@ function compartilharFocoMes(){
   var card=document.createElement('div');
   card.style.cssText='position:fixed;left:-9999px;top:0;width:460px;background:linear-gradient(160deg,#0B1929 0%,#0F1F35 100%);font-family:Inter,sans-serif;border-radius:22px;overflow:hidden';
   card.innerHTML='<div style="background:linear-gradient(135deg,#F59E0B,#EF4444);padding:24px 28px">'
-    +'<div style="font-size:15px;font-weight:800;letter-spacing:3px;color:#0A0A0A">\u{1F3AF} FOCO DO MÊS</div>'
+    +'<div style="font-size:15px;font-weight:800;letter-spacing:3px;color:#0A0A0A">\u{1F3AF} '+focoLabelUpper()+'</div>'
     +'<div style="font-size:25px;font-weight:900;color:#0A0A0A;margin-top:3px;line-height:1.15">Os itens que pagam seu prêmio</div>'
     +'<div style="font-size:14px;color:rgba(0,0,0,0.65);margin-top:5px;font-weight:600">Arcofoods \u00b7 Norte Fluminense \u00b7 '+mesNome+'</div></div>'
     +'<div style="padding:22px 26px 8px">'+itensHTML+'</div>'
@@ -928,7 +963,7 @@ function _mixInserirLote(itens,i,total){
     var t=document.getElementById('mixSubTxt');if(t)t.value='';
     var p=document.getElementById('mixSubPreview');if(p)p.innerHTML='';
     mixSoFoco=false;
-    var b=document.getElementById('mixFocoBtn');if(b){b.innerHTML='\u{1F3AF} So o Foco do Mes';b.classList.remove('bp');b.classList.add('bs');}
+    var b=document.getElementById('mixFocoBtn');if(b){b.innerHTML='\u{1F3AF} S\u00f3 o '+focoLabel();b.classList.remove('bp');b.classList.add('bs');}
     toast('Lista substituida! '+total+' itens carregados.');
     carregarMix();
     return;
@@ -1373,7 +1408,37 @@ function prospCard(p){
   }else if(st==='fechado'){acoes='<div style="margin-top:8px;font-size:12px;color:var(--gn);font-weight:700">\u2705 Fechado'+(p.codigo_cliente?' \u2014 c\u00f3digo '+p.codigo_cliente:'')+'</div>';}
   else{acoes='<div style="margin-top:8px;font-size:12px;color:var(--t3)">'+(p.feedback?'Motivo: '+p.feedback:'N\u00e3o rolou')+(eu&&eu.t==='coord'?' <button onclick="prospReativar(\''+p.id+'\')" style="background:none;border:none;color:#3B82F6;text-decoration:underline;cursor:pointer;font-family:Inter,sans-serif;font-size:11px;padding:0">devolver pra fila</button>':'')+'</div>';}
   var delBtn=(eu&&eu.t==='coord')?'<button onclick="prospExcluir(\''+p.id+'\')" title="Apagar da fila" style="position:absolute;top:10px;right:10px;background:var(--rd2);border:1px solid rgba(239,68,68,.25);color:var(--rd);border-radius:8px;width:30px;height:30px;font-size:14px;cursor:pointer;font-family:Inter,sans-serif;line-height:1;padding:0">\uD83D\uDDD1\uFE0F</button>':'';
-  return '<div style="position:relative;background:var(--s1);border:1px solid var(--b);border-left:3px solid '+borda+';border-radius:12px;padding:14px;'+(delBtn?'padding-right:48px;':'')+'margin-bottom:10px">'+delBtn+'<div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:3px">'+(p.nome||'(sem nome)')+selo+'</div>'+(p.endereco?'<div style="font-size:12px;color:var(--t2);line-height:1.5">\uD83D\uDCCD '+p.endereco+'</div>':'')+(p.telefone?'<div style="font-size:12px;color:var(--t2)">\uD83D\uDCDE '+p.telefone+'</div>':'')+(p.cnpj?'<div style="font-size:11px;color:var(--t3)">CNPJ '+p.cnpj+'</div>':'')+lembrete+acoes+'</div>';
+  var parecerBloco=prospParecerBloco(p);
+  return '<div style="position:relative;background:var(--s1);border:1px solid var(--b);border-left:3px solid '+borda+';border-radius:12px;padding:14px;'+(delBtn?'padding-right:48px;':'')+'margin-bottom:10px">'+delBtn+'<div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:3px">'+(p.nome||'(sem nome)')+selo+'</div>'+(p.endereco?'<div style="font-size:12px;color:var(--t2);line-height:1.5">\uD83D\uDCCD '+p.endereco+'</div>':'')+(p.telefone?'<div style="font-size:12px;color:var(--t2)">\uD83D\uDCDE '+p.telefone+'</div>':'')+(p.cnpj?'<div style="font-size:11px;color:var(--t3)">CNPJ '+p.cnpj+'</div>':'')+lembrete+acoes+parecerBloco+'</div>';
+}
+function prospParecerBloco(p){
+  var isCoord=eu&&eu.t==='coord';
+  var val=(p.parecer||'');
+  var valEsc=String(val).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  if(isCoord){
+    // Coordenador só lê o parecer do vendedor
+    if(!val) return '';
+    return '<div style="margin-top:10px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:9px;padding:10px 12px">'
+      +'<div style="font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#3B82F6;margin-bottom:4px">\uD83D\uDCDD Parecer do vendedor</div>'
+      +'<div style="font-size:12px;color:var(--t);line-height:1.55;white-space:pre-wrap">'+valEsc+'</div></div>';
+  }
+  // Vendedor: campo editável, salva a qualquer momento
+  return '<div style="margin-top:10px">'
+    +'<label style="font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--t3);display:block;margin-bottom:4px">\uD83D\uDCDD Seu parecer sobre este cliente</label>'
+    +'<textarea id="parecer_'+p.id+'" class="inp" rows="2" placeholder="Como foi a visita? O que voc\u00ea achou deste cliente? (opcional)" style="font-size:12px">'+valEsc+'</textarea>'
+    +'<button class="btn bs" style="width:100%;margin-top:6px;font-size:12px;padding:8px" onclick="prospSalvarParecer(\''+p.id+'\')">\uD83D\uDCBE Salvar parecer</button></div>';
+}
+function prospSalvarParecer(id){
+  var el=document.getElementById('parecer_'+id);
+  if(!el)return;
+  var txt=el.value.trim();
+  supaFetch('prospeccao?id=eq.'+id,{method:'PATCH',body:JSON.stringify({parecer:txt})}).then(function(r){
+    if(!r.ok)throw new Error();
+    // atualiza cache local sem recarregar tudo
+    var item=prospCache.find(function(x){return String(x.id)===String(id);});
+    if(item)item.parecer=txt;
+    toast('Parecer salvo! \uD83D\uDCBE');
+  }).catch(function(){toast('Erro ao salvar o parecer. Rodou o SQL da coluna parecer?');});
 }
 function renderProspBoard(){
   var box=document.getElementById('prospBoard');if(!box)return;var by={};
@@ -2626,159 +2691,6 @@ function salvarImagemQGDia(){
 }
 
 
-/* ===== QG DO DIA ===== */
-var qgdiaLista=[];
-var FRASES_PARABENS_DIA={
-  1:'Quem come\u00e7ou a semana batendo a meta j\u00e1 deu o tom. Parab\u00e9ns!',
-  2:'Resultado de ontem mostra quem n\u00e3o tira o p\u00e9. Aplausos!',
-  3:'Meio de semana e voc\u00eas continuam entregando. Orgulho da equipe!',
-  4:'A meta de ontem caiu pra esses craques. Sigam assim!',
-  5:'Fechando a semana com resultado de quem joga pra ganhar. Parab\u00e9ns!'
-};
-
-function rankingDisponivelHoje(){var d=new Date().getDay();return d>=1&&d<=5;}
-function getFraseParabensHoje(){return FRASES_PARABENS_DIA[new Date().getDay()]||'';}
-
-function parseLinhasCodNome(texto){
-  return texto.split('\n').map(function(l){return l.trim();}).filter(Boolean).map(function(l){
-    var m=l.match(/^(\d+)\s*[-\u2013\u2014.]?\s*(.+)$/);
-    if(m)return{cod:m[1],nome:m[2].trim()};
-    return{cod:'',nome:l};
-  });
-}
-function parseLinhasMetas(texto){
-  return texto.split('\n').map(function(l){return l.trim();}).filter(Boolean).map(function(l){
-    var v=l.replace(/[^\d,\.]/g,'').replace(/\./g,'').replace(',','.');
-    return parseFloat(v)||0;
-  });
-}
-function parseLinhasRanking(texto){
-  return texto.split('\n').map(function(l){return l.trim();}).filter(Boolean);
-}
-
-function montarListaQGDia(){
-  var codNomeTxt=document.getElementById('qgdiaCodNome').value;
-  var metasTxt=document.getElementById('qgdiaMetas').value;
-  if(!codNomeTxt.trim()){toast('Cole a lista de c\u00f3digo e nome primeiro.');return;}
-  var lista=parseLinhasCodNome(codNomeTxt);
-  var metas=parseLinhasMetas(metasTxt);
-  if(!lista.length){toast('N\u00e3o consegui identificar nenhum vendedor.');return;}
-  qgdiaLista=lista.map(function(v,i){return{cod:v.cod,nome:v.nome,meta:metas[i]||0};});
-  renderQGDiaPreview();
-  toast(qgdiaLista.length+' vendedor(es) carregado(s)!');
-}
-
-function renderQGDiaPreview(){
-  var box=document.getElementById('qgdiaListaBox');
-  var prev=document.getElementById('qgdiaListaPreview');
-  if(!qgdiaLista.length){box.style.display='none';return;}
-  box.style.display='block';
-  prev.innerHTML=qgdiaLista.map(function(v,i){
-    var metaTxt=v.meta?'R$ '+v.meta.toLocaleString('pt-BR',{minimumFractionDigits:2}):'<span style="color:var(--rd)">sem meta</span>';
-    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--s2);border-radius:8px;margin-bottom:6px">'
-      +'<span style="font-size:11px;color:var(--t3);width:34px">'+(v.cod||'-')+'</span>'
-      +'<span style="flex:1;font-size:13px;color:var(--t)">'+v.nome+'</span>'
-      +'<span style="font-size:13px;font-weight:700;color:var(--am)">'+metaTxt+'</span>'
-      +'</div>';
-  }).join('');
-}
-
-function gerarImagemQGDia(){
-  if(!qgdiaLista.length){toast('Monte a lista de vendedores primeiro (Etapa 1 e 2).');return;}
-  var hoje=new Date();
-  var dataTxt=hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-  dataTxt=dataTxt.charAt(0).toUpperCase()+dataTxt.slice(1);
-  var vend=eu?eu.n:'';
-  var cod=eu?eu.cd:'';
-
-var metasRows=qgdiaLista.map(function(v,i){
-    var metaTxt=v.meta?v.meta.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
-    if(i===0){
-      return '<div style="display:flex;align-items:center;padding:11px 14px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.35);border-left:3px solid #3B82F6;border-radius:8px;margin-bottom:8px">'
-        +'<span style="font-size:9px;color:rgba(255,255,255,0.35);width:30px">'+(v.cod||'&mdash;')+'</span>'
-        +'<span style="flex:1;font-size:12px;font-weight:700;color:#93C5FD;letter-spacing:.5px;text-transform:uppercase">'+v.nome.toUpperCase()+'</span>'
-        +'<span style="font-size:13px;font-weight:800;color:#93C5FD">R$ '+metaTxt+'</span>'
-        +'</div>';
-    }
-    return '<div style="display:flex;align-items:center;padding:9px 14px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:5px">'
-      +'<span style="font-size:9px;color:rgba(255,255,255,0.35);width:30px">'+(v.cod||'-')+'</span>'
-      +'<span style="flex:1;font-size:12px;font-weight:600;color:#F0F6FF">'+v.nome.toUpperCase()+'</span>'
-      +'<span style="font-size:12px;font-weight:800;color:#F59E0B">R$ '+metaTxt+'</span>'
-      +'</div>';
-  }).join('');
-
-  var rankingTxt=(document.getElementById('qgdiaRanking')||{value:''}).value;
-  var rankingLista=parseLinhasRanking(rankingTxt);
-  var rankingBlock='';
-  if(rankingDisponivelHoje()&&rankingLista.length){
-    var frase=getFraseParabensHoje();
-    var nomesHtml=rankingLista.map(function(n){
-      return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
-        +'<span style="font-size:14px">\uD83C\uDFC6</span>'
-        +'<span style="font-size:13px;font-weight:700;color:#F0F6FF">'+n+'</span>'
-        +'</div>';
-    }).join('');
-   rankingBlock='<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.4);border-left:3px solid #F59E0B;border-radius:10px;padding:12px 14px;margin-bottom:16px">'
-      +'<div style="font-size:12px;font-weight:700;color:#F0F6FF;line-height:1.5;margin-bottom:10px">'+frase+' \uD83D\uDC4F</div>'
-      +nomesHtml
-      +'</div>';
-  }
-
-  var dicaTxt=(document.getElementById('qgdiaDica')||{value:''}).value.trim();
-  var dicaBlock=dicaTxt
-    ?'<div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:12px 14px;margin-bottom:16px">'
-     +'<div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#10B981;text-transform:uppercase;margin-bottom:6px">Dica do dia</div>'
-     +'<div style="font-size:13px;color:#F0F6FF;line-height:1.5">'+dicaTxt+'</div>'
-     +'</div>'
-    :'';
-
-  document.getElementById('qgdiaCapture').innerHTML=
-    '<div style="background:#0B1929;border:2px solid rgba(245,158,11,0.5);border-radius:16px;padding:26px;width:480px;font-family:Inter,sans-serif">'
-    +'<div style="text-align:center;margin-bottom:18px">'
-   +'<div style="font-size:10px;font-weight:800;letter-spacing:2.5px;color:#F59E0B;text-transform:uppercase;margin-bottom:18px;padding-top:6px">GERENCION QG &middot; ARCOFOODS &middot; NORTE FLUMINENSE</div>'
-   +'<div style="font-size:11px;color:rgba(255,255,255,0.7);margin-bottom:10px;margin-top:8px">Coordenador 40 &mdash; Leandro Felipe</div>'
-    +'<div style="font-size:22px;font-weight:900;color:#F59E0B;letter-spacing:1.5px">METAS DO DIA</div>'
-    +'<div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:4px">'+dataTxt+'</div>'
-    +'</div>'
-    +'<div style="margin-bottom:16px">'+metasRows+'</div>'
-    +rankingBlock
-    +dicaBlock
-    +'<div style="text-align:center;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08)">'
-    +'<div style="font-size:9px;font-weight:800;letter-spacing:2px;color:rgba(255,255,255,0.7)">GERENCION QG &mdash; TODOS OS DIREITOS RESERVADOS</div>'
-    +'</div>'
-    +'</div>';
-
-  toast('Gerando imagem...');
-  var capEl=document.getElementById('qgdiaCapture');
-  capEl.style.position='fixed';
-  capEl.style.left='-9999px';
-  capEl.style.top='0';
-  capEl.style.zIndex='-1';
-  capEl.style.display='block';
-  setTimeout(function(){
-    html2canvas(capEl,{backgroundColor:'#060E1E',scale:2,useCORS:true,logging:false}).then(function(canvas){
-      var url=canvas.toDataURL('image/png');
-      document.getElementById('qgdiaImgEl').src=url;
-      document.getElementById('qgdiaImgBox').style.display='block';
-      toast('Imagem gerada! Toque para salvar.');
-      window._qgdiaImageDataURL=url;
-      capEl.style.display='none';
-    }).catch(function(){
-      toast('Erro ao gerar imagem.');
-      capEl.style.display='none';
-    });
-  },300);
-}
-
-function salvarImagemQGDia(){
-  if(!window._qgdiaImageDataURL){toast('Gere a imagem primeiro.');return;}
-  var hoje=new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
-  var link=document.createElement('a');
-  link.download='QG-do-Dia-'+hoje+'.png';
-  link.href=window._qgdiaImageDataURL;
-  link.click();
-  toast('Imagem salva! Agora abra o WhatsApp do grupo e anexe a foto.');
-}
 
 function compartilhar(){
   if(!tipoAtual)return;var t=TIPOS[tipoAtual];var ps=t.p.slice().sort();
@@ -3037,13 +2949,13 @@ var prompt='Escreva uma mensagem CURTA que EU vou enviar para o Supply/Pricing d
 +'Contexto de campo: '+(ctx||'nao informado')+'\n'
 +'Itens:\n'+(linhas||'nao informado')+'\n\n'
 +'=== REGRAS (execucao '+VAR+') ===\n'
-+'1. ENTRE 150 E 190 PALAVRAS, em DOIS paragrafos curtos. Nao ultrapasse. Quem le tem pressa.\n'
++'1. ENTRE 100 E 120 PALAVRAS, em DOIS paragrafos curtos. Deixe UMA LINHA EM BRANCO entre os dois paragrafos. Nao ultrapasse. Quem le tem pressa e o texto precisa respirar.\n'
 +'2. Escreva em PRIMEIRA PESSOA, como se eu mesmo tivesse escrito: "preciso", "estou", "consigo", "sugiro", "fecho". Nunca terceira pessoa, nunca linguagem de relatorio.\n'
 +'3. A PRIMEIRA FRASE ja deve trazer o pedido e o numero: o que preciso, em quantos SKUs, para qual cliente e o impacto em R$. Se a pessoa ler so essa linha, precisa entender tudo.\n'
 +'4. PARAGRAFO 1: o pedido, os numeros e a situacao concreta da conta. Pode citar os itens mais relevantes e o percentual, sem listar tudo.\n'
 +'5. PARAGRAFO 2: o apoio e o fechamento. '+ANGULO+' Deixe claro, sem drama, o que a empresa perde se a condicao nao sair: nao apenas este pedido, mas presenca na conta e espaco no mix, que raramente volta pelo mesmo preco.\n'
 +'6. '+FECHO+'\n'
-+'7. Sem saudacao longa, sem subtitulos, sem topicos, sem assinatura. Texto corrido em dois paragrafos.\n'
++'7. Sem saudacao longa, sem subtitulos, sem topicos, sem assinatura. Texto corrido em dois paragrafos, com uma linha em branco separando o primeiro do segundo (uma quebra de linha dupla). Nunca junte os dois paragrafos em bloco unico.\n'
 +'8. Nao liste os itens um a um em formato de tabela. Cite no maximo dois itens de exemplo e resuma o resto.\n\n'
 +'=== TOM ===\n'
 +'- Direto, seguro e respeitoso. Como colega que precisa de uma decisao, nao como quem pede favor.\n'
@@ -3082,11 +2994,30 @@ function limparNeg(){if(confirm('Limpar?')){prods=[];['negCli','negConc','negSku
 function verPix(){var b=document.getElementById('pixBox');b.style.display=b.style.display==='none'?'block':'none';}
 function copiarPix(){var ls=['Dados Bancarios Arcofoods','Tipo de Chave: CNPJ','Chave PIX: 08.365.731/0001-42','Banco: Itau','Agencia: 0530','C/c: 55341-1'];navigator.clipboard&&navigator.clipboard.writeText(ls.join('\n')).then(function(){toast('Dados PIX copiados!');});}
 
+var COORD_MARCADOR='COORD 40';
+function ehCoord(c){return c && (c.empresa===COORD_MARCADOR || (c.nome&&c.nome.indexOf('Leandro Felipe')!==-1&&(c.empresa||'').indexOf('COORD')!==-1));}
+function garantirContatoCoord(data){
+  // Se o coordenador ainda nao existe no banco, cria automaticamente (uma unica vez).
+  var existe=(data||[]).some(ehCoord);
+  if(existe) return Promise.resolve(data);
+  var novo={tipo:'arcofoods',empresa:COORD_MARCADOR,nome:'Leandro Felipe',telefone:'21971922229',email:''};
+  return supaFetch('contatos',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(novo)})
+    .then(function(r){return r.json();})
+    .then(function(inseridos){
+      var arr=(data||[]).slice();
+      if(inseridos&&inseridos.length) arr=arr.concat(inseridos);
+      return arr;
+    }).catch(function(){return data;});
+}
 function carregarContatos(){
   supaFetch('contatos?order=tipo.asc,criado_em.asc').then(function(r){return r.json();}).then(function(data){
+    return garantirContatoCoord(data);
+  }).then(function(data){
     window._CONTATOS = data||[];
     var arc = (data||[]).filter(function(c){return c.tipo!=='fornecedor';});
     var for_ = (data||[]).filter(function(c){return c.tipo==='fornecedor';});
+    // Coordenador sempre em primeiro na lista Arcofoods
+    arc.sort(function(a,b){var ca=ehCoord(a)?0:1, cb=ehCoord(b)?0:1; return ca-cb;});
     var isAdmin = eu && eu.t==='coord';
 
     function renderCard(c){
@@ -4397,7 +4328,7 @@ function renderKPIsVendedor(kpis){
       }
       h += '<div style="font-size:12px;color:var(--t);margin-top:9px;line-height:1.6"><strong style="color:var(--am)">' + headlineFalta(k.falta) + '</strong>' + k.msg.push + '</div>';
       if(k.id === 'mix' || k.id === 'sku'){
-        h += '<button onclick="abrirFocoDoMes()" style="width:100%;margin-top:11px;padding:11px;background:var(--am);border:none;border-radius:9px;color:#0A0A0A;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#127919; Ver o Foco do M&#234;s</button>';
+        h += '<button onclick="abrirFocoDoMes()" style="width:100%;margin-top:11px;padding:11px;background:var(--am);border:none;border-radius:9px;color:#0A0A0A;font-weight:800;font-size:13px;cursor:pointer;font-family:Inter,sans-serif">&#127919; Ver o '+focoLabel()+'</button>';
       }
       h += '</div>';
     }

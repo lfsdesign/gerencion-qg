@@ -345,7 +345,22 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
 .bras-tut-t{font-size:13px;font-weight:700;color:var(--t);}
 .bras-tut-d{font-size:12px;color:var(--t2);line-height:1.5;margin-top:1px;}
 .bras-tut-fim{margin-top:16px;text-align:center;font-size:14px;font-weight:800;color:var(--gn);}
-@media(max-width:480px){.bras-hero-pts{font-size:36px;}}
+.bras-modo{display:flex;gap:6px;background:var(--s2);padding:4px;border-radius:10px;}
+.bras-modo-b{flex:1;padding:9px 6px;border:none;background:transparent;color:var(--t2);font-family:'Inter',sans-serif;font-weight:600;font-size:12px;border-radius:7px;cursor:pointer;}
+.bras-modo-b.on{background:var(--am);color:#0A0A0A;}
+.bras-rm{background:var(--s2);border:1px solid var(--b);border-radius:10px;padding:11px 12px;margin-bottom:8px;}
+.bras-rm.lenda{border-color:var(--am3);background:var(--am2);}
+.bras-rm-nome{font-size:13px;font-weight:700;color:var(--t);margin-bottom:8px;display:flex;align-items:center;}
+.bras-rm-ind{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.bras-rm-lbl{font-size:11px;color:var(--t2);width:96px;flex-shrink:0;}
+.bras-rm-cur{color:var(--t3);font-size:10px;}
+.bras-rm-calc{display:flex;align-items:center;gap:5px;flex:1;}
+.bras-rm-calc .bras-gi{width:64px;flex-shrink:0;}
+.bras-rm-x{color:var(--t3);font-size:12px;}
+.bras-rm-eq{font-size:12px;color:var(--t3);min-width:52px;}
+.bras-rm-eq.ok{color:#6EE7B7;} .bras-rm-eq.quase{color:#FCD34D;} .bras-rm-eq.baixo{color:#FCA5A5;}
+.bras-rm-eq b{color:inherit;}
+@media(max-width:480px){.bras-hero-pts{font-size:36px;}.bras-rm-lbl{width:70px;}.bras-rm-calc .bras-gi{width:52px;}}
 </style>
 </head>
 <body>
@@ -2717,6 +2732,14 @@ function renderQGDiaPreview(){
   box.style.display='block';
   prev.innerHTML=qgdiaLista.map(function(v,i){
     var metaTxt=v.meta?'R$ '+v.meta.toLocaleString('pt-BR',{minimumFractionDigits:2}):'<span style="color:var(--rd)">sem meta</span>';
+    var ehTotal=(!v.cod)||/NORTE FLUMINENSE|REGIONAL/i.test(v.nome||'');
+    if(ehTotal){
+      return '<div style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:var(--bl2);border:1px solid rgba(59,130,246,0.5);border-radius:10px;margin-bottom:8px">'
+        +'<span style="font-size:12px;color:#60A5FA;width:34px;font-weight:700">&mdash;</span>'
+        +'<span style="flex:1;font-size:14px;font-weight:800;color:#60A5FA">'+v.nome+'</span>'
+        +'<span style="font-size:14px;font-weight:900;color:#60A5FA">'+metaTxt+'</span>'
+        +'</div>';
+    }
     return '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--s2);border-radius:8px;margin-bottom:6px">'
       +'<span style="font-size:11px;color:var(--t3);width:34px">'+(v.cod||'-')+'</span>'
       +'<span style="flex:1;font-size:13px;color:var(--t)">'+v.nome+'</span>'
@@ -2734,6 +2757,14 @@ function gerarImagemQGDia(){
   var cod=eu?eu.cd:'';
   var metasRows=qgdiaLista.map(function(v){
     var metaTxt=v.meta?v.meta.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
+    var ehTotal=(!v.cod)||/NORTE FLUMINENSE|REGIONAL/i.test(v.nome||'');
+    if(ehTotal){
+      return '<div style="display:flex;align-items:center;padding:13px 16px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.55);border-radius:12px;margin-bottom:12px">'
+        +'<span style="font-size:13px;color:#60A5FA;width:30px;font-weight:700">&mdash;</span>'
+        +'<span style="flex:1;font-size:14px;font-weight:800;color:#60A5FA;letter-spacing:0.5px">'+v.nome.toUpperCase()+'</span>'
+        +'<span style="font-size:14px;font-weight:900;color:#60A5FA">R$ '+metaTxt+'</span>'
+        +'</div>';
+    }
     return '<div style="display:flex;align-items:center;padding:9px 14px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:5px">'
       +'<span style="font-size:9px;color:rgba(255,255,255,0.35);width:30px">'+(v.cod||'-')+'</span>'
       +'<span style="flex:1;font-size:12px;font-weight:600;color:#F0F6FF">'+v.nome.toUpperCase()+'</span>'
@@ -4631,6 +4662,8 @@ var BRAS_CICLO='c1';               // ciclo selecionado na tela
 var BRAS_VERCOD=null;              // coordenador simulando um vendedor
 var BRAS_ADMIN_ABA='painel';       // aba do coordenador: 'painel' | 'lancar' | 'config'
 var BRAS_GERAL='__GERAL__';        // patrocinador sentinela p/ guardar % geral (gatilhos)
+var BRAS_MODO_LANC='pct';          // 'pct' = digitar % | 'realmeta' = Realizado ÷ Meta (app calcula)
+function brasPctDe(real,meta){ real=brasNumSimples(real); meta=brasNumSimples(meta); if(real==null||meta==null||meta<=0)return null; return Math.round(real/meta*1000)/10; }
 
 function brasVendedores(){return USERS.filter(function(u){return u.t==='vend';});}
 function brasEhCoord(){return eu&&eu.t==='coord';}
@@ -5011,9 +5044,9 @@ function brasTelaLancar(){
   h+='<div class="admin-box"><div class="admin-title">&#9997;&#65039; Lançar números — passo a passo</div>'
     +'<div style="font-size:12px;color:var(--t2);line-height:1.7">'
     +'<b>1.</b> Escolha o <b>ciclo</b> e o <b>vendedor</b>.<br>'
-    +'<b>2.</b> Para cada patrocinador, digite o <b>% da meta</b> em Faturamento, Positivação e SKU/PDV (ex.: <b>112</b> = bateu 112% da meta).<br>'
-    +'<b>3.</b> Toque em <b>Salvar</b>. Pronto — o placar de todo mundo atualiza na hora.<br>'
-    +'<span style="color:var(--t3)">Deixe em branco o que ainda não tem número. Abaixo de 100% não pontua (é o esperado).</span>'
+    +'<b>2.</b> Escolha como você tem os números: <b>já em %</b>, ou <b>Realizado &divide; Meta</b> (aí o app calcula o % sozinho).<br>'
+    +'<b>3.</b> Preencha cada patrocinador e toque em <b>Salvar</b>. O placar de todo mundo atualiza na hora.<br>'
+    +'<span style="color:var(--t3)">Deixe em branco o que ainda não tem número. Abaixo de 100% da meta não pontua (é o esperado).</span>'
     +'</div></div>';
 
   // seletor ciclo + vendedor
@@ -5024,6 +5057,7 @@ function brasTelaLancar(){
   h+='<div class="fg"><label class="fl">Vendedor</label><select id="brasLancVend" class="inp" onchange="brasRenderGrid()"><option value="">Selecione…</option>';
   brasVendedores().forEach(function(u){h+='<option value="'+u.c+'">'+mxE(u.cd+' — '+u.n)+'</option>';});
   h+='</select></div>';
+  h+='<div class="fg"><label class="fl">Como você tem os números?</label><div class="bras-modo"><button id="brasModoPct" class="bras-modo-b'+(BRAS_MODO_LANC==='pct'?' on':'')+'" onclick="brasSetModo(\'pct\')">J&#225; em %</button><button id="brasModoRM" class="bras-modo-b'+(BRAS_MODO_LANC==='realmeta'?' on':'')+'" onclick="brasSetModo(\'realmeta\')">Realizado &divide; Meta</button></div></div>';
   h+='<div id="brasGrid"></div>';
   h+='</div>';
 
@@ -5045,20 +5079,55 @@ function brasTelaLancar(){
   return h;
 }
 
+function brasSetModo(m){
+  BRAS_MODO_LANC=m;
+  var a=document.getElementById('brasModoPct'), b=document.getElementById('brasModoRM');
+  if(a)a.className='bras-modo-b'+(m==='pct'?' on':''); if(b)b.className='bras-modo-b'+(m==='realmeta'?' on':'');
+  brasRenderGrid();
+}
+// cálculo ao vivo no modo Realizado ÷ Meta
+function brasPrev(cod,k){
+  var real=(document.getElementById('bg_'+cod+'_'+k+'_real')||{}).value;
+  var meta=(document.getElementById('bg_'+cod+'_'+k+'_meta')||{}).value;
+  var pct=brasPctDe(real,meta);
+  var el=document.getElementById('bgp_'+cod+'_'+k);
+  if(el){ el.innerHTML = pct==null?'= —' : '= <b>'+brasFmtPct(pct)+'</b>'; el.className='bras-rm-eq'+(pct==null?'':(pct>=100?' ok':(pct>=90?' quase':' baixo'))); }
+}
 function brasRenderGrid(){
   var box=document.getElementById('brasGrid'); if(!box)return;
   var cod=(document.getElementById('brasLancVend')||{}).value||'';
   var ciclo=(document.getElementById('brasLancCiclo')||{}).value||BRAS_CFG.ciclos[0].id;
   if(!cod){box.innerHTML='<div class="empty" style="padding:20px">Selecione um vendedor pra lançar os números.</div>';return;}
   var ger=brasRowGeral(cod,ciclo);
-  var h='<div class="bras-grid-head"><span>Patrocinador</span><span>Fat%</span><span>Pos%</span><span>SKU%</span></div>';
-  BRAS_CFG.patrocinadores.forEach(function(p){
-    var r=BRAS_LANC.find(function(x){return x.vendedor_cod===cod&&x.ciclo===ciclo&&x.patroc_cod===p.cod;});
-    var selo=p.cota==='lenda'?'<span class="bras-selo-lenda">3x</span>':'';
-    function inp(k,v){return '<input class="bras-gi" id="bg_'+p.cod+'_'+k+'" inputmode="decimal" value="'+(v==null?'':v)+'" placeholder="—">';}
-    h+='<div class="bras-grow'+(p.cota==='lenda'?' lenda':'')+'"><span class="bras-gn">'+mxE(p.nome)+selo+'</span>'
-      +inp('fat',r?r.fat_pct:'')+inp('pos',r?r.pos_pct:'')+inp('sku',r?r.sku_pct:'')+'</div>';
-  });
+  var h='';
+  if(BRAS_MODO_LANC==='realmeta'){
+    h+='<div style="font-size:11.5px;color:var(--t2);line-height:1.6;margin:2px 0 10px;background:var(--gn2);border:1px solid rgba(16,185,129,.3);border-radius:8px;padding:9px 11px">&#128161; Digite o <b>realizado</b> (do BI) e a <b>meta</b> (da Arcofoods). O app calcula o % na hora. Ex.: Faturamento realizado <b>685</b> &divide; meta <b>600</b> = <b>114%</b>.</div>';
+    BRAS_CFG.patrocinadores.forEach(function(p){
+      var r=BRAS_LANC.find(function(x){return x.vendedor_cod===cod&&x.ciclo===ciclo&&x.patroc_cod===p.cod;});
+      var selo=p.cota==='lenda'?'<span class="bras-selo-lenda">3x</span>':'';
+      function linha(k,lbl,curPct){
+        var cur=curPct!=null?' <span class="bras-rm-cur">(hoje: '+brasFmtPct(curPct)+')</span>':'';
+        return '<div class="bras-rm-ind"><span class="bras-rm-lbl">'+lbl+cur+'</span>'
+          +'<div class="bras-rm-calc"><input class="bras-gi" id="bg_'+p.cod+'_'+k+'_real" inputmode="decimal" placeholder="realiz." oninput="brasPrev(\''+p.cod+'\',\''+k+'\')">'
+          +'<span class="bras-rm-x">&divide;</span>'
+          +'<input class="bras-gi" id="bg_'+p.cod+'_'+k+'_meta" inputmode="decimal" placeholder="meta" oninput="brasPrev(\''+p.cod+'\',\''+k+'\')">'
+          +'<span class="bras-rm-eq" id="bgp_'+p.cod+'_'+k+'">= &mdash;</span></div></div>';
+      }
+      h+='<div class="bras-rm'+(p.cota==='lenda'?' lenda':'')+'"><div class="bras-rm-nome">'+mxE(p.nome)+selo+'</div>'
+        +linha('fat','Faturamento',r?brasNumSimples(r.fat_pct):null)
+        +linha('pos','Positivação',r?brasNumSimples(r.pos_pct):null)
+        +linha('sku','SKU por PDV',r?brasNumSimples(r.sku_pct):null)+'</div>';
+    });
+  } else {
+    h+='<div class="bras-grid-head"><span>Patrocinador</span><span>Fat%</span><span>Pos%</span><span>SKU%</span></div>';
+    BRAS_CFG.patrocinadores.forEach(function(p){
+      var r=BRAS_LANC.find(function(x){return x.vendedor_cod===cod&&x.ciclo===ciclo&&x.patroc_cod===p.cod;});
+      var selo=p.cota==='lenda'?'<span class="bras-selo-lenda">3x</span>':'';
+      function inp(k,v){return '<input class="bras-gi" id="bg_'+p.cod+'_'+k+'" inputmode="decimal" value="'+(v==null?'':v)+'" placeholder="—">';}
+      h+='<div class="bras-grow'+(p.cota==='lenda'?' lenda':'')+'"><span class="bras-gn">'+mxE(p.nome)+selo+'</span>'
+        +inp('fat',r?r.fat_pct:'')+inp('pos',r?r.pos_pct:'')+inp('sku',r?r.sku_pct:'')+'</div>';
+    });
+  }
   h+='<div class="bras-grid-geral"><div style="font-size:11px;color:var(--t2);margin-bottom:6px">% <b>geral</b> do vendedor no ciclo (usado nos gatilhos de elegibilidade — opcional):</div>'
     +'<div class="bras-geral-row"><span>Faturamento geral %</span><input class="bras-gi" id="bg_geral_fat" inputmode="decimal" value="'+(ger&&ger.fat_pct!=null?ger.fat_pct:'')+'" placeholder="ex: 92"></div>'
     +'<div class="bras-geral-row"><span>Positivação geral %</span><input class="bras-gi" id="bg_geral_pos" inputmode="decimal" value="'+(ger&&ger.pos_pct!=null?ger.pos_pct:'')+'" placeholder="ex: 96"></div></div>';
@@ -5073,9 +5142,16 @@ function brasSalvarGrid(){
   var u=USERS.find(function(x){return x.c===cod;});
   var regs=[];
   BRAS_CFG.patrocinadores.forEach(function(p){
-    var f=brasNumSimples((document.getElementById('bg_'+p.cod+'_fat')||{}).value);
-    var o=brasNumSimples((document.getElementById('bg_'+p.cod+'_pos')||{}).value);
-    var s=brasNumSimples((document.getElementById('bg_'+p.cod+'_sku')||{}).value);
+    var f,o,s;
+    if(BRAS_MODO_LANC==='realmeta'){
+      f=brasPctDe((document.getElementById('bg_'+p.cod+'_fat_real')||{}).value,(document.getElementById('bg_'+p.cod+'_fat_meta')||{}).value);
+      o=brasPctDe((document.getElementById('bg_'+p.cod+'_pos_real')||{}).value,(document.getElementById('bg_'+p.cod+'_pos_meta')||{}).value);
+      s=brasPctDe((document.getElementById('bg_'+p.cod+'_sku_real')||{}).value,(document.getElementById('bg_'+p.cod+'_sku_meta')||{}).value);
+    } else {
+      f=brasNumSimples((document.getElementById('bg_'+p.cod+'_fat')||{}).value);
+      o=brasNumSimples((document.getElementById('bg_'+p.cod+'_pos')||{}).value);
+      s=brasNumSimples((document.getElementById('bg_'+p.cod+'_sku')||{}).value);
+    }
     if(f!=null||o!=null||s!=null)regs.push({ciclo:ciclo,vendedor_cod:cod,vendedor_nome:u?u.n:cod,patroc_cod:p.cod,patroc_nome:p.nome,fat_pct:f,pos_pct:o,sku_pct:s});
   });
   var gf=brasNumSimples((document.getElementById('bg_geral_fat')||{}).value);
@@ -5225,7 +5301,7 @@ function brasTutorialHtml(){
   h+='<div class="bras-tut-h">&#128241; O que tem em cada parte da tela</div>';
   if(coord){
     h+=passo('&#128202;','Painel','A tabela do Brasileirão, o termômetro do bônus regional e os gargalos do time (onde tem ponto parado).');
-    h+=passo('&#9997;&#65039;','Lançar números','Onde você coloca os % de cada vendedor. Pode digitar na grade ou colar do BI. É o que faz o placar existir.');
+    h+=passo('&#9997;&#65039;','Lançar números','Onde você coloca os números de cada vendedor. Pode digitar o % direto, ou informar <b>Realizado &divide; Meta</b> que o app calcula o % sozinho. Também dá pra colar do BI. É o que faz o placar existir.');
     h+=passo('&#9881;&#65039;','Configurar','Ajusta patrocinadores, ciclos e os gatilhos, caso a Arcofoods mude alguma regra.');
     h+=passo('&#128065;&#65039;','Ver como vendedor','Abre a tela exatamente como cada vendedor vê — pra você conferir e cobrar.');
   } else {
@@ -5241,7 +5317,6 @@ function brasTutorialHtml(){
   h+='<div class="bras-tut-fim">Bora subir essa tabela, time! &#9917;&#128293;</div>';
   return h;
 }
-
 </script>
 </body>
 </html>

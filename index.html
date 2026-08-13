@@ -5328,6 +5328,52 @@ function brasColarRegional(){
   if(f&&r.fat!=null)f.value=Math.round(r.fat); if(p&&r.pos!=null)p.value=Math.round(r.pos); if(s&&r.sku!=null)s.value=Math.round(r.sku);
   if(res)res.innerHTML='<span style="color:var(--gn)">✅ Achei: Faturamento '+(r.fat!=null?Math.round(r.fat)+'%':'—')+' · Positivação '+(r.pos!=null?Math.round(r.pos)+'%':'—')+' · SKU '+(r.sku!=null?Math.round(r.sku)+'%':'—')+'. Confira e clique em Salvar.</span>';
 }
+// lê o relatório por vendedor: aceita a TABELA TODA (com cabeçalho) OU LINHA A LINHA (sem cabeçalho)
+function brasLerRelatorio9(txt){
+  var linhas=String(txt||'').split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  function split(l){ var c=l.split('\t').map(function(x){return x.trim();}); if(c.length<3)c=l.split(/\s{2,}|;|\|/).map(function(x){return x.trim();}); return c; }
+  // 1) procura um cabeçalho
+  var idx=null;
+  linhas.forEach(function(l){ var cols=split(l); if(cols.length>=3 && /VENDEDOR/i.test(cols[0]) && !/^\s*n?\d/i.test(cols[0].replace(/^n/i,''))){ idx={}; cols.forEach(function(h,i){var k=brasNormH(h); if(k&&idx[k]==null)idx[k]=i;}); } });
+  var out=[];
+  linhas.forEach(function(l){
+    var cols=split(l);
+    if(cols.length<3)return;
+    if(/VENDEDOR/i.test(cols[0]) && !/^\d/.test(cols[0])) return; // pula cabeçalho
+    var cod=brasNormCod(cols[0]); if(!cod)return;                 // linha precisa começar com código
+    var fat,pReal,pMeta;
+    if(idx){
+      function get(){for(var a=0;a<arguments.length;a++){var k=brasNormH(arguments[a]); if(idx[k]!=null)return brasNumSimples(cols[idx[k]]);}return null;}
+      fat=get('%PROJ','PROJ'); pReal=get('POSIT','POSITIVACAO'); pMeta=get('METAPOSIT','METAPOS');
+    } else {
+      // sem cabeçalho: posições fixas do relatório do BI (%PROJ=5, META POSIT.=10, POSIT.=11)
+      if(cols.length<12)return;
+      fat=brasNumSimples(cols[5]); pMeta=brasNumSimples(cols[10]); pReal=brasNumSimples(cols[11]);
+    }
+    var pPct=(pReal!=null&&pMeta)?Math.round(pReal/pMeta*1000)/10:null;
+    out.push({cod:cod,fat:fat,pos:pPct,posReal:pReal,posMeta:pMeta});
+  });
+  return out;
+}
+function brasColar9(){
+  var ciclo=BRAS_BI_CICLO||BRAS_CFG.ciclos[0].id;
+  var txt=(document.getElementById('bras9Txt')||{}).value||'';
+  var arr=brasLerRelatorio9(txt);
+  var res=document.getElementById('bras9Res');
+  if(!arr.length){ if(res)res.innerHTML='<span style="color:var(--rd)">Nada reconhecido. Cole a tabela com o cabeçalho (VENDEDOR, %PROJ, META POSIT., POSIT...).</span>'; return; }
+  if(!BRAS_BI[ciclo])BRAS_BI[ciclo]={};
+  var achei=[], meus=brasVendedores();
+  arr.forEach(function(r){
+    var u=meus.find(function(x){return brasNormCod(x.c)===r.cod;});
+    if(!u)return;
+    var ex=BRAS_BI[ciclo][u.c]||{};
+    BRAS_BI[ciclo][u.c]={pts:ex.pts,gatilho:ex.gatilho||false,fat:r.fat,pos:r.pos,posReal:r.posReal,posMeta:r.posMeta};
+    achei.push(u.cd||u.c);
+  });
+  if(!achei.length){ if(res)res.innerHTML='<span style="color:var(--am)">Li a tabela, mas nenhum código bateu com os seus 9. Confira os códigos.</span>'; return; }
+  toast('Salvando detalhe dos 9…');
+  brasSalvarBI().then(function(ok){ if(res)res.innerHTML='<span style="color:var(--gn)">✅ Preenchi '+achei.length+' vendedor(es): '+achei.map(mxE).join(', ')+'. Confira nos cartões abaixo.</span>'; var t=document.getElementById('bras9Txt'); if(t)t.value=''; brasRender(); });
+}
 function brasSalvarGeralPaste(){
   var ciclo=BRAS_BI_CICLO||BRAS_CFG.ciclos[0].id;
   var txt=(document.getElementById('brasGeralTxt')||{}).value||'';
@@ -5357,8 +5403,14 @@ function brasSalvarRegNum(){
 function brasTelaLancarBI(){
   var ciclo=BRAS_BI_CICLO||BRAS_CFG.ciclos[0].id;
   var h='<div class="admin-box"><div class="admin-title" style="color:var(--am)">&#128203; Detalhe dos meus 9 (pro coach)</div>'
-    +'<div style="font-size:12px;color:var(--t2);line-height:1.7">Isto alimenta o "diagnóstico" e o "faltam X clientes" na tela do vendedor. Os <b>pontos</b> e o <b>gatilho</b> já vêm do Ranking geral — aqui você só complementa. Passe o mouse/toque em cada campo pra ver o exemplo do que colar.</div></div>';
+    +'<div style="font-size:12px;color:var(--t2);line-height:1.7">Isto alimenta o "diagnóstico" e o "faltam X clientes" na tela do vendedor. Os <b>pontos</b> e o <b>gatilho</b> já vêm do Ranking geral — aqui você só complementa.</div></div>';
+  h+='<div class="admin-box" style="border-color:rgba(16,185,129,.3)"><div class="admin-title" style="color:var(--gn)">&#128228; Colar (a tabela toda OU linha por linha)</div>'
+    +'<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:8px">Cole o <b>relatório por vendedor</b> do BI. Pode ser a <b>tabela inteira</b> (com cabeçalho) ou <b>a linha de um vendedor só</b> — o app acha pelo código, pega <b>%PROJ</b>, <b>positivação</b> e <b>meta</b>, e ignora o resto. Só preenche quem for dos seus 9.</div>'
+    +'<textarea id="bras9Txt" class="inp" rows="4" placeholder="Cole a tabela toda, ou uma linha só: 017 - EDIMAR BARBOSA   R$ 187.497 ...   77,5% ...   100   68 ..."></textarea>'
+    +'<button class="btn bp" style="width:100%;margin-top:6px" onclick="brasColar9()">&#128228; Ler e preencher</button>'
+    +'<div id="bras9Res" style="font-size:12px;margin-top:8px"></div></div>';
   h+='<div class="admin-box">';
+  h+='<div style="font-size:11px;color:var(--t3);margin-bottom:8px">Ou ajuste na mão (toque em cada campo pra ver o exemplo):</div>';
   h+='<div class="fg"><label class="fl">Ciclo</label><select id="brasBIgCiclo" class="inp" onchange="brasBISetCiclo(this.value)">';
   BRAS_CFG.ciclos.forEach(function(c){h+='<option value="'+c.id+'"'+(c.id===ciclo?' selected':'')+'>'+mxE(c.nome)+' ('+mxE(c.meses)+')</option>';});
   h+='</select></div>';

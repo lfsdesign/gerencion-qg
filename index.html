@@ -4670,6 +4670,7 @@ var BRAS_ADMIN_ABA='painel';       // aba do coordenador: 'painel' | 'lancar' | 
 var BRAS_PSENT='__GERAL__';        // patrocinador sentinela p/ guardar % geral (gatilhos)
 var BRAS_MODO_LANC='geral';        // 'geral' = ranking | 'bi' = meus 9 | 'pct' | 'realmeta'
 var BRAS_BI_CICLO='c1';            // ciclo selecionado no modo Pontos do BI
+var BRAS_MARCA_VEND='';            // vendedor selecionado no modo Pontos por marca
 function brasPctDe(real,meta){ real=brasNumSimples(real); meta=brasNumSimples(meta); if(real==null||meta==null||meta<=0)return null; return Math.round(real/meta*1000)/10; }
 var BRAS_BI={};                    // detalhe dos meus 9: {c1:{RCA017:{pts,gatilho,fat,pos,posReal,posMeta}}, c2:{...}}
 var BRAS_GERAL={};                 // ranking geral da empresa: {c1:[{cod,nome,pts,gatilho}], c2:[...]}
@@ -4694,23 +4695,23 @@ function brasDefaults(){
   return {
     patrocinadores:[
       {cod:'5191',nome:'Miolo',cota:'craque'},
-      {cod:'4197',nome:'Fruteb',cota:'craque'},
       {cod:'594', nome:'Sococo',cota:'craque'},
       {cod:'993', nome:'Nestle',cota:'craque'},
       {cod:'5084',nome:'Superbom',cota:'craque'},
       {cod:'4414',nome:'Predilecta',cota:'craque'},
-      {cod:'5951',nome:'UnileverPro',cota:'craque'},
       {cod:'2023',nome:'Bunge',cota:'craque'},
       {cod:'5824',nome:'Master Food',cota:'craque'},
       {cod:'7596',nome:'Riclan',cota:'craque'},
       {cod:'5163',nome:'Daus',cota:'craque'},
+      {cod:'SERIGY',nome:'Serigy',cota:'craque'},
       {cod:'2604',nome:'Cargill',cota:'lenda'},
       {cod:'5432',nome:'Icofort',cota:'lenda'},
       {cod:'6266',nome:'Qualimax',cota:'lenda'},
       {cod:'7464',nome:'Lactalis',cota:'lenda'},
       {cod:'7839',nome:'Barry',cota:'lenda'},
       {cod:'7912',nome:'Tres Coracoes',cota:'lenda'},
-      {cod:'951', nome:'Unilever',cota:'lenda'}
+      {cod:'951', nome:'Unilever',cota:'lenda'},
+      {cod:'RICHS',nome:"Rich's",cota:'lenda'}
     ],
     ciclos:[
       {id:'c1',nome:'Ciclo 1',meses:'Ago / Set / Out'},
@@ -5061,6 +5062,20 @@ function brasTelaVendedor(cod){
       +'</div>';
   }
 
+  // seus Lendas (onde ganhar) — pontos por marca
+  if(BRAS_CICLO!=='geral' && bi && bi.marcas && bi.marcas.length){
+    var lend=bi.marcas.filter(function(m){return m.cota==='lenda';}).sort(function(a,b){return a.pts-b.pts;});
+    if(lend.length){
+      var zer=lend.filter(function(m){return m.pts<=0;}).length;
+      h+='<div class="card"><div class="ct">&#127941; Seus Lendas (valem 3x) — onde ganhar</div>';
+      lend.forEach(function(m){
+        var zero=m.pts<=0;
+        h+='<div class="bras-pp"><div class="bras-pp-top"><b style="color:'+(zero?'var(--t2)':'var(--am)')+'">'+mxE(m.nome)+'</b>'+(zero?'<span class="bras-pp-zero">&#11036; zerado — pontos na mesa</span>':'<span class="bras-pp-pts">'+m.pts+' pts</span>')+'</div></div>';
+      });
+      h+='<div class="bras-dica">&#128161; '+(zer>0?('<b>'+zer+' Lenda(s) zerado(s)</b> = pontos parados valendo 3x. Ataque a lista de "Não Positivado" desses no BI.'):'Todos os Lendas pontuando — mantenha o ritmo e empurre pra faixa de cima!')+'</div></div>';
+    }
+  }
+
   // termômetro da regional (o bônus de +50% pra todos)
   if(BRAS_CICLO!=='geral'){
     var rn=(BRAS_CFG.regionalNum&&BRAS_CFG.regionalNum[BRAS_CICLO])||null;
@@ -5229,12 +5244,12 @@ function brasTelaLancar(){
     +'<div class="fg" style="margin-bottom:0"><label class="fl">O que você vai lançar?</label><div class="bras-modo" style="flex-wrap:wrap">'
     +'<button class="bras-modo-b'+(BRAS_MODO_LANC==='geral'?' on':'')+'" onclick="brasSetModo(\'geral\')">&#127942; Ranking geral</button>'
     +'<button class="bras-modo-b'+(BRAS_MODO_LANC==='bi'?' on':'')+'" onclick="brasSetModo(\'bi\')">&#128203; Meus 9 (detalhe)</button>'
-    +'<button class="bras-modo-b'+(BRAS_MODO_LANC==='pct'?' on':'')+'" onclick="brasSetModo(\'pct\')">% fornec.</button>'
-    +'<button class="bras-modo-b'+(BRAS_MODO_LANC==='realmeta'?' on':'')+'" onclick="brasSetModo(\'realmeta\')">Realiz&divide;Meta</button>'
+    +'<button class="bras-modo-b'+(BRAS_MODO_LANC==='marcas'?' on':'')+'" onclick="brasSetModo(\'marcas\')">&#127941; Pontos por marca</button>'
     +'</div></div></div>';
 
   if(BRAS_MODO_LANC==='geral') return h+brasTelaLancarGeral();
   if(BRAS_MODO_LANC==='bi') return h+brasTelaLancarBI();
+  if(BRAS_MODO_LANC==='marcas') return h+brasTelaLancarMarcas();
 
   // ---- modos por fornecedor (% ou realizado÷meta) ----
   h+='<div class="admin-box"><div style="font-size:12px;color:var(--t2);line-height:1.7">'
@@ -5253,6 +5268,36 @@ function brasTelaLancar(){
   setTimeout(brasRenderGrid,30);
   return h;
 }
+
+// ---- Modo PONTOS POR MARCA (cola a tabela do BI, 1 vendedor por vez) ----
+function brasTelaLancarMarcas(){
+  var ciclo=BRAS_BI_CICLO||BRAS_CFG.ciclos[0].id;
+  var cod=BRAS_MARCA_VEND||'';
+  var h='<div class="admin-box"><div class="admin-title" style="color:var(--am)">&#127941; Pontos por marca (onde ganhar)</div>'
+    +'<div style="font-size:12px;color:var(--t2);line-height:1.7">Escolha o vendedor e <b>cole a tabela de cima do "Ver Detalhes" do BI</b> (Fornecedor … Final). O app pega os pontos de cada marca e mostra pro vendedor <b>quais Lendas estão zerados</b> (pontos parados). Cole a categoria LENDA e a CRAQUE (uma de cada vez).</div></div>';
+  h+='<div class="admin-box">';
+  h+='<div class="fg"><label class="fl">Ciclo</label><select id="brasBIgCiclo" class="inp" onchange="brasBISetCiclo(this.value)">';
+  BRAS_CFG.ciclos.forEach(function(c){h+='<option value="'+c.id+'"'+(c.id===ciclo?' selected':'')+'>'+mxE(c.nome)+' ('+mxE(c.meses)+')</option>';});
+  h+='</select></div>';
+  h+='<div class="fg"><label class="fl">Vendedor</label><select id="brasMarcaVend" class="inp" onchange="brasMarcaSetVend(this.value)"><option value="">Selecione…</option>';
+  brasVendedores().forEach(function(u){h+='<option value="'+u.c+'"'+(u.c===cod?' selected':'')+'>'+mxE(u.cd+' — '+u.n)+'</option>';});
+  h+='</select></div>';
+  h+='<textarea id="brasMarcaTxt" class="inp" rows="5" placeholder="Cole aqui a tabela do BI:&#10;BARRY CALLEBAUT   0   0   165   165   Não   165&#10;CARGILL   0   0   0   0   Não   0 ..."></textarea>';
+  h+='<button class="btn bp" style="width:100%;margin-top:6px" onclick="brasColarMarcas()">&#128228; Ler e salvar os pontos por marca</button>';
+  h+='<div id="brasMarcaRes" style="font-size:12px;margin-top:8px"></div>';
+  // mostra o que já está salvo do vendedor
+  if(cod){
+    var bi=brasBiDe(cod,ciclo);
+    if(bi&&bi.marcas&&bi.marcas.length){
+      h+='<div style="margin-top:12px;font-size:12px;color:var(--t2)"><b>Já salvo pra este vendedor:</b></div>';
+      var lend=bi.marcas.filter(function(m){return m.cota==='lenda';});
+      lend.forEach(function(m){ h+='<div class="bras-gargalo">'+(m.pts>0?'&#9989;':'&#11036;')+' <b>'+mxE(m.nome)+'</b> <span class="bras-selo-lenda">3x</span><span style="margin-left:auto;color:'+(m.pts>0?'var(--am)':'var(--t3)')+';font-weight:700">'+(m.pts>0?m.pts+' pts':'zerado')+'</span></div>'; });
+    }
+  }
+  h+='</div>';
+  return h;
+}
+function brasMarcaSetVend(c){ BRAS_MARCA_VEND=c; brasRender(); }
 
 // ---- Modo RANKING GERAL (todas as regionais) ----
 function brasTelaLancarGeral(){
@@ -5367,12 +5412,50 @@ function brasColar9(){
     var u=meus.find(function(x){return brasNormCod(x.c)===r.cod;});
     if(!u)return;
     var ex=BRAS_BI[ciclo][u.c]||{};
-    BRAS_BI[ciclo][u.c]={pts:ex.pts,gatilho:ex.gatilho||false,fat:r.fat,pos:r.pos,posReal:r.posReal,posMeta:r.posMeta};
+    BRAS_BI[ciclo][u.c]=Object.assign({},ex,{pts:ex.pts,gatilho:ex.gatilho||false,fat:r.fat,pos:r.pos,posReal:r.posReal,posMeta:r.posMeta});
     achei.push(u.cd||u.c);
   });
   if(!achei.length){ if(res)res.innerHTML='<span style="color:var(--am)">Li a tabela, mas nenhum código bateu com os seus 9. Confira os códigos.</span>'; return; }
   toast('Salvando detalhe dos 9…');
   brasSalvarBI().then(function(ok){ if(res)res.innerHTML='<span style="color:var(--gn)">✅ Preenchi '+achei.length+' vendedor(es): '+achei.map(mxE).join(', ')+'. Confira nos cartões abaixo.</span>'; var t=document.getElementById('bras9Txt'); if(t)t.value=''; brasRender(); });
+}
+
+// lê a tabela do BI (Fornecedor ... Final) e pega os PONTOS de cada marca
+function brasLerMarcas(txt){
+  var out=[];
+  String(txt||'').split('\n').map(function(l){return l.trim();}).filter(Boolean).forEach(function(l){
+    var nums=l.match(/-?\d[\d.]*/g); if(!nums||!nums.length)return; // cabeçalho não tem número
+    var cols=l.split('\t');
+    var nome;
+    if(cols.length>1){ nome=cols[0].trim(); }
+    else { var m=l.search(/\s\d/); nome=(m>0?l.slice(0,m):l).trim(); }
+    if(!nome||/fornecedor/i.test(nome))return;
+    var pts=parseInt(nums[nums.length-1].replace(/\D/g,''),10);
+    var p=brasAchaPatr(nome); if(!p)return;
+    out.push({cod:p.cod,nome:p.nome,cota:p.cota,pts:isNaN(pts)?0:pts});
+  });
+  return out;
+}
+function brasColarMarcas(){
+  var ciclo=BRAS_BI_CICLO||BRAS_CFG.ciclos[0].id;
+  var cod=(document.getElementById('brasMarcaVend')||{}).value||'';
+  var txt=(document.getElementById('brasMarcaTxt')||{}).value||'';
+  var res=document.getElementById('brasMarcaRes');
+  if(!cod){ if(res)res.innerHTML='<span style="color:var(--rd)">Escolha o vendedor primeiro.</span>'; return; }
+  var arr=brasLerMarcas(txt);
+  if(!arr.length){ if(res)res.innerHTML='<span style="color:var(--rd)">Nenhuma marca reconhecida. Cole a tabela do BI (Fornecedor … Final).</span>'; return; }
+  if(!BRAS_BI[ciclo])BRAS_BI[ciclo]={};
+  var ex=BRAS_BI[ciclo][cod]||{};
+  var mapa={}; (ex.marcas||[]).forEach(function(m){mapa[m.cod]=m;});
+  arr.forEach(function(m){mapa[m.cod]=m;});
+  ex.marcas=Object.keys(mapa).map(function(k){return mapa[k];});
+  BRAS_BI[ciclo][cod]=ex;
+  toast('Salvando pontos por marca…');
+  brasSalvarBI().then(function(ok){
+    var lend=arr.filter(function(m){return m.cota==='lenda';}), zer=lend.filter(function(m){return m.pts<=0;}).length;
+    if(res)res.innerHTML='<span style="color:var(--gn)">✅ '+arr.length+' marcas salvas. '+(zer>0?('<b>'+zer+' Lenda(s) zerado(s)</b> — pontos na mesa!'):'Todos os Lendas pontuando 🔥')+'</span>';
+    var t=document.getElementById('brasMarcaTxt'); if(t)t.value=''; brasRender();
+  });
 }
 function brasSalvarGeralPaste(){
   var ciclo=BRAS_BI_CICLO||BRAS_CFG.ciclos[0].id;

@@ -4676,12 +4676,12 @@ var BRAS_BI={};                    // detalhe dos meus 9: {c1:{RCA017:{pts,gatil
 var BRAS_GERAL={};                 // ranking geral da empresa: {c1:[{cod,nome,pts,gatilho}], c2:[...]}
 function brasBiDe(cod,ciclo){ return (BRAS_BI&&BRAS_BI[ciclo]&&BRAS_BI[ciclo][cod])||null; }
 function brasTemBI(ciclo){ return !!(BRAS_BI&&BRAS_BI[ciclo]&&Object.keys(BRAS_BI[ciclo]).length); }
-// ponto do vendedor: ranking geral > detalhe dos 9 > cálculo pelos lançamentos
+// ponto do vendedor: ranking geral > detalhe dos 9 > 0 (nunca usa cálculo antigo por %)
 function brasPontosVend(cod,ciclo){
   var g=(typeof brasGeralDe==='function')?brasGeralDe(cod,ciclo):null;
   if(g&&g.pts!=null)return +g.pts||0;
   var bi=brasBiDe(cod,ciclo); if(bi&&bi.pts!=null&&bi.pts!=='')return +bi.pts||0;
-  return brasTotalComRegional(cod,ciclo);
+  return 0;
 }
 
 function brasVendedores(){return USERS.filter(function(u){return u.t==='vend';});}
@@ -5014,18 +5014,7 @@ function brasTelaVendedor(cod){
       }
       h+='<div class="bras-dica">&#128161; Lenda vale <b>3x</b>. Positivar largo nos Lendas é a jogada de maior retorno.</div></div>';
     } else {
-      var ops=brasOportunidades(cod,BRAS_CICLO);
-      h+='<div class="card"><div class="ct">&#128293; Onde você ganha mais rápido</div>';
-      if(!ops.length){h+='<div class="empty" style="padding:20px">Assim que chegarem os primeiros números, mostro aqui os pontos mais fáceis de pegar.</div>';}
-      else{
-        ops.forEach(function(o){
-          var cor=o.cota==='lenda'?'var(--am)':'var(--t2)';
-          var selo=o.cota==='lenda'?'<span class="bras-selo-lenda">LENDA 3x</span>':'<span class="bras-selo-craque">Craque</span>';
-          h+='<div class="bras-op"><div class="bras-op-h"><b style="color:'+cor+'">'+mxE(o.nome)+'</b>'+selo+'</div><div class="bras-op-t">'+o.txt+'</div></div>';
-        });
-        h+='<div class="bras-dica">&#128161; Cada ponto num <b>Lenda vale 3x</b>. Priorize os Lendas e empurre a <b>positivação</b> acima de 100% — é o que mais rende.</div>';
-      }
-      h+='</div>';
+      h+='<div class="card"><div class="ct">&#128293; Onde você ganha mais rápido</div><div class="empty" style="padding:20px">Assim que o coordenador lançar seus números, mostro aqui onde pegar ponto mais rápido.</div></div>';
     }
   }
 
@@ -5049,14 +5038,7 @@ function brasTelaVendedor(cod){
       }
       h+='</div>';
     } else {
-      var g=brasGatilhos(cod,BRAS_CICLO);
-      var lin=function(ok,txt,sub){return '<div class="bras-gat '+(ok?'ok':'no')+'"><span class="bras-gat-ic">'+(ok?'&#9989;':'&#10060;')+'</span><div><div class="bras-gat-t">'+txt+'</div>'+(sub?'<div class="bras-gat-s">'+sub+'</div>':'')+'</div></div>';};
-      h+='<div class="card"><div class="ct">&#127942; Meta Gatilho (pra valer prêmio)</div>';
-      h+=lin(g.g1.ok,'Faturamento &ge; '+g.g1.alvo+'%', g.g1.val!=null?('Você está em '+brasFmtPct(g.g1.val)+(g.estimado?' (estimado)':'')):'Sem dado ainda');
-      h+=lin(g.g2.ok,'Positivação &ge; '+g.g2.alvo+'%', g.g2.val!=null?('Você está em '+brasFmtPct(g.g2.val)+(g.estimado?' (estimado)':'')):'Sem dado ainda');
-      if(g.g3.ativo)h+=lin(g.g3.ok,'Mínimo de '+g.g3.alvo+' pts por patrocinador', g.g3.ok?'Tudo certo':(g.g3.abaixo+' patrocinador(es) abaixo do mínimo'));
-      else h+=lin(true,'Mínimo de pontos por indústria','O coordenador ainda vai configurar o valor');
-      h+='</div>';
+      h+='<div class="card"><div class="ct">&#127942; Gatilho (pra valer prêmio)</div><div class="empty" style="padding:20px">Assim que o ranking for lançado, mostro aqui se o seu gatilho está liberado.</div></div>';
     }
   }
 
@@ -5097,8 +5079,7 @@ function brasTelaVendedor(cod){
     }
   }
 
-  // placar por patrocinador (só quando há lançamento por fornecedor)
-  if(brasRowsDe(cod,cicloId).length) h+=brasPlacarPatrocinadores(cod,BRAS_CICLO);
+  // (o antigo "placar por patrocinador" por % foi removido — agora usamos os pontos do BI em "Seus Lendas")
   return h;
 }
 
@@ -5218,29 +5199,27 @@ function brasToggleRegional(k){
 function brasGargalos(){
   if(BRAS_CICLO==='geral')return '';
   var ciclo=BRAS_CICLO;
-  // só faz sentido com lançamentos por fornecedor; no modo "Pontos do BI" não há esse detalhe
-  var temLanc=BRAS_LANC.some(function(r){return r.ciclo===ciclo&&r.patroc_cod!==BRAS_PSENT;});
-  if(!temLanc)return '';
-  // por patrocinador: quantos vendedores ainda não pontuaram
-  var linhas=BRAS_CFG.patrocinadores.map(function(p){
-    var semPonto=0,total=brasVendedores().length;
-    brasVendedores().forEach(function(u){
-      var i=brasCalc(u.c,ciclo).itens.find(function(x){return x.cod===p.cod;});
-      if(!i||i.pts===0)semPonto++;
+  // usa os PONTOS POR MARCA do BI: quantos vendedores estão com cada Lenda zerado
+  var meus=brasVendedores();
+  var temMarcas=meus.some(function(u){var b=brasBiDe(u.c,ciclo);return b&&b.marcas&&b.marcas.length;});
+  if(!temMarcas)return '';
+  var mapa={};
+  meus.forEach(function(u){
+    var b=brasBiDe(u.c,ciclo); if(!b||!b.marcas)return;
+    b.marcas.forEach(function(m){
+      if(m.cota!=='lenda')return;
+      if(!mapa[m.nome])mapa[m.nome]={nome:m.nome,zer:0,total:0};
+      mapa[m.nome].total++; if(!(m.pts>0))mapa[m.nome].zer++;
     });
-    return {nome:p.nome,cota:p.cota,semPonto:semPonto,total:total};
-  }).filter(function(x){return x.semPonto>0;});
-  linhas.sort(function(a,b){return (b.cota==='lenda')-(a.cota==='lenda')||b.semPonto-a.semPonto;});
-  var h='<div class="admin-box"><div class="admin-title">&#128680; Gargalos do time — onde tem ponto parado</div>';
-  if(!linhas.length){h+='<div style="font-size:13px;color:var(--gn)">Todo mundo pontuando em todos os patrocinadores. 🔥</div>';}
-  else{
-    linhas.slice(0,8).forEach(function(l){
-      var selo=l.cota==='lenda'?'<span class="bras-selo-lenda">LENDA 3x</span>':'';
-      h+='<div class="bras-gargalo"><b>'+mxE(l.nome)+'</b>'+selo+'<span style="margin-left:auto;color:var(--rd);font-weight:700">'+l.semPonto+'/'+l.total+' sem ponto</span></div>';
-    });
-    h+='<div class="bras-dica" style="margin-top:10px">&#128161; Priorize cobrar os <b>Lendas</b> da lista — cada um vale 3x.</div>';
-  }
-  h+='</div>';
+  });
+  var linhas=Object.keys(mapa).map(function(k){return mapa[k];}).filter(function(x){return x.zer>0;});
+  linhas.sort(function(a,b){return b.zer-a.zer;});
+  if(!linhas.length)return '';
+  var h='<div class="admin-box"><div class="admin-title">&#128680; Gargalos do time — Lendas zerados (3x)</div>';
+  linhas.slice(0,10).forEach(function(l){
+    h+='<div class="bras-gargalo"><b>'+mxE(l.nome)+'</b><span class="bras-selo-lenda">3x</span><span style="margin-left:auto;color:var(--rd);font-weight:700">'+l.zer+'/'+l.total+' zerado</span></div>';
+  });
+  h+='<div class="bras-dica" style="margin-top:10px">&#128161; Cobre os <b>Lendas</b> da lista — cada ponto vale 3x.</div></div>';
   return h;
 }
 

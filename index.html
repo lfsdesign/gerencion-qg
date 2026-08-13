@@ -4699,6 +4699,7 @@ function brasDefaults(){
       {cod:'993', nome:'Nestle',cota:'craque'},
       {cod:'5084',nome:'Superbom',cota:'craque'},
       {cod:'4414',nome:'Predilecta',cota:'craque'},
+      {cod:'5951',nome:'UnileverPro',cota:'craque'},
       {cod:'2023',nome:'Bunge',cota:'craque'},
       {cod:'5824',nome:'Master Food',cota:'craque'},
       {cod:'7596',nome:'Riclan',cota:'craque'},
@@ -4710,8 +4711,7 @@ function brasDefaults(){
       {cod:'7464',nome:'Lactalis',cota:'lenda'},
       {cod:'7839',nome:'Barry',cota:'lenda'},
       {cod:'7912',nome:'Tres Coracoes',cota:'lenda'},
-      {cod:'951', nome:'Unilever',cota:'lenda'},
-      {cod:'RICHS',nome:"Rich's",cota:'lenda'}
+      {cod:'951', nome:'Unilever',cota:'lenda'}
     ],
     ciclos:[
       {id:'c1',nome:'Ciclo 1',meses:'Ago / Set / Out'},
@@ -4719,15 +4719,19 @@ function brasDefaults(){
     ],
     gatilhos:{fat_pct:90,pos_pct:95,min_pts:0},
     regional:{c1:{fat:false,pos:false,sku:false},c2:{fat:false,pos:false,sku:false}},
-    regionalNum:{}
+    regionalNum:{},
+    marcasVer:4
   };
 }
 
 function brasMergeCfg(v){
   var d=brasDefaults();
   if(!v||typeof v!=='object')return d;
+  // se a lista de marcas salva for de uma versão antiga, usa a nova (oficial do BI)
+  var usarSalva=(Array.isArray(v.patrocinadores)&&v.patrocinadores.length && v.marcasVer===d.marcasVer);
   return {
-    patrocinadores:(Array.isArray(v.patrocinadores)&&v.patrocinadores.length)?v.patrocinadores:d.patrocinadores,
+    marcasVer:d.marcasVer,
+    patrocinadores: usarSalva ? v.patrocinadores : d.patrocinadores,
     ciclos:(Array.isArray(v.ciclos)&&v.ciclos.length)?v.ciclos:d.ciclos,
     gatilhos:Object.assign({},d.gatilhos,v.gatilhos||{}),
     regional:Object.assign({},d.regional,v.regional||{}),
@@ -4841,7 +4845,10 @@ function carregarBrasileirao(){
 }
 function brasLoadCfg(){
   return supaFetch('qg_config?chave=eq.bras_config').then(qgJson).then(function(d){
-    BRAS_CFG=brasMergeCfg(Array.isArray(d)&&d.length?d[0].valor:null);
+    var salvo=(Array.isArray(d)&&d.length)?d[0].valor:null;
+    BRAS_CFG=brasMergeCfg(salvo);
+    // se a lista salva estava velha, regrava a nova (uma vez) pra corrigir o placar
+    if(salvo && salvo.marcasVer!==brasDefaults().marcasVer){ try{brasSalvarCfg();}catch(e){} }
   }).catch(function(){BRAS_CFG=brasDefaults();});
 }
 function brasLoadLanc(){

@@ -1,556 +1,158 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GERENCION QG - Arcofoods Norte Fluminense</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Supabase JS Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- html2canvas para exportação de cotações/metas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
-    <style>
-        body {
-            background-color: #111827;
-            color: #f3f4f6;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        }
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1f2937;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #374151;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #4b5563;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comunicado do Dia</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #060e1e;
+    color: #f0f6ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 900px;
+    background: #0a1628;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    background-color: #0f1f35;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: #f59e0b;
+  }
+
+  .code {
+    font-size: 11px;
+    font-weight: 700;
+    color: #f59e0b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  .name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #f0f6ff;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  .meta-box {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .meta-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .meta-value {
+    font-size: 14px;
+    font-weight: 800;
+    color: #10b981;
+  }
+</style>
 </head>
-<body class="min-h-screen flex flex-col justify-between">
+<body>
 
-    <!-- HEADER / NAVEGAÇÃO SUPERIOR -->
-    <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <!-- Logo & Identificação -->
-                <div class="flex items-center gap-3">
-                    <div class="bg-yellow-500 text-gray-950 p-2 rounded-lg font-black text-xl tracking-wider">
-                        QG
-                    </div>
-                    <div>
-                        <h1 class="text-lg font-bold text-white leading-tight">GERENCION QG</h1>
-                        <p class="text-[10px] text-gray-400">Arcofoods · Norte Fluminense</p>
-                    </div>
-                </div>
+<div class="container">
+  <div class="grid-container">
 
-                <!-- Nav Links (Desktop) -->
-                <nav class="hidden md:flex items-center space-x-1">
-                    <button onclick="mudarAba('inicio')" class="nav-btn px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition" id="btn-nav-inicio">
-                        <i class="fas fa-home mr-1.5 text-yellow-500"></i>Início
-                    </button>
-                    <button onclick="mudarAba('prospeccao')" class="nav-btn px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition" id="btn-nav-prospeccao">
-                        <i class="fas fa-search-location mr-1.5 text-yellow-500"></i>Prospecção
-                    </button>
-                    <button onclick="mudarAba('negociacao')" class="nav-btn px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition" id="btn-nav-negociacao">
-                        <i class="fas fa-handshake mr-1.5 text-yellow-500"></i>Negociação
-                    </button>
-                    <button onclick="mudarAba('mix')" class="nav-btn px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition" id="btn-nav-mix">
-                        <i class="fas fa-cubes mr-1.5 text-yellow-500"></i>Mix & Cotação
-                    </button>
-                    <button onclick="mudarAba('premiacao')" class="nav-btn px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition" id="btn-nav-premiacao">
-                        <i class="fas fa-calculator mr-1.5 text-yellow-500"></i>Premiação
-                    </button>
-                    <button onclick="mudarAba('brasileirao')" class="nav-btn px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition" id="btn-nav-brasileirao">
-                        <i class="fas fa-trophy mr-1.5 text-yellow-500"></i>Brasileirão
-                    </button>
-                </nav>
-
-                <!-- Identificação do Usuário / Login -->
-                <div class="flex items-center gap-3">
-                    <div id="usuario-info-badge" class="hidden text-right">
-                        <p id="usuario-nome" class="text-xs font-bold text-gray-200">RCA --</p>
-                        <p id="usuario-perfil" class="text-[10px] text-yellow-400">Vendedor</p>
-                    </div>
-                    <button onclick="abrirModalLogin()" id="btn-login-trigger" class="bg-yellow-500 hover:bg-yellow-400 text-gray-950 font-bold text-xs px-3 py-2 rounded-lg transition flex items-center gap-1.5">
-                        <i class="fas fa-user-lock"></i> Entrar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- CONTEÚDO PRINCIPAL (MÓDULOS) -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
-
-        <!-- ================================================================= -->
-        <!-- MÓDULO 1: INÍCIO / PAINEL GERAL                                   -->
-        <!-- ================================================================= -->
-        <section id="modulo-inicio" class="space-y-6">
-            <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 shadow-xl">
-                <h2 class="text-xl font-bold text-white mb-2">Bem-vindo ao GERENCION QG</h2>
-                <p class="text-sm text-gray-400">Central de apoio estratégico para a equipe comercial Arcofoods - Norte Fluminense.</p>
-                
-                <!-- Avisos e Comunicados em Tempo Real -->
-                <div class="mt-6 bg-gray-900 border border-gray-700 rounded-xl p-4">
-                    <h3 class="text-sm font-bold text-yellow-400 flex items-center gap-2 mb-3">
-                        <i class="fas fa-bullhorn"></i> Comunicados do Coordenador (QG)
-                    </h3>
-                    <div id="container-avisos-mural" class="space-y-2 text-sm text-gray-300">
-                        <p class="text-xs text-gray-500 italic">Carregando avisos recentes...</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-
-        <!-- ================================================================= -->
-        <!-- MÓDULO 2: PROSPECÇÃO INTELIGENTE (NOVO FILTRO HIGIENIZADO BI)     -->
-        <!-- ================================================================= -->
-        <section id="modulo-prospeccao" class="hidden space-y-6">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800 pb-4">
-                <div>
-                    <h2 class="text-2xl font-bold text-yellow-400 flex items-center gap-2">
-                        <i class="fas fa-search-location"></i> Prospecção Inteligente de Leads
-                    </h2>
-                    <p class="text-sm text-gray-400">Higienização automática via Supabase e distribuição para equipe de vendas.</p>
-                </div>
-                <button onclick="alternarPainelBlacklist()" class="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-lg flex items-center gap-2 shadow font-semibold">
-                    <i class="fas fa-user-slash"></i> Gestão de Blacklist (BI)
-                </button>
-            </div>
-
-            <!-- Painel Retrátil de Higienização (Blacklist) -->
-            <div id="painel-blacklist" class="hidden bg-gray-800 border border-red-900/50 rounded-xl p-4 transition-all shadow-lg">
-                <h3 class="text-lg font-semibold text-red-400 mb-2 flex items-center gap-2">
-                    <i class="fas fa-filter"></i> Alimentar Blacklist de CNPJs (Filtro Anti-Duplicidade BI)
-                </h3>
-                <p class="text-xs text-gray-300 mb-3">
-                    Cole abaixo a lista de CNPJs obtidos do BI da empresa (clientes ativos, inativos, com títulos atrasados ou já atendidos). O QG ocultará esses CNPJs automaticamente.
-                </p>
-                <div class="flex flex-col gap-3">
-                    <textarea id="input-cnpjs-blacklist" rows="3" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-sm text-gray-200 font-mono focus:border-red-500 focus:outline-none" placeholder="Ex: 41298541000182, 12.345.678/0001-90 (Separe por vírgula, espaço ou linha)"></textarea>
-                    <div class="flex justify-end gap-2">
-                        <button onclick="salvarBlacklistSupabase()" class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-5 py-2 rounded-lg flex items-center gap-2">
-                            <i class="fas fa-database"></i> Processar e Bloquear no Supabase
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Filtros Rápidos dos Leads -->
-            <div class="flex flex-wrap gap-3 bg-gray-800 p-3 rounded-xl border border-gray-700">
-                <div class="flex-1 min-w-[200px]">
-                    <input type="text" id="filtro-pesquisa-lead" oninput="filtrarCardsLocalmente()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 focus:border-yellow-400 focus:outline-none" placeholder="Pesquisar por Nome, CNPJ ou Bairro...">
-                </div>
-                <select id="filtro-cidade-lead" onchange="carregarLeadsHigienizados()" class="bg-gray-900 border border-gray-700 text-sm text-gray-200 rounded-lg px-3 py-2 focus:border-yellow-400 focus:outline-none">
-                    <option value="TODAS">Todas as Cidades</option>
-                    <option value="Saquarema" selected>Saquarema</option>
-                    <option value="Araruama">Araruama</option>
-                    <option value="Cabo Frio">Cabo Frio</option>
-                    <option value="São Pedro da Aldeia">São Pedro da Aldeia</option>
-                </select>
-            </div>
-
-            <!-- Grid de Cards dos Leads -->
-            <div id="container-leads-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div class="col-span-full text-center py-10 text-gray-500">
-                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                    <p>Carregando leads higienizados do Supabase...</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================================================================= -->
-        <!-- MÓDULO 3: NEGOCIAÇÃO COMERCIAL                                    -->
-        <!-- ================================================================= -->
-        <section id="modulo-negociacao" class="hidden space-y-6">
-            <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6">
-                <h2 class="text-xl font-bold text-yellow-400 mb-4 flex items-center gap-2">
-                    <i class="fas fa-handshake"></i> Solicitação de Desconto / Condição Especial
-                </h2>
-                <!-- Formulário de Negociação -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Cliente / Razão Social</label>
-                        <input type="text" id="neg-cliente" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm text-gray-200 focus:outline-none focus:border-yellow-500" placeholder="Nome do Cliente">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Produto</label>
-                        <input type="text" id="neg-produto" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm text-gray-200 focus:outline-none focus:border-yellow-500" placeholder="Ex: Queijo Mussarela 3kg">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Preço Tabela (R$)</label>
-                        <input type="number" step="0.01" id="neg-preco-tabela" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm text-gray-200 focus:outline-none focus:border-yellow-500" placeholder="0.00">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Preço Solicitado (R$)</label>
-                        <input type="number" step="0.01" id="neg-preco-solicitado" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm text-gray-200 focus:outline-none focus:border-yellow-500" placeholder="0.00">
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================================================================= -->
-        <!-- MÓDULO 4: MIX POR SEGMENTO & COTAÇÃO                              -->
-        <!-- ================================================================= -->
-        <section id="modulo-mix" class="hidden space-y-6">
-            <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6">
-                <h2 class="text-xl font-bold text-yellow-400 mb-2 flex items-center gap-2">
-                    <i class="fas fa-cubes"></i> Consultar Mix & Montar Cotação
-                </h2>
-                <p class="text-xs text-gray-400 mb-4">Selecione o segmento do cliente para visualizar os produtos sugeridos.</p>
-            </div>
-        </section>
-
-        <!-- ================================================================= -->
-        <!-- MÓDULO 5: CALCULADORA DE PREMIAÇÃO                                -->
-        <!-- ================================================================= -->
-        <section id="modulo-premiacao" class="hidden space-y-6">
-            <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6">
-                <h2 class="text-xl font-bold text-yellow-400 mb-2 flex items-center gap-2">
-                    <i class="fas fa-calculator"></i> Calculadora de Bônus & Premiação
-                </h2>
-                <p class="text-xs text-gray-400 mb-4">Simule suas comissões de acordo com o % de meta atingido.</p>
-            </div>
-        </section>
-
-        <!-- ================================================================= -->
-        <!-- MÓDULO 6: BRASILEIRÃO DE VENDAS                                   -->
-        <!-- ================================================================= -->
-        <section id="modulo-brasileirao" class="hidden space-y-6">
-            <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6">
-                <h2 class="text-xl font-bold text-yellow-400 mb-2 flex items-center gap-2">
-                    <i class="fas fa-trophy"></i> Tabela do Brasileirão de Vendas
-                </h2>
-                <p class="text-xs text-gray-400 mb-4">Acompanhe a pontuação atualizada do ranking regional.</p>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- FOOTER RODAPÉ -->
-    <footer class="bg-gray-900 border-t border-gray-800 py-4 text-center text-xs text-gray-500">
-        <p>GERENCION QG © 2026 - Desenvolvido para Arcofoods · Norte Fluminense</p>
-    </footer>
-
-    <!-- MODAL DE LOGIN -->
-    <div id="modal-login" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-gray-800 border border-gray-700 rounded-2xl max-w-md w-full p-6 relative">
-            <button onclick="fecharModalLogin()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
-                <i class="fas fa-times"></i>
-            </button>
-            <h3 class="text-lg font-bold text-yellow-400 mb-4 flex items-center gap-2">
-                <i class="fas fa-user-lock"></i> Acesso ao GERENCION QG
-            </h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1">Selecione seu Perfil / RCA</label>
-                    <select id="login-rca-select" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm text-gray-200">
-                        <option value="">Selecione...</option>
-                        <option value="COORD40">COORD 40 - Leandro Felipe</option>
-                        <option value="RCA334">RCA 334 - Vendedor</option>
-                        <option value="RCA337">RCA 337 - Vendedor</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1">Senha de Acesso</label>
-                    <input type="password" id="login-senha-input" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm text-gray-200" placeholder="••••••••">
-                </div>
-                <button onclick="autenticarUsuario()" class="w-full bg-yellow-500 hover:bg-yellow-400 text-gray-950 font-bold py-2.5 rounded-lg transition">
-                    Entrar no Sistema
-                </button>
-            </div>
-        </div>
+    <!-- Card 1 -->
+    <div class="card">
+      <div>
+        <div class="code">RCA 017</div>
+        <div class="name">EDIMAR BARBOSA</div>
+      </div>
+      <div class="meta-box">
+        <span class="meta-label">Meta</span>
+        <span class="meta-value">R$ 8.500,00</span>
+      </div>
     </div>
-<!-- ================================================================= -->
-    <!-- SCRIPTS JS E LÓGICA DE NAVEGAÇÃO / SUPABASE (PARTE 2)            -->
-    <!-- ================================================================= -->
-    <script>
-        // CONFIGURAÇÃO SUPABASE
-        const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co'; // Substitua pela sua URL
-        const SUPABASE_KEY = 'SUA-CHAVE-ANON-AQUI';             // Substitua pela sua Key
-        const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
-        // ESTADO GLOBAL DO USUÁRIO
-        let usuarioAtual = {
-            rca: 'COORD40',
-            nome: 'Leandro Felipe',
-            perfil: 'Coordenador',
-            isAdmin: true
-        };
+    <!-- Card 2 -->
+    <div class="card">
+      <div>
+        <div class="code">RCA 025</div>
+        <div class="name">ADSON BRUNO</div>
+      </div>
+      <div class="meta-box">
+        <span class="meta-label">Meta</span>
+        <span class="meta-value">R$ 10.000,00</span>
+      </div>
+    </div>
 
-        // NAVEGAÇÃO ENTRE ABAS/MÓDULOS
-        function mudarAba(moduloId) {
-            const modulos = ['inicio', 'prospeccao', 'negociacao', 'mix', 'premiacao', 'brasileirao'];
-            
-            modulos.forEach(mod => {
-                const el = document.getElementById(`modulo-${mod}`);
-                const btn = document.getElementById(`btn-nav-${mod}`);
-                
-                if (el) {
-                    if (mod === moduloId) {
-                        el.classList.remove('hidden');
-                    } else {
-                        el.classList.add('hidden');
-                    }
-                }
+    <!-- Card 3 -->
+    <div class="card">
+      <div>
+        <div class="code">RCA 042</div>
+        <div class="name">CARLOS SILVA</div>
+      </div>
+      <div class="meta-box">
+        <span class="meta-label">Meta</span>
+        <span class="meta-value">R$ 7.200,00</span>
+      </div>
+    </div>
 
-                if (btn) {
-                    if (mod === moduloId) {
-                        btn.classList.add('bg-gray-800', 'text-white', 'border-b-2', 'border-yellow-500');
-                        btn.classList.remove('text-gray-300');
-                    } else {
-                        btn.classList.remove('bg-gray-800', 'text-white', 'border-b-2', 'border-yellow-500');
-                        btn.classList.add('text-gray-300');
-                    }
-                }
-            });
+    <!-- Card 4 -->
+    <div class="card">
+      <div>
+        <div class="code">RCA 108</div>
+        <div class="name">MARCOS OLIVEIRA</div>
+      </div>
+      <div class="meta-box">
+        <span class="meta-label">Meta</span>
+        <span class="meta-value">R$ 9.000,00</span>
+      </div>
+    </div>
 
-            // Se abrir Prospecção, carrega os dados atualizados do Supabase
-            if (moduloId === 'prospeccao') {
-                carregarLeadsHigienizados();
-            }
-        }
+  </div>
+</div>
 
-        // MODAL DE LOGIN
-        function abrirModalLogin() {
-            document.getElementById('modal-login').classList.remove('hidden');
-        }
-
-        function fecharModalLogin() {
-            document.getElementById('modal-login').classList.add('hidden');
-        }
-
-        function autenticarUsuario() {
-            const select = document.getElementById('login-rca-select').value;
-            if (!select) {
-                alert('Por favor, selecione um perfil.');
-                return;
-            }
-
-            if (select === 'COORD40') {
-                usuarioAtual = { rca: 'COORD40', nome: 'Leandro Felipe', perfil: 'Coordenador', isAdmin: true };
-            } else {
-                usuarioAtual = { rca: select, nome: select, perfil: 'Vendedor', isAdmin: false };
-            }
-
-            document.getElementById('usuario-nome').innerText = usuarioAtual.nome;
-            document.getElementById('usuario-perfil').innerText = usuarioAtual.perfil;
-            document.getElementById('usuario-info-badge').classList.remove('hidden');
-
-            fecharModalLogin();
-            alert(`Bem-vindo, ${usuarioAtual.nome}!`);
-        }
-
-        // =================================================================
-        // MÓDULO PROSPECÇÃO INTELIGENTE (SUPABASE + BLACKLIST)
-        // =================================================================
-
-        function alternarPainelBlacklist() {
-            const painel = document.getElementById('painel-blacklist');
-            if (painel) painel.classList.toggle('hidden');
-        }
-
-        // 1. Inserir CNPJs na Blacklist do Supabase
-        async function salvarBlacklistSupabase() {
-            const rawInput = document.getElementById('input-cnpjs-blacklist').value;
-            if (!rawInput.trim()) {
-                alert('Por favor, insira ao menos um CNPJ.');
-                return;
-            }
-
-            const cnpjs = rawInput.match(/\d{14}|\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}/g) || [];
-            const cnpjsTratados = [...new Set(cnpjs.map(c => c.replace(/\D/g, '')))];
-
-            if (cnpjsTratados.length === 0) {
-                alert('Nenhum CNPJ válido de 14 dígitos foi localizado.');
-                return;
-            }
-
-            const payload = cnpjsTratados.map(cnpj => ({
-                cnpj: cnpj,
-                motivo: 'Inativo/Cadastrado no BI Empresa'
-            }));
-
-            try {
-                if (!supabase) throw new Error("Supabase não inicializado");
-
-                const { data, error } = await supabase
-                    .from('qg_blacklist_cnpjs')
-                    .upsert(payload, { onConflict: 'cnpj' });
-
-                if (error) throw error;
-
-                alert(`Sucesso! ${cnpjsTratados.length} CNPJ(s) bloqueados na Blacklist do Supabase.`);
-                document.getElementById('input-cnpjs-blacklist').value = '';
-                alternarPainelBlacklist();
-                carregarLeadsHigienizados();
-            } catch (err) {
-                console.error('Erro ao salvar na Blacklist:', err);
-                alert('Erro ao atualizar a Blacklist no Supabase. Verifique a chave de conexão.');
-            }
-        }
-
-        // 2. Buscar Leads Limpos (Cruzados com a View vw_qg_leads_higienizados)
-        let leadsLocais = [];
-
-        async function carregarLeadsHigienizados() {
-            const container = document.getElementById('container-leads-grid');
-            if (!container) return;
-
-            const selectCidade = document.getElementById('filtro-cidade-lead');
-            const cidade = selectCidade ? selectCidade.value : 'TODAS';
-
-            container.innerHTML = `
-                <div class="col-span-full text-center py-10 text-gray-500">
-                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                    <p>Consultando filtro inteligente no Supabase...</p>
-                </div>`;
-
-            try {
-                if (!supabase) {
-                    // Renderização de fallback/demonstração caso Supabase ainda não esteja com a Key configurada
-                    renderizarCardsLeads([
-                        { id: '1', cnpj: '41298541000182', razão_social: 'Cantina Mar e Sabor', nome_fantasia: 'Mar & Sabor', segmento: 'Restaurante', endereco: 'Rua Treze, Quadra 45', bairro: 'Jaconé', cidade: 'Saquarema', telefone: '22999998888' }
-                    ]);
-                    return;
-                }
-
-                let query = supabase.from('vw_qg_leads_higienizados').select('*');
-                if (cidade !== 'TODAS') {
-                    query = query.eq('cidade', cidade);
-                }
-
-                const { data, error } = await query;
-                if (error) throw error;
-
-                leadsLocais = data || [];
-                renderizarCardsLeads(leadsLocais);
-            } catch (err) {
-                console.error('Erro ao buscar leads:', err);
-                container.innerHTML = `
-                    <div class="col-span-full text-center py-10 text-red-400">
-                        <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                        <p>Falha ao carregar oportunidades de prospecção do Supabase.</p>
-                    </div>`;
-            }
-        }
-
-        // 3. Renderizar Cards Estilizados no Padrão QG
-        function renderizarCardsLeads(lista) {
-            const container = document.getElementById('container-leads-grid');
-            if (!container) return;
-
-            if (!lista || lista.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-full text-center py-12 bg-gray-800/50 rounded-xl border border-gray-700">
-                        <i class="fas fa-check-circle text-emerald-400 text-3xl mb-2"></i>
-                        <p class="text-gray-300 font-semibold">Tudo limpo por aqui!</p>
-                        <p class="text-xs text-gray-500">Nenhum novo lead pendente para esta região no momento.</p>
-                    </div>`;
-                return;
-            }
-
-            container.innerHTML = lista.map(lead => {
-                const cnpjFormatado = (lead.cnpj || '').replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
-                const razao = lead.razao_social || lead.razao_social || 'Empresa Sem Nome';
-                const fantasia = lead.nome_fantasia || razao;
-                
-                return `
-                    <div class="bg-gray-800 border border-gray-700 hover:border-yellow-500/50 rounded-xl p-4 flex flex-col justify-between transition shadow-md group">
-                        <div>
-                            <div class="flex justify-between items-start mb-2">
-                                <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                                    <i class="fas fa-check-circle mr-1"></i> Higienizado (Novo)
-                                </span>
-                                <span class="text-xs text-gray-400 font-medium bg-gray-900 px-2 py-0.5 rounded border border-gray-700">
-                                    ${lead.segmento || 'Foodservice'}
-                                </span>
-                            </div>
-
-                            <h3 class="font-bold text-gray-100 text-base group-hover:text-yellow-400 transition mb-1 leading-snug">
-                                ${fantasia}
-                            </h3>
-                            <p class="text-xs text-gray-400 mb-2">
-                                <span class="font-semibold text-gray-300">Razão:</span> ${razao}
-                            </p>
-                            
-                            <div class="text-xs text-gray-300 space-y-1 bg-gray-900/60 p-2.5 rounded-lg border border-gray-800/80 mb-3">
-                                <p><i class="far fa-id-card text-yellow-500 w-4"></i> <strong class="text-gray-400">CNPJ:</strong> ${cnpjFormatado}</p>
-                                <p><i class="fas fa-map-marker-alt text-red-400 w-4"></i> <strong class="text-gray-400">Endereço:</strong> ${lead.endereco || 'Não informado'} ${lead.bairro ? '- ' + lead.bairro : ''}</p>
-                                <p><i class="fas fa-city text-blue-400 w-4"></i> <strong class="text-gray-400">Cidade:</strong> ${lead.cidade || 'N/I'}</p>
-                            </div>
-                        </div>
-
-                        <div class="pt-2 border-t border-gray-700/60 flex items-center justify-between gap-2">
-                            <button onclick="copiarCardFormatado('${lead.id}')" class="flex-1 bg-gray-700 hover:bg-gray-600 text-gray-200 text-xs py-2 px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5" title="Copiar card formatado para enviar no WhatsApp do Vendedor">
-                                <i class="far fa-copy text-yellow-400"></i> Copiar Card
-                            </button>
-                            ${lead.telefone ? `
-                                <a href="https://wa.me/55${lead.telefone.replace(/\D/g,'')}" target="_blank" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs py-2 px-3 rounded-lg font-medium transition flex items-center justify-center gap-1">
-                                    <i class="fab fa-whatsapp text-sm"></i> Contato
-                                </a>
-                            ` : ''}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // 4. Formatar e Copiar Card para WhatsApp do Vendedor
-        function copiarCardFormatado(idLead) {
-            const lead = leadsLocais.find(l => l.id === idLead);
-            if (!lead) return;
-
-            const cnpjFormatado = (lead.cnpj || '').replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
-            const razao = lead.razao_social || 'Empresa Sem Nome';
-            const fantasia = lead.nome_fantasia || razao;
-
-            const textoCard = `📍 *OPORTUNIDADE DE PROSPECÇÃO - GERENCION QG*
-------------------------------------------------
-🏢 *Cliente:* ${fantasia}
-📄 *Razão Social:* ${razao}
-📋 *CNPJ:* ${cnpjFormatado}
-🍽️ *Segmento:* ${lead.segmento || 'Foodservice'}
-📍 *Endereço:* ${lead.endereco || 'Verificar local'}
-🌆 *Bairro/Cidade:* ${lead.bairro || ''} / ${lead.cidade || 'Região'}
-------------------------------------------------
-💡 *Status:* Higienizado pelo QG (Não consta na base ativa do BI). Favor realizar visita/contato e retornar o feedback!`;
-
-            navigator.clipboard.writeText(textoCard).then(() => {
-                alert('Card do Lead copiado com sucesso! Agora é só colar no WhatsApp do vendedor.');
-            }).catch(err => console.error('Erro ao copiar:', err));
-        }
-
-        // 5. Pesquisa Local em Tempo Real
-        function filtrarCardsLocalmente() {
-            const input = document.getElementById('filtro-pesquisa-lead');
-            if (!input) return;
-            const termo = input.value.toLowerCase();
-            
-            const filtrados = leadsLocais.filter(l => 
-                (l.nome_fantasia && l.nome_fantasia.toLowerCase().includes(termo)) ||
-                (l.razao_social && l.razao_social.toLowerCase().includes(termo)) ||
-                (l.cnpj && l.cnpj.includes(termo)) ||
-                (l.bairro && l.bairro.toLowerCase().includes(termo))
-            );
-            renderizarCardsLeads(filtrados);
-        }
-
-        // INICIALIZAÇÃO AUTOMÁTICA
-        document.addEventListener('DOMContentLoaded', () => {
-            mudarAba('inicio');
-        });
-    </script>
 </body>
 </html>

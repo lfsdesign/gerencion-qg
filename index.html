@@ -4989,8 +4989,9 @@ function brasTelaVendedor(cod){
   }
   h+='</div>';
 
-  // tabela do brasileirão
-  h+=brasTabelaClassificacao(cod);
+  // ranking: empresa (o que vale prêmio) quando houver; senão, o time
+  if(temG) h+=brasTabelaEmpresa(cod,BRAS_CICLO);
+  else h+=brasTabelaClassificacao(cod);
 
   // onde ganhar mais rápido / leitura pra subir
   if(BRAS_CICLO!=='geral'){
@@ -5080,6 +5081,32 @@ function brasTelaVendedor(cod){
 }
 
 function brasNomeCiclo(id){var c=BRAS_CFG.ciclos.find(function(x){return x.id===id;});return c?c.nome:id;}
+
+// Ranking da EMPRESA (o que vale prêmio): pódio + janela ao redor do vendedor
+function brasTabelaEmpresa(cod,ciclo){
+  var rk=brasGeralRank(ciclo); if(!rk.length)return '';
+  var n=brasNormCod(cod);
+  var meIdx=rk.findIndex(function(x){return brasNormCod(x.cod)===n;});
+  var meuTime=brasVendedores().map(function(u){return brasNormCod(u.c);});
+  var idxs=[]; [0,1,2].forEach(function(i){if(i<rk.length)idxs.push(i);});
+  if(meIdx>=0){ for(var k=meIdx-2;k<=meIdx+2;k++){ if(k>=0&&k<rk.length&&idxs.indexOf(k)<0)idxs.push(k); } }
+  else { for(var k2=3;k2<Math.min(6,rk.length);k2++){ if(idxs.indexOf(k2)<0)idxs.push(k2); } }
+  idxs.sort(function(a,b){return a-b;});
+  var h='<div class="card"><div class="ct">&#127942; Ranking da EMPRESA &middot; '+rk.length+' vendedores (todas as regionais)</div>'
+    +'<div style="font-size:11px;color:var(--t2);margin:-4px 0 8px">O prêmio é do <b>top 3 de toda a empresa</b> — é essa a disputa de verdade.</div><div class="bras-tab">';
+  var last=-1;
+  idxs.forEach(function(i){
+    if(last>=0 && i>last+1) h+='<div style="text-align:center;color:var(--t3);font-size:12px;padding:1px">⋯</div>';
+    last=i;
+    var r=rk[i], isMe=(brasNormCod(r.cod)===n), isTeam=meuTime.indexOf(brasNormCod(r.cod))>=0;
+    var medal=i===0?'&#129351;':i===1?'&#129352;':i===2?'&#129353;':(i+1)+'&ordm;';
+    var cls=isMe?' me':(i<3?' lider':'');
+    var tag=isMe?' <span class="bras-voce">você</span>':(isTeam?' <span style="font-size:9px;color:#93C5FD">(seu time)</span>':'');
+    h+='<div class="bras-tr'+cls+'"><div class="bras-tr-pos">'+medal+'</div><div class="bras-tr-nome">'+mxE(r.nome)+tag+'</div><div class="bras-tr-pts">'+r.pts+'</div></div>';
+  });
+  h+='</div><div class="bras-legenda"><span class="dot lider"></span>Pódio (top 3 = prêmio)</div></div>';
+  return h;
+}
 
 function brasTabelaClassificacao(destCod){
   var rk=brasRanking(BRAS_CICLO);
@@ -5255,12 +5282,51 @@ function brasTelaLancarGeral(){
   // regional (pro termômetro)
   var rn=(BRAS_CFG.regionalNum&&BRAS_CFG.regionalNum[ciclo])||{};
   h+='<div class="admin-box" style="border-color:rgba(59,130,246,.3)"><div class="admin-title" style="color:#93C5FD">&#128293; A Regional — % pro termômetro</div>'
-    +'<div style="font-size:12px;color:var(--t2);margin-bottom:8px">Do painel "regional" do BI, coloque o % que a Norte Fluminense atingiu (ou deixe em branco):</div>'
-    +'<div class="g2"><div class="fg" style="margin:0"><label class="fl">Faturamento %</label><input class="inp" id="brasRegFat" inputmode="decimal" value="'+(rn.fat!=null?rn.fat:'')+'" placeholder="ex: 106"></div>'
-    +'<div class="fg" style="margin:0"><label class="fl">Positivação %</label><input class="inp" id="brasRegPos" inputmode="decimal" value="'+(rn.pos!=null?rn.pos:'')+'" placeholder="ex: 61"></div></div>'
-    +'<div class="fg"><label class="fl">SKU por PDV %</label><input class="inp" id="brasRegSku" inputmode="decimal" value="'+(rn.sku!=null?rn.sku:'')+'" placeholder="ex: 75"></div>'
+    +'<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:8px"><b>Jeito fácil:</b> cole a linha da regional do BI aqui (do jeito que vem, com todas as colunas). O app acha faturamento (%PROJ), positivação e SKU sozinho e <b>ignora o resto</b>.</div>'
+    +'<textarea id="brasRegTxt" class="inp" rows="3" placeholder="Cole aqui a linha NORTE FLUMINENSE com as colunas do BID (pode colar as 2 tabelas, uma embaixo da outra)"></textarea>'
+    +'<button class="btn bp" style="width:100%;margin-top:6px" onclick="brasColarRegional()">&#128228; Ler a regional colada</button>'
+    +'<div id="brasRegRes" style="font-size:12px;margin:8px 0"></div>'
+    +'<div style="font-size:11px;color:var(--t3);margin:8px 0 6px">Ou digite/ajuste na mão:</div>'
+    +'<div class="g2"><div class="fg" style="margin:0"><label class="fl">Faturamento %</label><input class="inp" id="brasRegFat" inputmode="decimal" value="'+(rn.fat!=null?rn.fat:'')+'" placeholder="ex: 99"></div>'
+    +'<div class="fg" style="margin:0"><label class="fl">Positivação %</label><input class="inp" id="brasRegPos" inputmode="decimal" value="'+(rn.pos!=null?rn.pos:'')+'" placeholder="ex: 71"></div></div>'
+    +'<div class="fg"><label class="fl">SKU por PDV %</label><input class="inp" id="brasRegSku" inputmode="decimal" value="'+(rn.sku!=null?rn.sku:'')+'" placeholder="ex: 65"></div>'
     +'<button class="btn bs" style="width:100%" onclick="brasSalvarRegNum()">&#128190; Salvar % da regional</button></div>';
   return h;
+}
+// lê a linha da regional colada e extrai fat(%PROJ)/pos/sku, ignorando o resto
+function brasNormH(s){return String(s||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z0-9%]/g,'');}
+function brasLerRegional(txt){
+  var linhas=String(txt||'').split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  var pares=[]; var head=null;
+  linhas.forEach(function(l){
+    var cols=l.split('\t').map(function(c){return c.trim();});
+    if(cols.length<3){ cols=l.split(/\s{2,}|;|\|/).map(function(c){return c.trim();}); }
+    if(cols.length<3)return;
+    if(/NORTE|FLUMINENSE|REGIONAL/i.test(cols[0])&&/\d/.test(l)){ if(head)pares.push({head:head,vals:cols}); else pares.push({head:null,vals:cols}); }
+    else head=cols;
+  });
+  if(!pares.length)return null;
+  var out={fat:null,pos:null,sku:null};
+  pares.forEach(function(p){
+    var idx={}; (p.head||p.vals.map(function(_,i){return 'C'+i;})).forEach(function(h,i){var k=brasNormH(h); if(k&&idx[k]==null)idx[k]=i;});
+    function get(){ for(var a=0;a<arguments.length;a++){ var k=brasNormH(arguments[a]); if(idx[k]!=null) return brasNumSimples(p.vals[idx[k]]); } return null; }
+    var fat=get('%PROJ','PROJ');
+    var pos=get('%POS','%POSIT','%POSITIVACAO');
+    var sku=get('%SKUCLI','%SKUPDV','%SKU');
+    if(pos==null){var r=get('REALPOSIT','POS');var m=get('METAPOS','OBJPOSIT','METAPOSIT');if(r!=null&&m)pos=Math.round(r/m*1000)/10;}
+    if(sku==null){var rs=get('SKUCLI','SKUPDV');var ms=get('METASKUCLI','METASKUPDV');if(rs!=null&&ms)sku=Math.round(rs/ms*1000)/10;}
+    if(fat!=null)out.fat=fat; if(pos!=null)out.pos=pos; if(sku!=null)out.sku=sku;
+  });
+  return out;
+}
+function brasColarRegional(){
+  var txt=(document.getElementById('brasRegTxt')||{}).value||'';
+  var res=document.getElementById('brasRegRes');
+  var r=brasLerRegional(txt);
+  if(!r||(r.fat==null&&r.pos==null&&r.sku==null)){ if(res)res.innerHTML='<span style="color:var(--rd)">Não consegui achar os números. Cole a linha NORTE FLUMINENSE com o cabeçalho das colunas.</span>'; return; }
+  var f=document.getElementById('brasRegFat'), p=document.getElementById('brasRegPos'), s=document.getElementById('brasRegSku');
+  if(f&&r.fat!=null)f.value=Math.round(r.fat); if(p&&r.pos!=null)p.value=Math.round(r.pos); if(s&&r.sku!=null)s.value=Math.round(r.sku);
+  if(res)res.innerHTML='<span style="color:var(--gn)">✅ Achei: Faturamento '+(r.fat!=null?Math.round(r.fat)+'%':'—')+' · Positivação '+(r.pos!=null?Math.round(r.pos)+'%':'—')+' · SKU '+(r.sku!=null?Math.round(r.sku)+'%':'—')+'. Confira e clique em Salvar.</span>';
 }
 function brasSalvarGeralPaste(){
   var ciclo=BRAS_BI_CICLO||BRAS_CFG.ciclos[0].id;

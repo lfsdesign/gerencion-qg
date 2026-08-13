@@ -360,6 +360,12 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
 .bras-rm-eq{font-size:12px;color:var(--t3);min-width:52px;}
 .bras-rm-eq.ok{color:#6EE7B7;} .bras-rm-eq.quase{color:#FCD34D;} .bras-rm-eq.baixo{color:#FCA5A5;}
 .bras-rm-eq b{color:inherit;}
+.bras-bi-card{background:var(--s2);border:1px solid var(--b);border-radius:10px;padding:11px 12px;margin-bottom:8px;}
+.bras-bi-card .bras-bi-nome{font-size:13px;color:var(--t);margin-bottom:8px;}
+.bras-bi-inps{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.bras-bi-inps label{font-size:10px;color:var(--t2);display:flex;flex-direction:column;gap:3px;text-transform:uppercase;letter-spacing:.3px;}
+.bras-bi-inps .bras-gi{text-align:left;padding:8px;}
+.bras-bi-inps select.bras-gi{text-align:left;}
 @media(max-width:480px){.bras-hero-pts{font-size:36px;}.bras-rm-lbl{width:70px;}.bras-rm-calc .bras-gi{width:52px;}}
 </style>
 </head>
@@ -2734,10 +2740,10 @@ function renderQGDiaPreview(){
     var metaTxt=v.meta?'R$ '+v.meta.toLocaleString('pt-BR',{minimumFractionDigits:2}):'<span style="color:var(--rd)">sem meta</span>';
     var ehTotal=(!v.cod)||/NORTE FLUMINENSE|REGIONAL/i.test(v.nome||'');
     if(ehTotal){
-      return '<div style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:var(--bl2);border:1px solid rgba(59,130,246,0.5);border-radius:10px;margin-bottom:8px">'
-        +'<span style="font-size:12px;color:#60A5FA;width:34px;font-weight:700">&mdash;</span>'
-        +'<span style="flex:1;font-size:14px;font-weight:800;color:#60A5FA">'+v.nome+'</span>'
-        +'<span style="font-size:14px;font-weight:900;color:#60A5FA">'+metaTxt+'</span>'
+      return '<div style="display:flex;align-items:center;gap:10px;padding:12px 12px;background:linear-gradient(90deg,rgba(59,130,246,0.28),rgba(59,130,246,0.05));border:1px solid rgba(59,130,246,0.45);border-left:4px solid #3B82F6;border-radius:10px;margin-bottom:8px">'
+        +'<span style="font-size:13px;color:#7DAEF7;width:34px;font-weight:700">&mdash;</span>'
+        +'<span style="flex:1;font-size:14px;font-weight:800;color:#6AA1F5">'+v.nome+'</span>'
+        +'<span style="font-size:14px;font-weight:900;color:#6AA1F5">'+metaTxt+'</span>'
         +'</div>';
     }
     return '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--s2);border-radius:8px;margin-bottom:6px">'
@@ -2759,10 +2765,10 @@ function gerarImagemQGDia(){
     var metaTxt=v.meta?v.meta.toLocaleString('pt-BR',{minimumFractionDigits:2}):'-';
     var ehTotal=(!v.cod)||/NORTE FLUMINENSE|REGIONAL/i.test(v.nome||'');
     if(ehTotal){
-      return '<div style="display:flex;align-items:center;padding:13px 16px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.55);border-radius:12px;margin-bottom:12px">'
-        +'<span style="font-size:13px;color:#60A5FA;width:30px;font-weight:700">&mdash;</span>'
-        +'<span style="flex:1;font-size:14px;font-weight:800;color:#60A5FA;letter-spacing:0.5px">'+v.nome.toUpperCase()+'</span>'
-        +'<span style="font-size:14px;font-weight:900;color:#60A5FA">R$ '+metaTxt+'</span>'
+      return '<div style="display:flex;align-items:center;padding:14px 16px;background:linear-gradient(90deg,rgba(59,130,246,0.30),rgba(59,130,246,0.05));border:1px solid rgba(59,130,246,0.45);border-left:4px solid #3B82F6;border-radius:12px;margin-bottom:13px;box-shadow:0 2px 12px rgba(59,130,246,0.18)">'
+        +'<span style="font-size:14px;color:#7DAEF7;width:30px;font-weight:700">&mdash;</span>'
+        +'<span style="flex:1;font-size:14px;font-weight:800;color:#6AA1F5;letter-spacing:0.5px">'+v.nome.toUpperCase()+'</span>'
+        +'<span style="font-size:14px;font-weight:900;color:#6AA1F5">R$ '+metaTxt+'</span>'
         +'</div>';
     }
     return '<div style="display:flex;align-items:center;padding:9px 14px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:5px">'
@@ -4661,9 +4667,21 @@ var BRAS_LANC=[];                  // cache de lançamentos
 var BRAS_CICLO='c1';               // ciclo selecionado na tela
 var BRAS_VERCOD=null;              // coordenador simulando um vendedor
 var BRAS_ADMIN_ABA='painel';       // aba do coordenador: 'painel' | 'lancar' | 'config'
-var BRAS_GERAL='__GERAL__';        // patrocinador sentinela p/ guardar % geral (gatilhos)
-var BRAS_MODO_LANC='pct';          // 'pct' = digitar % | 'realmeta' = Realizado ÷ Meta (app calcula)
+var BRAS_PSENT='__GERAL__';        // patrocinador sentinela p/ guardar % geral (gatilhos)
+var BRAS_MODO_LANC='geral';        // 'geral' = ranking | 'bi' = meus 9 | 'pct' | 'realmeta'
+var BRAS_BI_CICLO='c1';            // ciclo selecionado no modo Pontos do BI
 function brasPctDe(real,meta){ real=brasNumSimples(real); meta=brasNumSimples(meta); if(real==null||meta==null||meta<=0)return null; return Math.round(real/meta*1000)/10; }
+var BRAS_BI={};                    // detalhe dos meus 9: {c1:{RCA017:{pts,gatilho,fat,pos,posReal,posMeta}}, c2:{...}}
+var BRAS_GERAL={};                 // ranking geral da empresa: {c1:[{cod,nome,pts,gatilho}], c2:[...]}
+function brasBiDe(cod,ciclo){ return (BRAS_BI&&BRAS_BI[ciclo]&&BRAS_BI[ciclo][cod])||null; }
+function brasTemBI(ciclo){ return !!(BRAS_BI&&BRAS_BI[ciclo]&&Object.keys(BRAS_BI[ciclo]).length); }
+// ponto do vendedor: ranking geral > detalhe dos 9 > cálculo pelos lançamentos
+function brasPontosVend(cod,ciclo){
+  var g=(typeof brasGeralDe==='function')?brasGeralDe(cod,ciclo):null;
+  if(g&&g.pts!=null)return +g.pts||0;
+  var bi=brasBiDe(cod,ciclo); if(bi&&bi.pts!=null&&bi.pts!=='')return +bi.pts||0;
+  return brasTotalComRegional(cod,ciclo);
+}
 
 function brasVendedores(){return USERS.filter(function(u){return u.t==='vend';});}
 function brasEhCoord(){return eu&&eu.t==='coord';}
@@ -4699,7 +4717,8 @@ function brasDefaults(){
       {id:'c2',nome:'Ciclo 2',meses:'Nov / Dez'}
     ],
     gatilhos:{fat_pct:90,pos_pct:95,min_pts:0},
-    regional:{c1:{fat:false,pos:false,sku:false},c2:{fat:false,pos:false,sku:false}}
+    regional:{c1:{fat:false,pos:false,sku:false},c2:{fat:false,pos:false,sku:false}},
+    regionalNum:{}
   };
 }
 
@@ -4710,7 +4729,8 @@ function brasMergeCfg(v){
     patrocinadores:(Array.isArray(v.patrocinadores)&&v.patrocinadores.length)?v.patrocinadores:d.patrocinadores,
     ciclos:(Array.isArray(v.ciclos)&&v.ciclos.length)?v.ciclos:d.ciclos,
     gatilhos:Object.assign({},d.gatilhos,v.gatilhos||{}),
-    regional:Object.assign({},d.regional,v.regional||{})
+    regional:Object.assign({},d.regional,v.regional||{}),
+    regionalNum:Object.assign({},d.regionalNum,v.regionalNum||{})
   };
 }
 
@@ -4720,10 +4740,10 @@ function brasTier(pct){ pct=+pct||0; return pct>=120?120:pct>=110?110:pct>=100?1
 function brasPts(tipo,pct){ var t=brasTier(pct); return t?BRAS_TAB[tipo][t]:0; }
 
 function brasRowsDe(cod,ciclo){
-  return BRAS_LANC.filter(function(r){return r.vendedor_cod===cod && r.ciclo===ciclo && r.patroc_cod!==BRAS_GERAL;});
+  return BRAS_LANC.filter(function(r){return r.vendedor_cod===cod && r.ciclo===ciclo && r.patroc_cod!==BRAS_PSENT;});
 }
 function brasRowGeral(cod,ciclo){
-  return BRAS_LANC.find(function(r){return r.vendedor_cod===cod && r.ciclo===ciclo && r.patroc_cod===BRAS_GERAL;});
+  return BRAS_LANC.find(function(r){return r.vendedor_cod===cod && r.ciclo===ciclo && r.patroc_cod===BRAS_PSENT;});
 }
 
 // Calcula os pontos de um vendedor num ciclo, patrocinador por patrocinador
@@ -4751,13 +4771,13 @@ function brasTotalComRegional(cod,ciclo){
   var base=brasCalc(cod,ciclo).total;
   return brasRegionalAtivo(ciclo)?Math.round(base*1.5):base;
 }
-function brasTotalGeral(cod){ // soma de todos os ciclos, com regional aplicado por ciclo
-  var t=0; BRAS_CFG.ciclos.forEach(function(c){t+=brasTotalComRegional(cod,c.id);}); return t;
+function brasTotalGeral(cod){ // soma de todos os ciclos (usa BI se houver)
+  var t=0; BRAS_CFG.ciclos.forEach(function(c){t+=brasPontosVend(cod,c.id);}); return t;
 }
 
 function brasRanking(ciclo){ // ciclo id ou 'geral'
   var arr=brasVendedores().map(function(u){
-    var pts=(ciclo==='geral')?brasTotalGeral(u.c):brasTotalComRegional(u.c,ciclo);
+    var pts=(ciclo==='geral')?brasTotalGeral(u.c):brasPontosVend(u.c,ciclo);
     return {cod:u.c,nome:u.n,cd:u.cd,pts:pts};
   });
   arr.sort(function(a,b){return b.pts-a.pts;});
@@ -4811,7 +4831,7 @@ function brasFmtPct(v){ if(v==null)return '-'; var n=Math.round(v*10)/10; return
 function carregarBrasileirao(){
   var body=document.getElementById('brasBody');
   if(body&&!BRAS_CFG)body.innerHTML='<div class="loading">Carregando o Brasileirão…</div>';
-  return brasLoadCfg().then(brasLoadLanc).then(function(){
+  return brasLoadCfg().then(brasLoadLanc).then(brasLoadBI).then(brasLoadGeral).then(function(){
     if(brasEhCoord()&&!BRAS_VERCOD){} // coord começa no painel
     brasRender();
   }).catch(function(){
@@ -4835,6 +4855,64 @@ function brasSalvarCfg(){
    .then(function(r){if(!r.ok)throw new Error();toast('Configuração salva! ✅');})
    .catch(function(){toast('Erro ao salvar configuração.');});
 }
+function brasLoadBI(){
+  return supaFetch('qg_config?chave=eq.bras_bi').then(qgJson).then(function(d){
+    BRAS_BI=(Array.isArray(d)&&d.length&&d[0].valor&&typeof d[0].valor==='object')?d[0].valor:{};
+  }).catch(function(){BRAS_BI={};});
+}
+function brasSalvarBI(){
+  return supaFetch('qg_config',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},
+    body:JSON.stringify({chave:'bras_bi',valor:BRAS_BI})})
+   .then(function(r){if(!r.ok)throw new Error();return true;})
+   .catch(function(){toast('Erro ao salvar os pontos.');return false;});
+}
+
+/* ---------- RANKING GERAL DA EMPRESA (todas as regionais) ---------- */
+function brasLoadGeral(){
+  return supaFetch('qg_config?chave=eq.bras_geral').then(qgJson).then(function(d){
+    BRAS_GERAL=(Array.isArray(d)&&d.length&&d[0].valor&&typeof d[0].valor==='object')?d[0].valor:{};
+  }).catch(function(){BRAS_GERAL={};});
+}
+function brasSalvarGeral(){
+  return supaFetch('qg_config',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},
+    body:JSON.stringify({chave:'bras_geral',valor:BRAS_GERAL})})
+   .then(function(r){if(!r.ok)throw new Error();return true;})
+   .catch(function(){toast('Erro ao salvar o ranking.');return false;});
+}
+function brasPtsInt(v){ if(v==null)return null; var n=parseInt(String(v).replace(/[^\d]/g,''),10); return isNaN(n)?null:n; }
+// interpreta a lista colada dos clubes: "046 - ROSANGELA SAAGER   1.050   Não"
+function brasParseGeral(txt){
+  var out=[];
+  txt.split('\n').forEach(function(l){
+    l=l.trim(); if(!l)return;
+    var gat=false, resto=l;
+    var mg=resto.match(/\b(sim|s[ií]m|n[aã]o|nao)\b\s*$/i);
+    if(mg){ gat=/^s/i.test(mg[1]); resto=resto.slice(0,mg.index).trim(); }
+    // pts = último número da linha (aceita 1.050)
+    var mp=resto.match(/([\d][\d.]*)\s*$/);
+    if(!mp)return;
+    var pts=brasPtsInt(mp[1]); resto=resto.slice(0,mp.index).trim();
+    // código no início
+    var mc=resto.match(/^(\d+)\s*[-–—]?\s*(.*)$/);
+    var cod=mc?mc[1]:''; var nome=mc?mc[2].trim():resto;
+    if(!cod&&!nome)return;
+    out.push({cod:cod,nome:nome,pts:(pts!=null?pts:0),gatilho:gat});
+  });
+  return out;
+}
+function brasGeralRank(ciclo){
+  var arr=(BRAS_GERAL&&BRAS_GERAL[ciclo])?BRAS_GERAL[ciclo].slice():[];
+  arr.sort(function(a,b){return b.pts-a.pts;});
+  return arr;
+}
+function brasTemGeral(ciclo){ return brasGeralRank(ciclo).length>0; }
+function brasNormCod(x){ return String(x==null?'':x).replace(/\D/g,'').replace(/^0+/,''); } // só dígitos, sem zeros à esquerda
+function brasGeralDe(cod,ciclo){ var n=brasNormCod(cod); if(!n)return null; return brasGeralRank(ciclo).find(function(x){return brasNormCod(x.cod)===n;})||null; }
+function brasPosGeral(cod,ciclo){
+  var rk=brasGeralRank(ciclo), n=brasNormCod(cod); var i=n?rk.findIndex(function(x){return brasNormCod(x.cod)===n;}):-1;
+  return {pos:(i>=0?i+1:null), total:rk.length};
+}
+function brasPodioPts(ciclo){ var rk=brasGeralRank(ciclo); return rk.length>=3?rk[2].pts:(rk.length?rk[rk.length-1].pts:0); }
 
 /* ================== RENDER PRINCIPAL ================== */
 function brasSetCiclo(c){BRAS_CICLO=c;brasRender();}
@@ -4888,53 +4966,116 @@ function brasTelaVendedor(cod){
   // seletor ciclo
   h+=brasSeletorCiclo(true);
 
-  // cabeçalho com pontuação
-  var rk=brasRanking(BRAS_CICLO);
-  var pos=rk.findIndex(function(x){return x.cod===cod;})+1;
-  var pts=(BRAS_CICLO==='geral')?brasTotalGeral(cod):brasTotalComRegional(cod,BRAS_CICLO);
-  var reg=(BRAS_CICLO!=='geral')&&brasRegionalAtivo(BRAS_CICLO);
-  var medal=pos===1?'&#129351;':pos===2?'&#129352;':pos===3?'&#129353;':'';
-  h+='<div class="bras-hero">'
-    +'<div class="bras-hero-top"><div>'
-    +'<div class="bras-hero-lbl">Sua pontuação'+(BRAS_CICLO==='geral'?' na campanha':' no '+brasNomeCiclo(BRAS_CICLO))+'</div>'
-    +'<div class="bras-hero-pts">'+pts+' <small>pts</small></div>'
-    +(reg?'<div class="bras-reg-on">&#128293; Bônus regional +50% aplicado!</div>':'')
-    +'</div><div class="bras-hero-pos">'+medal+'<div class="bras-pos-num">'+(pos||'-')+'&ordm;</div><div class="bras-pos-lbl">de '+rk.length+'</div></div></div>'
-    +'</div>';
+  // ---- HERO: posição GERAL na empresa (o que vale prêmio) ----
+  var bi=(BRAS_CICLO!=='geral')?brasBiDe(cod,BRAS_CICLO):null;
+  var pts=(BRAS_CICLO==='geral')?brasTotalGeral(cod):brasPontosVend(cod,BRAS_CICLO);
+  var rk9=brasRanking(BRAS_CICLO); var pos9=rk9.findIndex(function(x){return x.cod===cod;})+1;
+  var temG=(BRAS_CICLO!=='geral')&&brasTemGeral(BRAS_CICLO);
+  h+='<div class="bras-hero"><div class="bras-hero-top"><div>';
+  if(temG){
+    var pg=brasPosGeral(cod,BRAS_CICLO), pod=brasPodioPts(BRAS_CICLO);
+    h+='<div class="bras-hero-lbl">Sua posição na empresa — vale prêmio</div>'
+      +'<div class="bras-hero-pts">'+pts+' <small>pts</small></div>'
+      +'</div><div class="bras-hero-pos"><div class="bras-pos-num">'+(pg.pos||'-')+'&ordm;</div><div class="bras-pos-lbl">de '+pg.total+'</div></div></div>';
+    if(pg.pos&&pg.pos<=3) h+='<div class="bras-reg-on">&#127942; Você está no pódio (top 3)! Não tire o pé.</div>';
+    else h+='<div class="bras-reg-on">&#127942; Pódio (top 3) está em '+pod+' pts — faltam '+Math.max(0,pod-pts)+' pra você.</div>';
+    h+='<div style="font-size:11px;color:#93C5FD;margin-top:4px">No seu time (Norte Fluminense) você é o '+(pos9||'-')+'&ordm; de '+rk9.length+'.</div>';
+  } else {
+    var medal=pos9===1?'&#129351;':pos9===2?'&#129352;':pos9===3?'&#129353;':'';
+    h+='<div class="bras-hero-lbl">Sua pontuação'+(BRAS_CICLO==='geral'?' na campanha':' no '+brasNomeCiclo(BRAS_CICLO))+'</div>'
+      +'<div class="bras-hero-pts">'+pts+' <small>pts</small></div>'
+      +'</div><div class="bras-hero-pos">'+medal+'<div class="bras-pos-num">'+(pos9||'-')+'&ordm;</div><div class="bras-pos-lbl">de '+rk9.length+'</div></div></div>';
+    h+='<div style="font-size:11px;color:#93C5FD;margin-top:6px">Assim que o ranking geral da empresa for lançado, sua posição real aparece aqui.</div>';
+  }
+  h+='</div>';
 
   // tabela do brasileirão
   h+=brasTabelaClassificacao(cod);
 
-  // onde ganhar mais rápido
+  // onde ganhar mais rápido / leitura pra subir
   if(BRAS_CICLO!=='geral'){
-    var ops=brasOportunidades(cod,BRAS_CICLO);
-    h+='<div class="card"><div class="ct">&#128293; Onde você ganha mais rápido</div>';
-    if(!ops.length){h+='<div class="empty" style="padding:20px">Assim que chegarem os primeiros números, mostro aqui os pontos mais fáceis de pegar.</div>';}
-    else{
-      ops.forEach(function(o){
-        var cor=o.cota==='lenda'?'var(--am)':'var(--t2)';
-        var selo=o.cota==='lenda'?'<span class="bras-selo-lenda">LENDA 3x</span>':'<span class="bras-selo-craque">Craque</span>';
-        h+='<div class="bras-op"><div class="bras-op-h"><b style="color:'+cor+'">'+mxE(o.nome)+'</b>'+selo+'</div><div class="bras-op-t">'+o.txt+'</div></div>';
-      });
-      h+='<div class="bras-dica">&#128161; Cada ponto num <b>Lenda vale 3x</b>. Priorize os Lendas e empurre a <b>positivação</b> acima de 100% — é o que mais rende.</div>';
+    if(bi){
+      h+='<div class="card"><div class="ct">&#128293; Sua leitura pra subir</div>';
+      if(bi.pos!=null&&bi.pos<95){
+        h+='<div class="bras-op"><div class="bras-op-t">Sua <b>positivação</b> está em <b>'+brasFmtPct(bi.pos)+'</b> (o gatilho pede 95%). <b>É aqui que estão seus pontos.</b> Positivar mais — principalmente nos <b>Lendas (valem 3x)</b> — é o caminho mais rápido pra subir.</div></div>';
+      } else if(bi.pos!=null){
+        h+='<div class="bras-op"><div class="bras-op-t">Positivação em <b>'+brasFmtPct(bi.pos)+'</b> — mandou bem! Agora foca no <b>faturamento</b> e nos <b>Lendas (3x)</b> pra somar mais.</div></div>';
+      } else {
+        h+='<div class="bras-op"><div class="bras-op-t">Foco nos <b>Lendas (valem 3x)</b> e na <b>positivação</b> — é o que mais soma ponto na campanha.</div></div>';
+      }
+      h+='<div class="bras-dica">&#128161; Lenda vale <b>3x</b>. Positivar largo nos Lendas é a jogada de maior retorno.</div></div>';
+    } else {
+      var ops=brasOportunidades(cod,BRAS_CICLO);
+      h+='<div class="card"><div class="ct">&#128293; Onde você ganha mais rápido</div>';
+      if(!ops.length){h+='<div class="empty" style="padding:20px">Assim que chegarem os primeiros números, mostro aqui os pontos mais fáceis de pegar.</div>';}
+      else{
+        ops.forEach(function(o){
+          var cor=o.cota==='lenda'?'var(--am)':'var(--t2)';
+          var selo=o.cota==='lenda'?'<span class="bras-selo-lenda">LENDA 3x</span>':'<span class="bras-selo-craque">Craque</span>';
+          h+='<div class="bras-op"><div class="bras-op-h"><b style="color:'+cor+'">'+mxE(o.nome)+'</b>'+selo+'</div><div class="bras-op-t">'+o.txt+'</div></div>';
+        });
+        h+='<div class="bras-dica">&#128161; Cada ponto num <b>Lenda vale 3x</b>. Priorize os Lendas e empurre a <b>positivação</b> acima de 100% — é o que mais rende.</div>';
+      }
+      h+='</div>';
     }
-    h+='</div>';
   }
 
-  // checklist de gatilhos
+  // gatilho
   if(BRAS_CICLO!=='geral'){
-    var g=brasGatilhos(cod,BRAS_CICLO);
-    function lin(ok,txt,sub){return '<div class="bras-gat '+(ok?'ok':'no')+'"><span class="bras-gat-ic">'+(ok?'&#9989;':'&#10060;')+'</span><div><div class="bras-gat-t">'+txt+'</div>'+(sub?'<div class="bras-gat-s">'+sub+'</div>':'')+'</div></div>';}
-    h+='<div class="card"><div class="ct">&#127942; Meta Gatilho (pra valer prêmio)</div>';
-    h+=lin(g.g1.ok,'Faturamento &ge; '+g.g1.alvo+'%', g.g1.val!=null?('Você está em '+brasFmtPct(g.g1.val)+(g.estimado?' (estimado)':'')):'Sem dado ainda');
-    h+=lin(g.g2.ok,'Positivação &ge; '+g.g2.alvo+'%', g.g2.val!=null?('Você está em '+brasFmtPct(g.g2.val)+(g.estimado?' (estimado)':'')):'Sem dado ainda');
-    if(g.g3.ativo)h+=lin(g.g3.ok,'Mínimo de '+g.g3.alvo+' pts por patrocinador', g.g3.ok?'Tudo certo':(g.g3.abaixo+' patrocinador(es) abaixo do mínimo'));
-    else h+=lin(true,'Mínimo de pontos por indústria','O coordenador ainda vai configurar o valor');
-    h+='</div>';
+    var gsrc=brasGeralDe(cod,BRAS_CICLO);
+    var gflag=(gsrc&&typeof gsrc.gatilho!=='undefined')?!!gsrc.gatilho:(bi?!!bi.gatilho:null);
+    if(gflag!==null||bi){
+      var lib=!!gflag;
+      h+='<div class="card"><div class="ct">&#127942; O que falta pra destravar o prêmio</div>';
+      h+='<div class="bras-gat '+(lib?'ok':'no')+'"><span class="bras-gat-ic">'+(lib?'&#9989;':'&#10060;')+'</span><div><div class="bras-gat-t">'+(lib?'LIBERADO — você está valendo prêmio!':'Gatilho ainda NÃO liberado')+'</div><div class="bras-gat-s">'+(lib?'Continue assim.':'Falta destravar — geralmente é a positivação.')+'</div></div></div>';
+      if(bi&&bi.fat!=null)h+='<div class="bras-gat '+(bi.fat>=90?'ok':'no')+'"><span class="bras-gat-ic">'+(bi.fat>=90?'&#9989;':'&#10060;')+'</span><div><div class="bras-gat-t">Faturamento &ge; 90%</div><div class="bras-gat-s">Você está em '+brasFmtPct(bi.fat)+'</div></div></div>';
+      if(bi){
+        var pr=bi.posReal, pm=bi.posMeta;
+        var ppct=(bi.pos!=null)?bi.pos:((pr!=null&&pm)?Math.round(pr/pm*1000)/10:null);
+        if(ppct!=null){
+          var sub='Você está em '+brasFmtPct(ppct);
+          if(pr!=null&&pm){ var need=Math.ceil(pm*0.95), falt=Math.max(0,need-pr); sub=(falt>0)?('Positivou '+pr+' de '+pm+' — <b>faltam '+falt+' cliente(s)</b> pra chegar aos 95%'):('Positivou '+pr+' de '+pm+' — meta batida!'); }
+          h+='<div class="bras-gat '+(ppct>=95?'ok':'no')+'"><span class="bras-gat-ic">'+(ppct>=95?'&#9989;':'&#10060;')+'</span><div><div class="bras-gat-t">Positivação &ge; 95%</div><div class="bras-gat-s">'+sub+'</div></div></div>';
+        }
+      }
+      h+='</div>';
+    } else {
+      var g=brasGatilhos(cod,BRAS_CICLO);
+      var lin=function(ok,txt,sub){return '<div class="bras-gat '+(ok?'ok':'no')+'"><span class="bras-gat-ic">'+(ok?'&#9989;':'&#10060;')+'</span><div><div class="bras-gat-t">'+txt+'</div>'+(sub?'<div class="bras-gat-s">'+sub+'</div>':'')+'</div></div>';};
+      h+='<div class="card"><div class="ct">&#127942; Meta Gatilho (pra valer prêmio)</div>';
+      h+=lin(g.g1.ok,'Faturamento &ge; '+g.g1.alvo+'%', g.g1.val!=null?('Você está em '+brasFmtPct(g.g1.val)+(g.estimado?' (estimado)':'')):'Sem dado ainda');
+      h+=lin(g.g2.ok,'Positivação &ge; '+g.g2.alvo+'%', g.g2.val!=null?('Você está em '+brasFmtPct(g.g2.val)+(g.estimado?' (estimado)':'')):'Sem dado ainda');
+      if(g.g3.ativo)h+=lin(g.g3.ok,'Mínimo de '+g.g3.alvo+' pts por patrocinador', g.g3.ok?'Tudo certo':(g.g3.abaixo+' patrocinador(es) abaixo do mínimo'));
+      else h+=lin(true,'Mínimo de pontos por indústria','O coordenador ainda vai configurar o valor');
+      h+='</div>';
+    }
   }
 
-  // placar por patrocinador
-  h+=brasPlacarPatrocinadores(cod,BRAS_CICLO);
+  // caminho pra subir (sempre que houver dado do vendedor)
+  if(BRAS_CICLO!=='geral' && (bi||temG)){
+    h+='<div class="card"><div class="ct">&#128293; Seu caminho pra subir</div>'
+      +'<div class="bras-op"><div class="bras-op-h"><b style="color:var(--am)">1. Destrave o gatilho</b></div><div class="bras-op-t">Chegue a <b>95% de positivação</b> e <b>90% de faturamento</b>. Sem isso, o prêmio não conta.</div></div>'
+      +'<div class="bras-op"><div class="bras-op-h"><b style="color:var(--am)">2. Ataque os "Não Positivados"</b></div><div class="bras-op-t">No BI, vá na lista de quem <b>não comprou</b> — comece pelos <b>Lendas (valem 3x)</b>. É onde estão seus pontos parados.</div></div>'
+      +'<div class="bras-op"><div class="bras-op-h"><b style="color:var(--am)">3. Multiplique</b></div><div class="bras-op-t">Passe as metas de 100% pra <b>110% / 120%</b> — cada faixa rende mais ponto, ainda mais nos Lendas.</div></div>'
+      +'</div>';
+  }
+
+  // termômetro da regional (o bônus de +50% pra todos)
+  if(BRAS_CICLO!=='geral'){
+    var rn=(BRAS_CFG.regionalNum&&BRAS_CFG.regionalNum[BRAS_CICLO])||null;
+    if(rn&&(rn.fat!=null||rn.pos!=null||rn.sku!=null)){
+      function rcol(lbl,v){ var ok=(v!=null&&v>=100); var cor=ok?'#6EE7B7':'#FCA5A5'; var ic=ok?'&#9989;':'&#10060;';
+        return '<div style="flex:1;text-align:center"><div style="font-size:16px">'+ic+'</div><div style="font-size:11px;color:var(--t);font-weight:700;margin-top:2px">'+lbl+'</div><div style="font-size:12px;font-weight:800;color:'+cor+'">'+(v!=null?brasFmtPct(v):'-')+'</div></div>'; }
+      var todos=(rn.fat>=100&&rn.pos>=100&&rn.sku>=100);
+      h+='<div class="card" style="border:1px solid rgba(59,130,246,.35)"><div class="ct" style="color:#93C5FD">&#128293; A Regional — bônus de +50% pra todos</div>'
+        +'<div style="font-size:12px;color:var(--t2);margin-bottom:10px">Se a Norte Fluminense não bater os 3, ninguém leva o bônus:</div>'
+        +'<div style="display:flex;gap:8px">'+rcol('Faturamento',rn.fat)+rcol('Positivação',rn.pos)+rcol('SKU/PDV',rn.sku)+'</div>'
+        +'<div style="margin-top:10px;text-align:center;font-size:12px;font-weight:700;color:'+(todos?'var(--gn)':'#93C5FD')+'">'+(todos?'&#127881; Regional bateu os 3 — bônus liberado!':'Positivação costuma ser o gargalo do time também. Bora juntos!')+'</div></div>';
+    }
+  }
+
+  // placar por patrocinador (só quando há lançamento por fornecedor)
+  if(brasRowsDe(cod,cicloId).length) h+=brasPlacarPatrocinadores(cod,BRAS_CICLO);
   return h;
 }
 
@@ -4981,9 +5122,21 @@ function brasChip(lbl,pct,pts){
 /* ================== PAINEL DO COORDENADOR ================== */
 function brasTelaPainel(){
   var h=brasSeletorCiclo(true);
+  // resumo do ranking geral da empresa
+  if(BRAS_CICLO!=='geral' && brasTemGeral(BRAS_CICLO)){
+    var rk=brasGeralRank(BRAS_CICLO), pod=brasPodioPts(BRAS_CICLO);
+    h+='<div class="admin-box" style="border-color:var(--am3)"><div class="admin-title" style="color:var(--am)">&#127942; Ranking geral da empresa ('+rk.length+' vendedores)</div>';
+    h+='<div style="font-size:12px;color:var(--t2);margin-bottom:8px">Pódio (top 3) — o corte pro prêmio está em <b style="color:var(--am)">'+pod+' pts</b>:</div>';
+    rk.slice(0,3).forEach(function(x,i){var m=i===0?'&#129351;':i===1?'&#129352;':'&#129353;';h+='<div class="bras-gargalo">'+m+' <b>'+mxE(x.nome)+'</b><span style="margin-left:auto;color:var(--am);font-weight:800">'+x.pts+'</span></div>';});
+    h+='<div style="font-size:12px;color:var(--t2);margin-top:10px;margin-bottom:4px"><b>Seus 9 na empresa:</b></div>';
+    brasVendedores().map(function(u){return {u:u,pg:brasPosGeral(u.c,BRAS_CICLO),pts:brasPontosVend(u.c,BRAS_CICLO)};})
+      .sort(function(a,b){return (a.pg.pos||9999)-(b.pg.pos||9999);})
+      .forEach(function(o){ if(o.pg.pos)h+='<div class="bras-gargalo"><b>'+o.pg.pos+'&ordm;</b> '+mxE(o.u.n.split(' ')[0])+'<span style="margin-left:auto;color:var(--t2)">'+o.pts+' pts &middot; faltam '+Math.max(0,pod-o.pts)+' pro pódio</span></div>'; });
+    h+='</div>';
+  }
   // termômetro regional
   h+=brasTermometroRegional();
-  // classificação
+  // classificação (time)
   h+=brasTabelaClassificacao(null);
   // simular
   h+='<div class="admin-box"><div class="admin-title">&#128065;&#65039; Ver como cada vendedor vê</div><div style="font-size:11px;color:var(--t2);margin-bottom:10px">Toque num nome pra abrir a tela dele (só simulação).</div><div style="display:flex;flex-wrap:wrap;gap:6px">';
@@ -4996,6 +5149,7 @@ function brasTelaPainel(){
 
 function brasTermometroRegional(){
   if(BRAS_CICLO==='geral')return '';
+  if(brasTemBI(BRAS_CICLO))return ''; // com pontos do BI, o multiplicador já vem embutido
   var r=(BRAS_CFG.regional&&BRAS_CFG.regional[BRAS_CICLO])||{fat:false,pos:false,sku:false};
   var ativo=r.fat&&r.pos&&r.sku;
   function tg(k,lbl){return '<button class="bras-tg'+(r[k]?' on':'')+'" onclick="brasToggleRegional(\''+k+'\')">'+(r[k]?'&#9989; ':'')+lbl+'</button>';}
@@ -5015,6 +5169,9 @@ function brasToggleRegional(k){
 function brasGargalos(){
   if(BRAS_CICLO==='geral')return '';
   var ciclo=BRAS_CICLO;
+  // só faz sentido com lançamentos por fornecedor; no modo "Pontos do BI" não há esse detalhe
+  var temLanc=BRAS_LANC.some(function(r){return r.ciclo===ciclo&&r.patroc_cod!==BRAS_PSENT;});
+  if(!temLanc)return '';
   // por patrocinador: quantos vendedores ainda não pontuaram
   var linhas=BRAS_CFG.patrocinadores.map(function(p){
     var semPonto=0,total=brasVendedores().length;
@@ -5041,15 +5198,22 @@ function brasGargalos(){
 /* ================== LANÇAR NÚMEROS ================== */
 function brasTelaLancar(){
   var h='';
-  h+='<div class="admin-box"><div class="admin-title">&#9997;&#65039; Lançar números — passo a passo</div>'
-    +'<div style="font-size:12px;color:var(--t2);line-height:1.7">'
-    +'<b>1.</b> Escolha o <b>ciclo</b> e o <b>vendedor</b>.<br>'
-    +'<b>2.</b> Escolha como você tem os números: <b>já em %</b>, ou <b>Realizado &divide; Meta</b> (aí o app calcula o % sozinho).<br>'
-    +'<b>3.</b> Preencha cada patrocinador e toque em <b>Salvar</b>. O placar de todo mundo atualiza na hora.<br>'
-    +'<span style="color:var(--t3)">Deixe em branco o que ainda não tem número. Abaixo de 100% da meta não pontua (é o esperado).</span>'
-    +'</div></div>';
+  h+='<div class="admin-box"><div class="admin-title">&#9997;&#65039; Lançar números</div>'
+    +'<div class="fg" style="margin-bottom:0"><label class="fl">O que você vai lançar?</label><div class="bras-modo" style="flex-wrap:wrap">'
+    +'<button class="bras-modo-b'+(BRAS_MODO_LANC==='geral'?' on':'')+'" onclick="brasSetModo(\'geral\')">&#127942; Ranking geral</button>'
+    +'<button class="bras-modo-b'+(BRAS_MODO_LANC==='bi'?' on':'')+'" onclick="brasSetModo(\'bi\')">&#128203; Meus 9 (detalhe)</button>'
+    +'<button class="bras-modo-b'+(BRAS_MODO_LANC==='pct'?' on':'')+'" onclick="brasSetModo(\'pct\')">% fornec.</button>'
+    +'<button class="bras-modo-b'+(BRAS_MODO_LANC==='realmeta'?' on':'')+'" onclick="brasSetModo(\'realmeta\')">Realiz&divide;Meta</button>'
+    +'</div></div></div>';
 
-  // seletor ciclo + vendedor
+  if(BRAS_MODO_LANC==='geral') return h+brasTelaLancarGeral();
+  if(BRAS_MODO_LANC==='bi') return h+brasTelaLancarBI();
+
+  // ---- modos por fornecedor (% ou realizado÷meta) ----
+  h+='<div class="admin-box"><div style="font-size:12px;color:var(--t2);line-height:1.7">'
+    +'<b>1.</b> Escolha o <b>ciclo</b> e o <b>vendedor</b>.<br>'
+    +'<b>2.</b> Preencha cada patrocinador ('+(BRAS_MODO_LANC==='realmeta'?'realizado e meta — o app calcula o %':'% da meta')+') e toque em <b>Salvar</b>.<br>'
+    +'<span style="color:var(--t3)">Deixe em branco o que não tem número. Abaixo de 100% da meta não pontua.</span></div></div>';
   h+='<div class="admin-box">';
   h+='<div class="fg"><label class="fl">Ciclo</label><select id="brasLancCiclo" class="inp" onchange="brasRenderGrid()">';
   BRAS_CFG.ciclos.forEach(function(c){h+='<option value="'+c.id+'"'+(c.id===BRAS_CICLO?' selected':'')+'>'+mxE(c.nome)+' ('+mxE(c.meses)+')</option>';});
@@ -5057,35 +5221,123 @@ function brasTelaLancar(){
   h+='<div class="fg"><label class="fl">Vendedor</label><select id="brasLancVend" class="inp" onchange="brasRenderGrid()"><option value="">Selecione…</option>';
   brasVendedores().forEach(function(u){h+='<option value="'+u.c+'">'+mxE(u.cd+' — '+u.n)+'</option>';});
   h+='</select></div>';
-  h+='<div class="fg"><label class="fl">Como você tem os números?</label><div class="bras-modo"><button id="brasModoPct" class="bras-modo-b'+(BRAS_MODO_LANC==='pct'?' on':'')+'" onclick="brasSetModo(\'pct\')">J&#225; em %</button><button id="brasModoRM" class="bras-modo-b'+(BRAS_MODO_LANC==='realmeta'?' on':'')+'" onclick="brasSetModo(\'realmeta\')">Realizado &divide; Meta</button></div></div>';
   h+='<div id="brasGrid"></div>';
   h+='</div>';
-
-  // colar do BI
-  h+='<div class="admin-box" style="border-color:rgba(16,185,129,.3)">'
-    +'<div class="admin-title" style="color:var(--gn)">&#128203; Colar do BI (rápido, vários de uma vez)</div>'
-    +'<div style="font-size:12px;color:var(--t2);line-height:1.7;margin-bottom:8px">Cole uma linha por vendedor+patrocinador, no formato:<br>'
-    +'<code class="bras-code">Vendedor ; Patrocinador ; Fat% ; Pos% ; SKU%</code><br>'
-    +'<span style="color:var(--t3)">Ex.: <code class="bras-code">RCA 017 ; Cargill ; 105 ; 112 ; 98</code> — aceita separar por <b>;</b> ou <b>Tab</b>. O vendedor é reconhecido pelo código (RCA 017) ou nome.</span></div>'
-    +'<div class="fg"><label class="fl">Ciclo do lote</label><select id="brasBICiclo" class="inp">';
-  BRAS_CFG.ciclos.forEach(function(c){h+='<option value="'+c.id+'"'+(c.id===BRAS_CICLO?' selected':'')+'>'+mxE(c.nome)+'</option>';});
-  h+='</select></div>'
-    +'<textarea id="brasBITxt" class="inp" rows="5" placeholder="RCA 017 ; Cargill ; 105 ; 112 ; 98&#10;RCA 017 ; Nestle ; 100 ; 101 ; 100"></textarea>'
-    +'<button class="btn bp" style="width:100%;margin-top:8px" onclick="brasColarBI()">&#128228; Ler e salvar o lote</button>'
-    +'<div id="brasBIRes" style="font-size:12px;margin-top:10px"></div>'
-    +'</div>';
-  // precisa renderizar grid depois de inserir no DOM
   setTimeout(brasRenderGrid,30);
   return h;
 }
 
-function brasSetModo(m){
-  BRAS_MODO_LANC=m;
-  var a=document.getElementById('brasModoPct'), b=document.getElementById('brasModoRM');
-  if(a)a.className='bras-modo-b'+(m==='pct'?' on':''); if(b)b.className='bras-modo-b'+(m==='realmeta'?' on':'');
-  brasRenderGrid();
+// ---- Modo RANKING GERAL (todas as regionais) ----
+function brasTelaLancarGeral(){
+  var ciclo=BRAS_BI_CICLO||BRAS_CFG.ciclos[0].id;
+  var rk=brasGeralRank(ciclo);
+  var h='<div class="admin-box"><div class="admin-title" style="color:var(--am)">&#127942; Ranking geral da empresa</div>'
+    +'<div style="font-size:12px;color:var(--t2);line-height:1.7">Cole a lista dos clubes do BI (pode colar um por vez, vai juntando). Formato de cada linha:<br>'
+    +'<code class="bras-code">046 - ROSANGELA SAAGER   1.050   Não</code><br>'
+    +'<span style="color:var(--t3)">O app entende código, nome, pontos e gatilho sozinho. É isso que calcula a <b>posição na empresa</b> e a <b>distância pro pódio</b>.</span></div></div>';
+  h+='<div class="admin-box">';
+  h+='<div class="fg"><label class="fl">Ciclo</label><select id="brasBIgCiclo" class="inp" onchange="brasBISetCiclo(this.value)">';
+  BRAS_CFG.ciclos.forEach(function(c){h+='<option value="'+c.id+'"'+(c.id===ciclo?' selected':'')+'>'+mxE(c.nome)+' ('+mxE(c.meses)+')</option>';});
+  h+='</select></div>';
+  h+='<textarea id="brasGeralTxt" class="inp" rows="7" placeholder="046 - ROSANGELA SAAGER   1.050   Não&#10;108 - ELTON BITTENCOURT   875   Não&#10;017 - EDIMAR BARBOSA   610   Não"></textarea>';
+  h+='<button class="btn bp" style="width:100%;margin-top:8px" onclick="brasSalvarGeralPaste()">&#128228; Ler e adicionar ao ranking</button>';
+  if(rk.length){
+    var podio=rk.slice(0,3).map(function(x,i){return (i+1)+'&ordm; '+mxE(x.nome)+' ('+x.pts+')';}).join(' &nbsp;·&nbsp; ');
+    h+='<div style="margin-top:12px;font-size:12px;color:var(--gn)">✅ <b>'+rk.length+'</b> vendedores no ranking. Pódio: '+podio+'.</div>';
+    // posição dos meus 9
+    h+='<div style="margin-top:8px;font-size:12px;color:var(--t2)"><b>Seus 9:</b><br>';
+    brasVendedores().forEach(function(u){var pg=brasPosGeral(u.c,ciclo); if(pg.pos)h+='&nbsp;• '+mxE(u.cd)+' '+mxE(u.n.split(' ')[0])+': <b style="color:var(--t)">'+pg.pos+'&ordm; de '+pg.total+'</b><br>';});
+    h+='</div>';
+    h+='<button class="btn bs" style="width:100%;margin-top:10px;font-size:12px" onclick="brasLimparGeral()">Limpar ranking deste ciclo</button>';
+  }
+  h+='<div id="brasGeralRes" style="font-size:12px;margin-top:10px"></div>';
+  h+='</div>';
+  // regional (pro termômetro)
+  var rn=(BRAS_CFG.regionalNum&&BRAS_CFG.regionalNum[ciclo])||{};
+  h+='<div class="admin-box" style="border-color:rgba(59,130,246,.3)"><div class="admin-title" style="color:#93C5FD">&#128293; A Regional — % pro termômetro</div>'
+    +'<div style="font-size:12px;color:var(--t2);margin-bottom:8px">Do painel "regional" do BI, coloque o % que a Norte Fluminense atingiu (ou deixe em branco):</div>'
+    +'<div class="g2"><div class="fg" style="margin:0"><label class="fl">Faturamento %</label><input class="inp" id="brasRegFat" inputmode="decimal" value="'+(rn.fat!=null?rn.fat:'')+'" placeholder="ex: 106"></div>'
+    +'<div class="fg" style="margin:0"><label class="fl">Positivação %</label><input class="inp" id="brasRegPos" inputmode="decimal" value="'+(rn.pos!=null?rn.pos:'')+'" placeholder="ex: 61"></div></div>'
+    +'<div class="fg"><label class="fl">SKU por PDV %</label><input class="inp" id="brasRegSku" inputmode="decimal" value="'+(rn.sku!=null?rn.sku:'')+'" placeholder="ex: 75"></div>'
+    +'<button class="btn bs" style="width:100%" onclick="brasSalvarRegNum()">&#128190; Salvar % da regional</button></div>';
+  return h;
+}
+function brasSalvarGeralPaste(){
+  var ciclo=BRAS_BI_CICLO||BRAS_CFG.ciclos[0].id;
+  var txt=(document.getElementById('brasGeralTxt')||{}).value||'';
+  var arr=brasParseGeral(txt);
+  var res=document.getElementById('brasGeralRes');
+  if(!arr.length){ if(res)res.innerHTML='<span style="color:var(--rd)">Nenhuma linha reconhecida. Confira o formato: 046 - NOME   1.050   Não</span>'; return; }
+  var map={}; (BRAS_GERAL[ciclo]||[]).forEach(function(x){map[String(x.cod)]=x;});
+  arr.forEach(function(x){map[String(x.cod)]=x;});
+  BRAS_GERAL[ciclo]=Object.keys(map).map(function(k){return map[k];});
+  toast('Salvando ranking…');
+  brasSalvarGeral().then(function(ok){ if(ok)toast('Ranking salvo! ✅ ('+arr.length+' linhas)'); var t=document.getElementById('brasGeralTxt'); if(t)t.value=''; brasRender(); });
+}
+function brasLimparGeral(){
+  var ciclo=BRAS_BI_CICLO||BRAS_CFG.ciclos[0].id;
+  if(!confirm('Limpar o ranking geral deste ciclo?'))return;
+  delete BRAS_GERAL[ciclo];
+  brasSalvarGeral().then(function(){brasRender();toast('Ranking limpo.');});
+}
+function brasSalvarRegNum(){
+  var ciclo=BRAS_BI_CICLO||BRAS_CFG.ciclos[0].id;
+  if(!BRAS_CFG.regionalNum)BRAS_CFG.regionalNum={};
+  BRAS_CFG.regionalNum[ciclo]={fat:brasNumSimples((document.getElementById('brasRegFat')||{}).value),pos:brasNumSimples((document.getElementById('brasRegPos')||{}).value),sku:brasNumSimples((document.getElementById('brasRegSku')||{}).value)};
+  brasSalvarCfg().then(brasRender);
+}
+
+// ---- Modo MEUS 9 (detalhe pro coach) ----
+function brasTelaLancarBI(){
+  var ciclo=BRAS_BI_CICLO||BRAS_CFG.ciclos[0].id;
+  var h='<div class="admin-box"><div class="admin-title" style="color:var(--am)">&#128203; Detalhe dos meus 9 (pro coach)</div>'
+    +'<div style="font-size:12px;color:var(--t2);line-height:1.7">Isto alimenta o "diagnóstico" e o "faltam X clientes" na tela do vendedor. Os <b>pontos</b> e o <b>gatilho</b> já vêm do Ranking geral — aqui você só complementa. Passe o mouse/toque em cada campo pra ver o exemplo do que colar.</div></div>';
+  h+='<div class="admin-box">';
+  h+='<div class="fg"><label class="fl">Ciclo</label><select id="brasBIgCiclo" class="inp" onchange="brasBISetCiclo(this.value)">';
+  BRAS_CFG.ciclos.forEach(function(c){h+='<option value="'+c.id+'"'+(c.id===ciclo?' selected':'')+'>'+mxE(c.nome)+' ('+mxE(c.meses)+')</option>';});
+  h+='</select></div>';
+  brasVendedores().forEach(function(u){
+    var bi=brasBiDe(u.c,ciclo)||{};
+    h+='<div class="bras-bi-card"><div class="bras-bi-nome"><b>'+mxE(u.cd)+'</b> &middot; '+mxE(u.n)+'</div>'
+      +'<div class="bras-bi-inps">'
+      +'<label>Fat% geral<input class="bras-gi" id="bbi_'+u.c+'_fat" inputmode="decimal" value="'+(bi.fat!=null?bi.fat:'')+'" placeholder="ex: 92" title="Do relatorio por vendedor: a coluna %PROJ (faturamento). Ex: 92"></label>'
+      +'<label>Pos% geral<input class="bras-gi" id="bbi_'+u.c+'_pos" inputmode="decimal" value="'+(bi.pos!=null?bi.pos:'')+'" placeholder="ex: 64" title="Positivacao geral do vendedor em %. Ex: 64"></label>'
+      +'<label>Positiv. REAL<input class="bras-gi" id="bbi_'+u.c+'_preal" inputmode="numeric" value="'+(bi.posReal!=null?bi.posReal:'')+'" placeholder="ex: 4" title="Quantos clientes ele positivou (numero real). Do BI: POSIT. Ex: 4"></label>'
+      +'<label>Positiv. META<input class="bras-gi" id="bbi_'+u.c+'_pmeta" inputmode="numeric" value="'+(bi.posMeta!=null?bi.posMeta:'')+'" placeholder="ex: 11" title="Meta de positivacao dele (numero). Do BI: META POSIT. Ex: 11"></label>'
+      +'<label style="grid-column:1/3;opacity:.8">Pontos (opcional, se nao colou o ranking)<input class="bras-gi" id="bbi_'+u.c+'_pts" inputmode="numeric" value="'+(bi.pts!=null?bi.pts:'')+'" placeholder="ex: 610" title="So se voce nao colou o Ranking geral. Ex: 610"></label>'
+      +'<label>Gatilho<select class="bras-gi" id="bbi_'+u.c+'_gat"><option value="nao"'+(bi.gatilho?'':' selected')+'>Não</option><option value="sim"'+(bi.gatilho?' selected':'')+'>Sim</option></select></label>'
+      +'</div></div>';
+  });
+  h+='<button class="btn bp" style="width:100%;margin-top:12px" onclick="brasSalvarBIGrid()">&#128190; Salvar detalhe dos 9</button>';
+  h+='<div id="brasBIgRes" style="font-size:12px;margin-top:10px"></div>';
+  h+='</div>';
+  return h;
+}
+function brasBISetCiclo(c){ BRAS_BI_CICLO=c; brasRender(); }
+function brasSalvarBIGrid(){
+  var ciclo=BRAS_BI_CICLO||BRAS_CFG.ciclos[0].id;
+  if(!BRAS_BI[ciclo])BRAS_BI[ciclo]={};
+  var n=0;
+  brasVendedores().forEach(function(u){
+    var pts=brasNumSimples((document.getElementById('bbi_'+u.c+'_pts')||{}).value);
+    var gat=(((document.getElementById('bbi_'+u.c+'_gat')||{}).value)==='sim');
+    var fat=brasNumSimples((document.getElementById('bbi_'+u.c+'_fat')||{}).value);
+    var pos=brasNumSimples((document.getElementById('bbi_'+u.c+'_pos')||{}).value);
+    var preal=brasNumSimples((document.getElementById('bbi_'+u.c+'_preal')||{}).value);
+    var pmeta=brasNumSimples((document.getElementById('bbi_'+u.c+'_pmeta')||{}).value);
+    if(pts!=null||fat!=null||pos!=null||preal!=null||pmeta!=null||gat){
+      BRAS_BI[ciclo][u.c]={pts:(pts!=null?pts:(brasBiDe(u.c,ciclo)||{}).pts),gatilho:gat,fat:fat,pos:pos,posReal:preal,posMeta:pmeta}; n++;
+    } else { delete BRAS_BI[ciclo][u.c]; }
+  });
+  toast('Salvando detalhe…');
+  brasSalvarBI().then(function(ok){
+    var res=document.getElementById('brasBIgRes');
+    if(ok){ if(res)res.innerHTML='<span style="color:var(--gn)">✅ Detalhe salvo ('+n+' vendedores). A tela do coach já atualizou.</span>'; toast('Detalhe salvo! ✅'); }
+    brasRender();
+  });
 }
 // cálculo ao vivo no modo Realizado ÷ Meta
+function brasSetModo(m){ BRAS_MODO_LANC=m; brasRender(); window.scrollTo(0,0); }
 function brasPrev(cod,k){
   var real=(document.getElementById('bg_'+cod+'_'+k+'_real')||{}).value;
   var meta=(document.getElementById('bg_'+cod+'_'+k+'_meta')||{}).value;
@@ -5156,7 +5408,7 @@ function brasSalvarGrid(){
   });
   var gf=brasNumSimples((document.getElementById('bg_geral_fat')||{}).value);
   var gp=brasNumSimples((document.getElementById('bg_geral_pos')||{}).value);
-  if(gf!=null||gp!=null)regs.push({ciclo:ciclo,vendedor_cod:cod,vendedor_nome:u?u.n:cod,patroc_cod:BRAS_GERAL,patroc_nome:'GERAL',fat_pct:gf,pos_pct:gp,sku_pct:null});
+  if(gf!=null||gp!=null)regs.push({ciclo:ciclo,vendedor_cod:cod,vendedor_nome:u?u.n:cod,patroc_cod:BRAS_PSENT,patroc_nome:'GERAL',fat_pct:gf,pos_pct:gp,sku_pct:null});
   brasSalvarLote(cod,ciclo,regs,function(){toast('Números salvos! ✅');});
 }
 
@@ -5300,16 +5552,16 @@ function brasTutorialHtml(){
 
   h+='<div class="bras-tut-h">&#128241; O que tem em cada parte da tela</div>';
   if(coord){
-    h+=passo('&#128202;','Painel','A tabela do Brasileirão, o termômetro do bônus regional e os gargalos do time (onde tem ponto parado).');
-    h+=passo('&#9997;&#65039;','Lançar números','Onde você coloca os números de cada vendedor. Pode digitar o % direto, ou informar <b>Realizado &divide; Meta</b> que o app calcula o % sozinho. Também dá pra colar do BI. É o que faz o placar existir.');
-    h+=passo('&#9881;&#65039;','Configurar','Ajusta patrocinadores, ciclos e os gatilhos, caso a Arcofoods mude alguma regra.');
+    h+=passo('&#128202;','Painel','O ranking geral da empresa (pódio + a posição dos seus 9), o termômetro da regional e os gargalos do time.');
+    h+=passo('&#127942;','Ranking geral','Você cola a lista dos 6 clubes do BI (código, nome, pontos, gatilho) e o app monta a posição de cada um na empresa e a distância pro pódio.');
+    h+=passo('&#128203;','Meus 9 (detalhe)','Complementa o coach: fat%, pos% e a positivação real/meta dos seus 9 — é o que gera o "faltam X clientes".');
     h+=passo('&#128065;&#65039;','Ver como vendedor','Abre a tela exatamente como cada vendedor vê — pra você conferir e cobrar.');
   } else {
-    h+=passo('&#127942;','Sua pontuação e posição','Lá no topo: quantos pontos você tem e em que lugar da tabela está.');
-    h+=passo('&#128203;','Tabela do Brasileirão','A classificação de todo mundo. Seu nome fica destacado. Mira no topo!');
-    h+=passo('&#128293;','Onde você ganha mais rápido','Suas melhores jogadas do momento: Lenda parado, meta quase virando, próximo degrau de pontos.');
-    h+=passo('&#9989;','Meta Gatilho','O checklist que garante seu prêmio. Deixe tudo verde.');
-    h+=passo('&#128203;','Placar por patrocinador','Seu detalhe marca por marca, com os Lendas destacados.');
+    h+=passo('&#127942;','Sua posição na empresa','No topo: seus pontos, sua posição entre TODOS (o que vale prêmio) e quanto falta pro pódio (top 3).');
+    h+=passo('&#9989;','O que falta pra destravar','Seu gatilho: faturamento e positivação. Mostra até quantos clientes faltam pra você liberar o prêmio.');
+    h+=passo('&#128293;','Seu caminho pra subir','O passo a passo: destrave o gatilho, ataque os "não positivados" dos Lendas, e multiplique passando das metas.');
+    h+=passo('&#128293;','A Regional','O termômetro da Norte Fluminense — se a regional não bater os 3, ninguém leva o bônus de +50%.');
+    h+=passo('&#128203;','Sua equipe','A tabela dos 9 do seu time, só como referência interna.');
   }
 
   h+='<div class="bras-tut-h">&#128197; E os dois ciclos?</div>';

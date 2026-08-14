@@ -4888,6 +4888,14 @@ function brasSalvarGeral(){
    .catch(function(){toast('Erro ao salvar o ranking.');return false;});
 }
 function brasPtsInt(v){ if(v==null)return null; var n=parseInt(String(v).replace(/[^\d]/g,''),10); return isNaN(n)?null:n; }
+function brasLimparLancAntigos(){
+  if(!confirm('Apagar os lançamentos de teste antigos (modelo % por fornecedor)? O Ranking geral, os Pontos por marca e o detalhe dos 9 NÃO são afetados.'))return;
+  var res=document.getElementById('brasLimpRes'); if(res)res.innerHTML='<span style="color:var(--t2)">Apagando…</span>';
+  toast('Limpando dados antigos…');
+  supaFetch('bras_lancamentos?ciclo=neq.__nenhum__',{method:'DELETE',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'return=minimal'}})
+   .then(function(r){ if(!r.ok)throw new Error(); BRAS_LANC=[]; if(res)res.innerHTML='<span style="color:var(--gn)">✅ Dados de teste antigos apagados. O placar agora usa só os pontos do BI.</span>'; toast('Limpo! ✅'); brasRender(); })
+   .catch(function(){ if(res)res.innerHTML='<span style="color:var(--rd)">Erro ao limpar. Tente de novo.</span>'; toast('Erro ao limpar.'); });
+}
 // interpreta a lista colada dos clubes: "046 - ROSANGELA SAAGER   1.050   Não"
 function brasParseGeral(txt){
   var out=[];
@@ -5051,18 +5059,9 @@ function brasTelaVendedor(cod){
       +'</div>';
   }
 
-  // seus Lendas (onde ganhar) — pontos por marca
+  // placar por patrocinador — pontos do BI (Lendas + Craques)
   if(BRAS_CICLO!=='geral' && bi && bi.marcas && bi.marcas.length){
-    var lend=bi.marcas.filter(function(m){return m.cota==='lenda';}).sort(function(a,b){return a.pts-b.pts;});
-    if(lend.length){
-      var zer=lend.filter(function(m){return m.pts<=0;}).length;
-      h+='<div class="card"><div class="ct">&#127941; Seus Lendas (valem 3x) — onde ganhar</div>';
-      lend.forEach(function(m){
-        var zero=m.pts<=0;
-        h+='<div class="bras-pp"><div class="bras-pp-top"><b style="color:'+(zero?'var(--t2)':'var(--am)')+'">'+mxE(m.nome)+'</b>'+(zero?'<span class="bras-pp-zero">&#11036; zerado — pontos na mesa</span>':'<span class="bras-pp-pts">'+m.pts+' pts</span>')+'</div></div>';
-      });
-      h+='<div class="bras-dica">&#128161; '+(zer>0?('<b>'+zer+' Lenda(s) zerado(s)</b> = pontos parados valendo 3x. Ataque a lista de "Não Positivado" desses no BI.'):'Todos os Lendas pontuando — mantenha o ritmo e empurre pra faixa de cima!')+'</div></div>';
-    }
+    h+=brasPlacarPatrocinadores(cod,BRAS_CICLO);
   }
 
   // termômetro da regional (o bônus de +50% pra todos)
@@ -5126,21 +5125,27 @@ function brasTabelaClassificacao(destCod){
 
 function brasPlacarPatrocinadores(cod,ciclo){
   if(ciclo==='geral')ciclo=BRAS_CFG.ciclos[0].id;
-  var calc=brasCalc(cod,ciclo);
-  var lendas=calc.itens.filter(function(i){return i.cota==='lenda';});
-  var craques=calc.itens.filter(function(i){return i.cota==='craque';});
+  var bi=brasBiDe(cod,ciclo);
+  var marcas=(bi&&bi.marcas)?bi.marcas:[];
+  if(!marcas.length) return '<div class="card"><div class="ct">&#128203; Seu placar por patrocinador</div><div class="empty" style="padding:20px">Assim que o coordenador colar a tabela de pontos do BI (aba "Pontos por marca"), seu placar por fornecedor aparece aqui.</div></div>';
+  var lendas=marcas.filter(function(m){return m.cota==='lenda';}).sort(function(a,b){return a.pts-b.pts;});
+  var craques=marcas.filter(function(m){return m.cota==='craque';}).sort(function(a,b){return a.pts-b.pts;});
   function bloco(titulo,arr,cor){
+    if(!arr.length)return '';
     var h='<div class="ct" style="margin-top:6px;color:'+cor+'">'+titulo+'</div>';
-    arr.forEach(function(i){
-      var badge=i.pts>0?'<span class="bras-pp-pts">'+i.pts+' pts</span>':'<span class="bras-pp-zero">— sem ponto</span>';
-      h+='<div class="bras-pp"><div class="bras-pp-top"><b>'+mxE(i.nome)+'</b>'+badge+'</div>'
-        +'<div class="bras-pp-ind">'+brasChip('Fat',i.fat,i.pf)+brasChip('Pos',i.pos,i.pp)+brasChip('SKU',i.sku,i.ps)+'</div></div>';
+    arr.forEach(function(m){
+      var zero=!(m.pts>0);
+      var badge=zero?'<span class="bras-pp-zero">&#11036; zerado</span>':'<span class="bras-pp-pts">'+m.pts+' pts</span>';
+      h+='<div class="bras-pp"><div class="bras-pp-top"><b style="color:'+(zero?'var(--t2)':'var(--t)')+'">'+mxE(m.nome)+'</b>'+badge+'</div></div>';
     });
     return h;
   }
+  var zer=lendas.filter(function(m){return !(m.pts>0);}).length;
   var h='<div class="card"><div class="ct">&#128203; Seu placar por patrocinador &middot; '+mxE(brasNomeCiclo(ciclo))+'</div>';
+  h+='<div style="font-size:11px;color:var(--t3);margin:-4px 0 6px">Pontos oficiais do BI.</div>';
   h+=bloco('&#127941; Lendas (valem 3x)',lendas,'var(--am)');
   h+=bloco('&#9917; Craques (valem 1x)',craques,'var(--t2)');
+  if(zer>0)h+='<div class="bras-dica" style="margin-top:10px">&#128161; <b>'+zer+' Lenda(s) zerado(s)</b> = pontos parados valendo 3x. Ataque a lista de "Não Positivado" desses no BI.</div>';
   h+='</div>';
   return h;
 }
@@ -5676,6 +5681,11 @@ function brasTelaConfig(){
     +'<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:8px">Um por linha, no formato <code class="bras-code">Nome | Craque ou Lenda | Código</code>. Só mexa se a Arcofoods mudar a lista.</div>'
     +'<textarea id="brasPatrTxt" class="inp" rows="8">'+mxE(patrTxt)+'</textarea>'
     +'<button class="btn bs" style="width:100%;margin-top:8px" onclick="brasSalvarPatrocinadores()">&#128190; Salvar lista de patrocinadores</button></div>';
+
+  h+='<div class="admin-box" style="border-color:rgba(239,68,68,.3)"><div class="admin-title" style="color:var(--rd)">&#129529; Limpeza — dados de teste antigos</div>'
+    +'<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">Apaga os lançamentos antigos do modelo antigo (% por fornecedor) que ficaram de testes. <b>Não</b> afeta o Ranking geral, os Pontos por marca nem o detalhe dos 9 — só limpa o lixo. Faça uma vez.</div>'
+    +'<button class="btn bs" style="width:100%;border-color:var(--rd);color:#FCA5A5" onclick="brasLimparLancAntigos()">&#128465;&#65039; Apagar dados de teste antigos</button>'
+    +'<div id="brasLimpRes" style="font-size:12px;margin-top:8px"></div></div>';
 
   h+='<div class="admin-box"><div class="admin-title">&#128197; Ciclos da campanha</div>';
   BRAS_CFG.ciclos.forEach(function(c,i){

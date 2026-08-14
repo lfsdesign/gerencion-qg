@@ -4676,7 +4676,7 @@ var BRAS_BI={};                    // detalhe dos meus 9: {c1:{RCA017:{pts,gatil
 var BRAS_GERAL={};                 // ranking geral da empresa: {c1:[{cod,nome,pts,gatilho}], c2:[...]}
 function brasBiDe(cod,ciclo){ return (BRAS_BI&&BRAS_BI[ciclo]&&BRAS_BI[ciclo][cod])||null; }
 function brasTemBI(ciclo){ return !!(BRAS_BI&&BRAS_BI[ciclo]&&Object.keys(BRAS_BI[ciclo]).length); }
-// ponto do vendedor: ranking geral > detalhe dos 9 > 0 (nunca usa cálculo antigo por %)
+// ponto do vendedor: ranking dos clubes (oficial) > detalhe dos 9 > 0
 function brasPontosVend(cod,ciclo){
   var g=(typeof brasGeralDe==='function')?brasGeralDe(cod,ciclo):null;
   if(g&&g.pts!=null)return +g.pts||0;
@@ -4727,11 +4727,10 @@ function brasDefaults(){
 function brasMergeCfg(v){
   var d=brasDefaults();
   if(!v||typeof v!=='object')return d;
-  // se a lista de marcas salva for de uma versão antiga, usa a nova (oficial do BI)
-  var usarSalva=(Array.isArray(v.patrocinadores)&&v.patrocinadores.length && v.marcasVer===d.marcasVer);
+  // A lista de marcas é SEMPRE a oficial do código (nunca a salva no banco) — evita lista velha/errada.
   return {
     marcasVer:d.marcasVer,
-    patrocinadores: usarSalva ? v.patrocinadores : d.patrocinadores,
+    patrocinadores: d.patrocinadores,
     ciclos:(Array.isArray(v.ciclos)&&v.ciclos.length)?v.ciclos:d.ciclos,
     gatilhos:Object.assign({},d.gatilhos,v.gatilhos||{}),
     regional:Object.assign({},d.regional,v.regional||{}),
@@ -5677,7 +5676,10 @@ function brasTelaConfig(){
     +'<div class="fg"><label class="fl">Mínimo de pontos por patrocinador (0 = desligado)</label><input id="brasGmin" class="inp" inputmode="numeric" value="'+g.min_pts+'"></div>'
     +'<button class="btn bp" style="width:100%" onclick="brasSalvarGatilhos()">&#128190; Salvar gatilhos</button></div>';
 
+  var nCra=BRAS_CFG.patrocinadores.filter(function(p){return p.cota==='craque';}).length;
+  var nLen=BRAS_CFG.patrocinadores.filter(function(p){return p.cota==='lenda';}).length;
   h+='<div class="admin-box"><div class="admin-title">&#127775; Patrocinadores (Craque = 1x, Lenda = 3x)</div>'
+    +'<div style="font-size:13px;color:var(--am);font-weight:700;margin-bottom:6px">'+nCra+' Craques &middot; '+nLen+' Lendas ('+(nCra+nLen)+' no total)</div>'
     +'<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:8px">Um por linha, no formato <code class="bras-code">Nome | Craque ou Lenda | Código</code>. Só mexa se a Arcofoods mudar a lista.</div>'
     +'<textarea id="brasPatrTxt" class="inp" rows="8">'+mxE(patrTxt)+'</textarea>'
     +'<button class="btn bs" style="width:100%;margin-top:8px" onclick="brasSalvarPatrocinadores()">&#128190; Salvar lista de patrocinadores</button></div>';

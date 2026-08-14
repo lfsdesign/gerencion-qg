@@ -4730,7 +4730,8 @@ function brasDefaults(){
     gatilhos:{fat_pct:90,pos_pct:95,min_pts:0},
     regional:{c1:{fat:false,pos:false,sku:false},c2:{fat:false,pos:false,sku:false}},
     regionalNum:{},
-    marcasVer:4
+    marcasVer:4,
+    publicado:false
   };
 }
 
@@ -4744,7 +4745,8 @@ function brasMergeCfg(v){
     ciclos:(Array.isArray(v.ciclos)&&v.ciclos.length)?v.ciclos:d.ciclos,
     gatilhos:Object.assign({},d.gatilhos,v.gatilhos||{}),
     regional:Object.assign({},d.regional,v.regional||{}),
-    regionalNum:Object.assign({},d.regionalNum,v.regionalNum||{})
+    regionalNum:Object.assign({},d.regionalNum,v.regionalNum||{}),
+    publicado:(typeof v.publicado==='boolean')?v.publicado:false
   };
 }
 
@@ -4936,6 +4938,13 @@ function brasPodioPts(ciclo){ var rk=brasGeralRank(ciclo); return rk.length>=3?r
 
 /* ================== RENDER PRINCIPAL ================== */
 function brasSetCiclo(c){BRAS_CICLO=c;brasRender();}
+function brasPublicar(v){
+  if(!BRAS_CFG)return;
+  if(v && !confirm('Publicar o Brasileirão para TODOS os vendedores agora?'))return;
+  BRAS_CFG.publicado=!!v;
+  toast(v?'Publicando…':'Ocultando…');
+  brasSalvarCfg().then(function(){ toast(v?'Publicado! Os vendedores já veem. ✅':'Oculto. Só você vê agora. 🔒'); brasRender(); });
+}
 function brasVerComo(cod){BRAS_VERCOD=cod||null;brasRender();window.scrollTo(0,0);}
 function brasAba(a){BRAS_ADMIN_ABA=a;brasRender();}
 
@@ -4949,9 +4958,18 @@ function brasRender(){
     else if(BRAS_ADMIN_ABA==='config'){ h+=brasTelaConfig(); }
     else { h+=brasTelaPainel(); }
   } else {
-    h+=brasTelaVendedor(eu?eu.c:null);
+    if(!(BRAS_CFG&&BRAS_CFG.publicado)){ h+=brasTelaEmBreve(); }
+    else { h+=brasTelaVendedor(eu?eu.c:null); }
   }
   body.innerHTML=h;
+}
+function brasTelaEmBreve(){
+  return '<div class="card" style="text-align:center;padding:40px 20px">'
+    +'<div style="font-size:44px">&#9917;</div>'
+    +'<div style="font-size:20px;font-weight:900;color:var(--am);margin-top:10px">Brasileirão de Vendas</div>'
+    +'<div style="font-size:15px;font-weight:700;color:var(--t);margin-top:14px">Chega já já! 🔥</div>'
+    +'<div style="font-size:13px;color:var(--t2);line-height:1.7;margin-top:8px;max-width:320px;margin-left:auto;margin-right:auto">Estamos preparando a tabela e conferindo cada ponto pra ficar tudo certo. Em breve você vê sua posição, seus pontos e o caminho pro pódio. Fica ligado!</div>'
+    +'</div>';
 }
 
 /* ---------- barra do coordenador ---------- */
@@ -5162,6 +5180,14 @@ function brasChip(lbl,pct,pts){
 function brasTelaPainel(){
   var h=brasSeletorCiclo(true);
   h+='<div style="text-align:center;font-size:11px;color:var(--gn);font-weight:700;margin:-4px 0 8px">✅ Versão do módulo: <b>'+BRAS_VER+'</b> (se não for esta, limpe o cache)</div>';
+  // controle de publicação (visibilidade pros vendedores)
+  var pub=!!(BRAS_CFG&&BRAS_CFG.publicado);
+  h+='<div class="admin-box" style="border-color:'+(pub?'rgba(16,185,129,.4)':'rgba(245,158,11,.4)')+'">'
+    +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+    +'<div style="flex:1;min-width:180px"><div style="font-weight:800;color:'+(pub?'var(--gn)':'var(--am)')+'">'+(pub?'👁️ Visível para os vendedores':'🔒 Oculto — só você vê')+'</div>'
+    +'<div style="font-size:12px;color:var(--t2);margin-top:2px">'+(pub?'Todos os vendedores estão vendo o Brasileirão.':'Os vendedores veem "em breve". Ajuste à vontade e publique quando estiver certo.')+'</div></div>'
+    +'<button class="btn '+(pub?'bs':'bp')+'" style="white-space:nowrap" onclick="brasPublicar('+(pub?'false':'true')+')">'+(pub?'Ocultar de novo':'✅ Publicar pros vendedores')+'</button>'
+    +'</div></div>';
   // resumo do ranking geral da empresa
   if(BRAS_CICLO!=='geral' && brasTemGeral(BRAS_CICLO)){
     var rk=brasGeralRank(BRAS_CICLO), pod=brasPodioPts(BRAS_CICLO);

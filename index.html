@@ -4661,6 +4661,17 @@ function salvarPix(){
 /* ====== BRASILEIRAO DE VENDAS (modulo) ====== */
 /* ================== BRASILEIRÃO DE VENDAS 2026 ================== */
 /* Depende de globais já existentes no QG: supaFetch, toast, mxE, qgJson, USERS, eu, SUPA_KEY */
+var BRAS_VER='14ago-D';            // selo de versão (pra confirmar que não é cache)
+
+// salvamento à prova de falha: APAGA o registro antigo e GRAVA o novo (não depende de regra do banco)
+function brasUpsertCfg(chave,valor){
+  var H={'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'};
+  return supaFetch('qg_config?chave=eq.'+encodeURIComponent(chave),{method:'DELETE',headers:H})
+    .then(function(){ return supaFetch('qg_config',{method:'POST',headers:Object.assign({},H,{'Prefer':'return=minimal'}),body:JSON.stringify({chave:chave,valor:valor})}); })
+    .then(function(r){ if(!r.ok)throw new Error('save falhou'); return true; });
+}
+// leitura: se houver linhas duplicadas, usa SEMPRE a última (a mais recente)
+function brasValorDe(d){ return (Array.isArray(d)&&d.length&&d[d.length-1].valor)?d[d.length-1].valor:null; }
 
 var BRAS_CFG=null;                 // config global (patrocinadores, ciclos, gatilhos, regional)
 var BRAS_LANC=[];                  // cache de lançamentos
@@ -4676,11 +4687,10 @@ var BRAS_BI={};                    // detalhe dos meus 9: {c1:{RCA017:{pts,gatil
 var BRAS_GERAL={};                 // ranking geral da empresa: {c1:[{cod,nome,pts,gatilho}], c2:[...]}
 function brasBiDe(cod,ciclo){ return (BRAS_BI&&BRAS_BI[ciclo]&&BRAS_BI[ciclo][cod])||null; }
 function brasTemBI(ciclo){ return !!(BRAS_BI&&BRAS_BI[ciclo]&&Object.keys(BRAS_BI[ciclo]).length); }
-// ponto do vendedor: ranking dos clubes (oficial) > detalhe dos 9 > 0
+// ponto do vendedor: SOMENTE do ranking dos clubes (fonte única). Sem ranking = 0.
 function brasPontosVend(cod,ciclo){
   var g=(typeof brasGeralDe==='function')?brasGeralDe(cod,ciclo):null;
   if(g&&g.pts!=null)return +g.pts||0;
-  var bi=brasBiDe(cod,ciclo); if(bi&&bi.pts!=null&&bi.pts!=='')return +bi.pts||0;
   return 0;
 }
 
@@ -4844,10 +4854,8 @@ function carregarBrasileirao(){
 }
 function brasLoadCfg(){
   return supaFetch('qg_config?chave=eq.bras_config').then(qgJson).then(function(d){
-    var salvo=(Array.isArray(d)&&d.length)?d[0].valor:null;
+    var salvo=brasValorDe(d);
     BRAS_CFG=brasMergeCfg(salvo);
-    // se a lista salva estava velha, regrava a nova (uma vez) pra corrigir o placar
-    if(salvo && salvo.marcasVer!==brasDefaults().marcasVer){ try{brasSalvarCfg();}catch(e){} }
   }).catch(function(){BRAS_CFG=brasDefaults();});
 }
 function brasLoadLanc(){
@@ -4857,33 +4865,30 @@ function brasLoadLanc(){
 }
 function brasSalvarCfg(){
   toast('Salvando configuração…');
-  return supaFetch('qg_config',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},
-    body:JSON.stringify({chave:'bras_config',valor:BRAS_CFG})})
-   .then(function(r){if(!r.ok)throw new Error();toast('Configuração salva! ✅');})
+  return brasUpsertCfg('bras_config',BRAS_CFG)
+   .then(function(){toast('Configuração salva! ✅');})
    .catch(function(){toast('Erro ao salvar configuração.');});
 }
 function brasLoadBI(){
   return supaFetch('qg_config?chave=eq.bras_bi').then(qgJson).then(function(d){
-    BRAS_BI=(Array.isArray(d)&&d.length&&d[0].valor&&typeof d[0].valor==='object')?d[0].valor:{};
+    var v=brasValorDe(d); BRAS_BI=(v&&typeof v==='object')?v:{};
   }).catch(function(){BRAS_BI={};});
 }
 function brasSalvarBI(){
-  return supaFetch('qg_config',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},
-    body:JSON.stringify({chave:'bras_bi',valor:BRAS_BI})})
-   .then(function(r){if(!r.ok)throw new Error();return true;})
+  return brasUpsertCfg('bras_bi',BRAS_BI)
+   .then(function(){return true;})
    .catch(function(){toast('Erro ao salvar os pontos.');return false;});
 }
 
 /* ---------- RANKING GERAL DA EMPRESA (todas as regionais) ---------- */
 function brasLoadGeral(){
   return supaFetch('qg_config?chave=eq.bras_geral').then(qgJson).then(function(d){
-    BRAS_GERAL=(Array.isArray(d)&&d.length&&d[0].valor&&typeof d[0].valor==='object')?d[0].valor:{};
+    var v=brasValorDe(d); BRAS_GERAL=(v&&typeof v==='object')?v:{};
   }).catch(function(){BRAS_GERAL={};});
 }
 function brasSalvarGeral(){
-  return supaFetch('qg_config',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},
-    body:JSON.stringify({chave:'bras_geral',valor:BRAS_GERAL})})
-   .then(function(r){if(!r.ok)throw new Error();return true;})
+  return brasUpsertCfg('bras_geral',BRAS_GERAL)
+   .then(function(){return true;})
    .catch(function(){toast('Erro ao salvar o ranking.');return false;});
 }
 function brasPtsInt(v){ if(v==null)return null; var n=parseInt(String(v).replace(/[^\d]/g,''),10); return isNaN(n)?null:n; }
@@ -5156,6 +5161,7 @@ function brasChip(lbl,pct,pts){
 /* ================== PAINEL DO COORDENADOR ================== */
 function brasTelaPainel(){
   var h=brasSeletorCiclo(true);
+  h+='<div style="text-align:center;font-size:11px;color:var(--gn);font-weight:700;margin:-4px 0 8px">✅ Versão do módulo: <b>'+BRAS_VER+'</b> (se não for esta, limpe o cache)</div>';
   // resumo do ranking geral da empresa
   if(BRAS_CICLO!=='geral' && brasTemGeral(BRAS_CICLO)){
     var rk=brasGeralRank(BRAS_CICLO), pod=brasPodioPts(BRAS_CICLO);

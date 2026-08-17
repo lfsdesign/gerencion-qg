@@ -4661,7 +4661,7 @@ function salvarPix(){
 /* ====== BRASILEIRAO DE VENDAS (modulo) ====== */
 /* ================== BRASILEIRÃO DE VENDAS 2026 ================== */
 /* Depende de globais já existentes no QG: supaFetch, toast, mxE, qgJson, USERS, eu, SUPA_KEY */
-var BRAS_VER='14ago-G';            // selo de versão (pra confirmar que não é cache)
+var BRAS_VER='14ago-H';            // selo de versão (pra confirmar que não é cache)
 
 // salvamento à prova de falha: APAGA o registro antigo e GRAVA o novo (não depende de regra do banco)
 function brasUpsertCfg(chave,valor){
@@ -5348,7 +5348,9 @@ function brasTelaLancarGeral(){
     +'<span style="color:var(--t3)">Serve pros 104 vendedores (posição na empresa). Os seus 9 você pode corrigir na tabela acima.</span></div></div>';
   h+='<div class="admin-box">';
   h+='<textarea id="brasGeralTxt" class="inp" rows="7" placeholder="046 - ROSANGELA SAAGER   1.050   Não&#10;108 - ELTON BITTENCOURT   875   Não&#10;017 - EDIMAR BARBOSA   480   Não"></textarea>';
-  h+='<button class="btn bp" style="width:100%;margin-top:8px" onclick="brasSalvarGeralPaste()">&#128228; Ler e adicionar ao ranking</button>';
+  h+='<button class="btn bp" style="width:100%;margin-top:8px" onclick="brasSalvarGeralPaste(\'replace\')">&#128260; Substituir o ranking (usar SÓ o que colei)</button>';
+  h+='<div style="font-size:11px;color:var(--t3);margin:6px 0 2px;line-height:1.5">Use <b>Substituir</b> quando colar <b>todos os clubes de uma vez</b> — ele joga fora quem saiu da empresa (fantasmas).</div>';
+  h+='<button class="btn bs" style="width:100%;margin-top:6px;font-size:12px" onclick="brasSalvarGeralPaste(\'merge\')">&#10133; Só adicionar/atualizar (um clube por vez)</button>';
   if(rk.length){
     var podio=rk.slice(0,3).map(function(x,i){return (i+1)+'&ordm; '+mxE(x.nome)+' ('+x.pts+')';}).join(' &nbsp;·&nbsp; ');
     h+='<div style="margin-top:12px;font-size:12px;color:var(--gn)">✅ <b>'+rk.length+'</b> vendedores no ranking. Pódio: '+podio+'.</div>';
@@ -5493,19 +5495,25 @@ function brasColarMarcas(){
     var t=document.getElementById('brasMarcaTxt'); if(t)t.value=''; brasRender();
   });
 }
-function brasSalvarGeralPaste(){
+function brasSalvarGeralPaste(modo){
   var ciclo=BRAS_BI_CICLO||BRAS_CFG.ciclos[0].id;
   var txt=(document.getElementById('brasGeralTxt')||{}).value||'';
   var arr=brasParseGeral(txt);
   var res=document.getElementById('brasGeralRes');
   if(!arr.length){ if(res)res.innerHTML='<span style="color:var(--rd)">Nenhuma linha reconhecida. Confira o formato: 046 - NOME   1.050   Não</span>'; return; }
-  // merge por CÓDIGO NORMALIZADO (evita duplicata tipo 017 velho + 017 novo)
-  var map={}; (BRAS_GERAL[ciclo]||[]).forEach(function(x){map[brasNormCod(x.cod)]=x;});
-  arr.forEach(function(x){map[brasNormCod(x.cod)]=x;});
-  BRAS_GERAL[ciclo]=Object.keys(map).map(function(k){return map[k];});
+  if(modo==='replace'){
+    // SUBSTITUI tudo: usa só o que foi colado (remove fantasmas/quem saiu). Dedup por código.
+    var m2={}; arr.forEach(function(x){m2[brasNormCod(x.cod)]=x;});
+    BRAS_GERAL[ciclo]=Object.keys(m2).map(function(k){return m2[k];});
+  } else {
+    // ADICIONA/ATUALIZA por código normalizado
+    var map={}; (BRAS_GERAL[ciclo]||[]).forEach(function(x){map[brasNormCod(x.cod)]=x;});
+    arr.forEach(function(x){map[brasNormCod(x.cod)]=x;});
+    BRAS_GERAL[ciclo]=Object.keys(map).map(function(k){return map[k];});
+  }
   toast('Salvando ranking…');
   brasSalvarGeral().then(function(ok){
-    if(ok){ toast('Ranking salvo! ✅'); BRAS_MSG9={ciclo:ciclo,n:arr.length}; }
+    if(ok){ toast('Ranking salvo! ✅'); BRAS_MSG9={ciclo:ciclo,n:BRAS_GERAL[ciclo].length,modo:modo}; }
     var t=document.getElementById('brasGeralTxt'); if(t)t.value='';
     brasRender();
   });

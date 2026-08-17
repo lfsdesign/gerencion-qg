@@ -4661,14 +4661,13 @@ function salvarPix(){
 /* ====== BRASILEIRAO DE VENDAS (modulo) ====== */
 /* ================== BRASILEIRÃO DE VENDAS 2026 ================== */
 /* Depende de globais já existentes no QG: supaFetch, toast, mxE, qgJson, USERS, eu, SUPA_KEY */
-var BRAS_VER='14ago-H';            // selo de versão (pra confirmar que não é cache)
+var BRAS_VER='14ago-I';            // selo de versão (pra confirmar que não é cache)
 
-// salvamento à prova de falha: APAGA o registro antigo e GRAVA o novo (não depende de regra do banco)
+// salvamento pelo método original do QG (merge-duplicates) — o mesmo que já funciona no seu app
 function brasUpsertCfg(chave,valor){
-  var H={'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'};
-  return supaFetch('qg_config?chave=eq.'+encodeURIComponent(chave),{method:'DELETE',headers:H})
-    .then(function(){ return supaFetch('qg_config',{method:'POST',headers:Object.assign({},H,{'Prefer':'return=minimal'}),body:JSON.stringify({chave:chave,valor:valor})}); })
-    .then(function(r){ if(!r.ok)throw new Error('save falhou'); return true; });
+  return supaFetch('qg_config',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},
+    body:JSON.stringify({chave:chave,valor:valor})})
+   .then(function(r){ if(!r.ok)throw new Error('save falhou'); return true; });
 }
 // leitura: se houver linhas duplicadas, usa SEMPRE a última (a mais recente)
 function brasValorDe(d){ return (Array.isArray(d)&&d.length&&d[d.length-1].valor)?d[d.length-1].valor:null; }

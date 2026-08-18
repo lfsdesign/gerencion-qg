@@ -4661,7 +4661,7 @@ function salvarPix(){
 /* ====== BRASILEIRAO DE VENDAS (modulo) ====== */
 /* ================== BRASILEIRÃO DE VENDAS 2026 ================== */
 /* Depende de globais já existentes no QG: supaFetch, toast, mxE, qgJson, USERS, eu, SUPA_KEY */
-var BRAS_VER='14ago-I';            // selo de versão (pra confirmar que não é cache)
+var BRAS_VER='14ago-J-LIMPO';            // selo de versão (pra confirmar que não é cache)
 
 // salvamento pelo método original do QG (merge-duplicates) — o mesmo que já funciona no seu app
 function brasUpsertCfg(chave,valor){
@@ -4855,7 +4855,7 @@ function carregarBrasileirao(){
   });
 }
 function brasLoadCfg(){
-  return supaFetch('qg_config?chave=eq.bras_config').then(qgJson).then(function(d){
+  return supaFetch('qg_config?chave=eq.bras_config3').then(qgJson).then(function(d){
     var salvo=brasValorDe(d);
     BRAS_CFG=brasMergeCfg(salvo);
   }).catch(function(){BRAS_CFG=brasDefaults();});
@@ -4867,29 +4867,29 @@ function brasLoadLanc(){
 }
 function brasSalvarCfg(){
   toast('Salvando configuração…');
-  return brasUpsertCfg('bras_config',BRAS_CFG)
+  return brasUpsertCfg('bras_config3',BRAS_CFG)
    .then(function(){toast('Configuração salva! ✅');})
    .catch(function(){toast('Erro ao salvar configuração.');});
 }
 function brasLoadBI(){
-  return supaFetch('qg_config?chave=eq.bras_bi').then(qgJson).then(function(d){
+  return supaFetch('qg_config?chave=eq.bras_bi3').then(qgJson).then(function(d){
     var v=brasValorDe(d); BRAS_BI=(v&&typeof v==='object')?v:{};
   }).catch(function(){BRAS_BI={};});
 }
 function brasSalvarBI(){
-  return brasUpsertCfg('bras_bi',BRAS_BI)
+  return brasUpsertCfg('bras_bi3',BRAS_BI)
    .then(function(){return true;})
    .catch(function(){toast('Erro ao salvar os pontos.');return false;});
 }
 
 /* ---------- RANKING GERAL DA EMPRESA (todas as regionais) ---------- */
 function brasLoadGeral(){
-  return supaFetch('qg_config?chave=eq.bras_geral').then(qgJson).then(function(d){
+  return supaFetch('qg_config?chave=eq.bras_geral3').then(qgJson).then(function(d){
     var v=brasValorDe(d); BRAS_GERAL=(v&&typeof v==='object')?v:{};
   }).catch(function(){BRAS_GERAL={};});
 }
 function brasSalvarGeral(){
-  return brasUpsertCfg('bras_geral',BRAS_GERAL)
+  return brasUpsertCfg('bras_geral3',BRAS_GERAL)
    .then(function(){return true;})
    .catch(function(){toast('Erro ao salvar o ranking.');return false;});
 }

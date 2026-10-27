@@ -1200,6 +1200,23 @@ function telWhatsApp(s){
   if(d.length<=11 && d.indexOf('55')!==0)d='55'+d; // acrescenta DDI Brasil se faltar
   return d;
 }
+function equipeTelPorCod(cod){
+  var dig=String(cod||'').replace(/\D/g,'');
+  var u=USERS.filter(function(x){return x.t==='vend';}).find(function(x){return (x.cd||'').replace(/\D/g,'')===dig;});
+  if(!u)return '';
+  var c=EQUIPE_CONTATOS[u.c];
+  return (c&&c.tel)?telWhatsApp(c.tel):'';
+}
+function radarGrupoCidades(naopos){
+  var map={};
+  (naopos||[]).forEach(function(x){
+    var c=(x.municipio||'SEM CIDADE').toUpperCase();
+    if(!map[c])map[c]=[];
+    map[c].push(x);
+  });
+  return Object.keys(map).map(function(c){return {cidade:c,clientes:map[c]};})
+    .sort(function(a,b){return b.clientes.length-a.clientes.length;});
+}
 function carregarEquipeContatos(){
   return supaFetch('qg_config?chave=eq.equipe_contatos').then(function(r){return r.json();}).then(function(d){
     if(d&&d[0]&&d[0].valor&&typeof d[0].valor==='object')EQUIPE_CONTATOS=d[0].valor;
@@ -1443,19 +1460,38 @@ function radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend,acomp){
     +diag+scrList(naopos,'np')
     +'<div id="radarWrapNaopos" style="margin-top:12px"></div>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn bp" style="flex:1;min-width:140px" onclick="radarGerarCard(\'naopos\')">\uD83D\uDDBC\uFE0F Gerar card dos nao-pos</button><a href="https://wa.me/?text='+encodeURIComponent(window._radarTxtNaopos)+'" target="_blank" rel="noopener" class="btn bg" style="flex:1;min-width:130px;text-decoration:none;justify-content:center">\uD83D\uDCAC Texto dos nao-pos</a></div></div>'):'';
+  // envio direto pelo WhatsApp do vendedor
+  var telV=equipeTelPorCod(cod);
+  var primeiro=(nome||'').split(' ')[0]||nome;
+  var saud='Bom dia, '+primeiro+'! Segue seu Radar da semana. 👇';
+  var btnEnviar=telV
+    ?'<a href="https://wa.me/'+telV+'?text='+encodeURIComponent(saud)+'" target="_blank" rel="noopener" class="btn bg" style="width:100%;text-decoration:none;justify-content:center;margin:4px 0 10px">💬 Abrir WhatsApp do '+mxE(primeiro)+'</a>'
+    :'<div style="font-size:12px;color:var(--am);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:9px 12px;margin:4px 0 10px">📱 Cadastre o WhatsApp do '+mxE(primeiro)+' em "Contatos da equipe" (topo do Radar) pra liberar o envio direto.</div>';
+  // rota por cidade
+  var grupos=radarGrupoCidades(naopos);
+  var Tr=['🧭 *ROTA POR CIDADE — '+cod+' '+nome.toUpperCase()+'*','',dataHoje,'Seus não-positivados por região:',''];
+  grupos.forEach(function(g){Tr.push('📍 *'+g.cidade+'* ('+g.clientes.length+')');g.clientes.forEach(function(x){Tr.push('   • '+(x.cod?x.cod+' - ':'')+(x.cliente||''));});Tr.push('');});
+  Tr.push('Planeje a semana por região e não rode à toa! 🚀','_GERENCION QG_');
+  window._radarTxtRota=Tr.join('\n');
+  var secRota=naopos.length?('<div style="border-top:1px solid var(--b);margin-top:18px;padding-top:14px">'
+    +'<div style="font-size:13px;font-weight:800;color:#10B981;margin-bottom:8px">🧭 Rota por cidade do '+cod+'</div>'
+    +grupos.map(function(g){return '<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 2px;border-bottom:1px solid var(--b)"><span style="color:var(--t);font-weight:600">📍 '+mxE(g.cidade)+'</span><span style="color:var(--t2)">'+g.clientes.length+'</span></div>';}).join('')
+    +'<div id="radarWrapRota" style="margin-top:12px"></div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn bp" style="flex:1;min-width:140px" onclick="radarGerarCard(\'rota\')">🖼️ Gerar card da rota</button><a href="https://wa.me/?text='+encodeURIComponent(window._radarTxtRota)+'" target="_blank" rel="noopener" class="btn bg" style="flex:1;min-width:130px;text-decoration:none;justify-content:center">💬 Texto da rota</a></div></div>'):'';
   box.style.display='block';
   box.innerHTML='<div class="card"><div class="ct">Pacote de '+cod+' - '+nome+'</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px">'
     +'<div style="flex:1;min-width:110px;background:var(--rd2);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--rd)">'+churn.length+'</div><div style="font-size:11px;color:var(--t2)">em churn</div></div>'
     +'<div style="flex:1;min-width:110px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--am)">'+naopos.length+'</div><div style="font-size:11px;color:var(--t2)">nao positivados'+((npTotal&&npTotal>naopos.length)?'<br><span style="color:var(--t3)">de '+npTotal+' colados</span>':'')+'</div></div></div>'
-    +secAcomp+secChurn+secNp+'</div>';
+    +btnEnviar
+    +secAcomp+secChurn+secNp+secRota+'</div>';
   box.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function radarGerarCard(tipo){
   if(typeof html2canvas==='undefined'){toast('Aguarde o gerador de imagem e tente de novo.');return;}
   var p=window._radarPkg;if(!p){toast('Monte o pacote primeiro.');return;}
-  if((tipo==='churn'&&!p.churn.length)||(tipo==='naopos'&&!p.naopos.length)||(tipo==='acomp'&&!p.acomp)){toast('Nada pra gerar.');return;}
-  var wraps={churn:'radarWrapChurn',naopos:'radarWrapNaopos',acomp:'radarWrapAcomp'};
+  if((tipo==='churn'&&!p.churn.length)||(tipo==='naopos'&&!p.naopos.length)||(tipo==='acomp'&&!p.acomp)||(tipo==='rota'&&!p.naopos.length)){toast('Nada pra gerar.');return;}
+  var wraps={churn:'radarWrapChurn',naopos:'radarWrapNaopos',acomp:'radarWrapAcomp',rota:'radarWrapRota'};
   var wrap=document.getElementById(wraps[tipo]);
   var card=radarBuildCardEl(tipo,p);
   document.body.appendChild(card);toast('Gerando card...');
@@ -1463,7 +1499,7 @@ function radarGerarCard(tipo){
     if(card.parentNode)document.body.removeChild(card);
     var data=canvas.toDataURL('image/png');
     window._radarImgs=window._radarImgs||{};window._radarImgs[tipo]=data;
-    var fn=tipo==='churn'?'Churn':(tipo==='acomp'?'Acompanhamento':'NaoPositivados');
+    var fn=tipo==='churn'?'Churn':(tipo==='acomp'?'Acompanhamento':(tipo==='rota'?'RotaPorCidade':'NaoPositivados'));
     if(wrap)wrap.innerHTML='<img src="'+data+'" style="width:100%;border-radius:12px;border:1px solid var(--b);margin-bottom:8px"><button class="btn bp" style="width:100%" onclick="radarBaixarImg(\''+tipo+'\',\''+fn+'\')">\u2B07\uFE0F Baixar card</button>';
     toast('Card pronto!');
   }).catch(function(){if(card.parentNode)document.body.removeChild(card);toast('Erro ao gerar o card.');});
@@ -1497,6 +1533,15 @@ function radarBuildCardEl(tipo,p){
         +'<div style="padding:12px 28px 8px">'+rows+'</div>'+conx
         +'<div style="padding:16px 28px 24px"><div style="display:flex;align-items:center;gap:8px"><div style="font-size:22px;font-weight:900;color:#3B82F6">QG</div><div style="font-size:13px;color:#8098B8">Gerencion \u00b7 Radar de Clientes</div></div></div>';
     }
+  }else if(tipo==='rota'){
+    var grupos=radarGrupoCidades(p.naopos);
+    var blocos=grupos.map(function(g){
+      var cls=g.clientes.map(function(x){return '<div style="font-size:12px;color:#E2E8F0;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)">'+(x.cod?x.cod+' \u2014 ':'')+(x.cliente||'')+'</div>';}).join('');
+      return '<div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);border-radius:10px;padding:9px 14px;margin-bottom:6px"><span style="font-size:14px;font-weight:800;color:#6EE7B7">\ud83d\udccd '+g.cidade+'</span><span style="font-size:13px;font-weight:800;color:#6EE7B7">'+g.clientes.length+' cliente(s)</span></div>'+cls+'</div>';
+    }).join('');
+    card.innerHTML='<div style="background:linear-gradient(135deg,#065F46,#10B981);padding:22px 28px"><div style="font-size:14px;font-weight:800;letter-spacing:2px;color:#fff">\ud83e\udded ROTA POR CIDADE</div><div style="font-size:21px;font-weight:900;color:#fff;margin-top:3px">'+p.cod+' \u2014 '+p.nome+'</div><div style="font-size:13px;color:rgba(255,255,255,0.9);margin-top:4px;font-weight:600">Seus n\u00e3o-positivados por regi\u00e3o \u00b7 '+dataHoje+'</div></div>'
+      +'<div style="padding:18px 28px 8px">'+blocos+'</div>'
+      +'<div style="padding:4px 28px 24px"><div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:14px 16px;font-size:12px;color:#D8E4F2;line-height:1.6;font-weight:600">Planeje a semana por regi\u00e3o e n\u00e3o rode \u00e0 toa. Cada cidade, um dia! \ud83d\ude80</div><div style="display:flex;align-items:center;gap:8px;margin-top:14px"><div style="font-size:22px;font-weight:900;color:#3B82F6">QG</div><div style="font-size:13px;color:#8098B8">Gerencion \u00b7 Radar de Clientes</div></div></div>';
   }else{
     var linhasN=p.naopos.map(function(x){
       var head=(x.cod?x.cod+' \u2014 ':'')+(x.cliente||'');

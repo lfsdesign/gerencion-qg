@@ -571,6 +571,17 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
         </div>
       </div>
 
+      <div class="card" style="border-color:rgba(148,163,184,0.25);margin-top:14px">
+        <div class="ct" style="color:var(--t2)">&#9881;&#65039; Ajustar sequ&#234;ncia de um dia (avan&#231;ado)</div>
+        <div style="font-size:11px;color:var(--t3);line-height:1.6;margin-bottom:10px">Use s&#243; pra <b>corrigir um dia passado</b> &mdash; por exemplo, um fechamento que voc&#234; fez depois da meia-noite e contou no dia errado. Informe a <b>data</b> e os <b>c&#243;digos de quem bateu</b> naquele dia. S&#243; coloque dados reais.</div>
+        <label class="fl">Data do dia a corrigir</label>
+        <input id="fechAjusteData" class="inp" type="date" style="margin-bottom:10px">
+        <label class="fl">C&#243;digos de quem BATEU nesse dia (um por linha)</label>
+        <textarea id="fechAjusteCods" class="inp" rows="4" placeholder="Ex:&#10;017&#10;118&#10;249"></textarea>
+        <button class="btn bs" onclick="fechAjustarDia()" style="width:100%;margin-top:8px">&#128190; Salvar esse dia na sequ&#234;ncia</button>
+        <div id="fechAjusteRes" style="font-size:12px;margin-top:8px"></div>
+      </div>
+
       <div id="fechCapture"></div>
     </div>
 
@@ -2896,6 +2907,9 @@ function carregarFechamento(){
   supaFetch('qg_config?chave=eq.qg_fechamento').then(function(r){return r.json();}).then(function(d){
     if(d&&d[0]&&d[0].valor){FECH_HIST=d[0].valor.hist||[];FECH_LAST=d[0].valor.last||null;}
   }).catch(function(){});
+  // pré-preenche o ajuste com a data de ontem
+  var di=document.getElementById('fechAjusteData');
+  if(di){var o=new Date();o.setDate(o.getDate()-1);di.value=o.getFullYear()+'-'+('0'+(o.getMonth()+1)).slice(-2)+'-'+('0'+o.getDate()).slice(-2);}
 }
 
 function fechSalvarSupa(){
@@ -2959,6 +2973,13 @@ function renderFechPreview(){
 
 function gerarImagemFechamento(){
   if(!fechLista.length){toast('Monte o fechamento primeiro (Etapas 1, 2 e 3).');return;}
+  toast('Gerando imagem...');
+  // SEMPRE recarrega o historico do banco antes de contar a sequencia (nunca perde dias)
+  supaFetch('qg_config?chave=eq.qg_fechamento').then(function(r){return r.json();}).then(function(d){
+    if(d&&d[0]&&d[0].valor){FECH_HIST=(d[0].valor.hist||FECH_HIST||[]);FECH_LAST=(d[0].valor.last||FECH_LAST);}
+  }).catch(function(){}).then(function(){fechMontarCard();});
+}
+function fechMontarCard(){
   var hoje=new Date();
   var dataTxt=hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   dataTxt=dataTxt.charAt(0).toUpperCase()+dataTxt.slice(1);
@@ -2988,18 +3009,21 @@ function gerarImagemFechamento(){
       +'</div>';
   }).join('');
 
-  var seqBlock='';
+  var seqRows;
   if(seq.length){
-    var seqRows=seq.map(function(x){
+    seqRows=seq.map(function(x){
+      var dias=x.s+(x.s===1?' dia':' dias')+' consecutivos';
       return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
         +'<span style="font-size:19px">🔥</span>'
-        +'<span style="flex:1;font-size:16px;color:#FFFFFF"><b>'+x.nome.toUpperCase()+'</b> bateu <b style="color:#FBBF24">'+x.s+' dias consecutivos</b></span>'
+        +'<span style="flex:1;font-size:16px;color:#FFFFFF"><b>'+x.nome.toUpperCase()+'</b> bateu <b style="color:#FBBF24">'+dias+'</b></span>'
         +'</div>';
     }).join('');
-    seqBlock='<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:13px;padding:16px 18px;margin-bottom:16px">'
-      +'<div style="font-size:13px;font-weight:800;letter-spacing:1.5px;color:#F59E0B;text-transform:uppercase;margin-bottom:12px">🔥 SEQUÊNCIA QUENTE</div>'
-      +seqRows+'</div>';
+  }else{
+    seqRows='<div style="font-size:15px;color:#E6EEFA;line-height:1.55">A sequência começa a contar hoje! Quem bater a meta de novo nos próximos dias aparece aqui. 🔥💪</div>';
   }
+  var seqBlock='<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:13px;padding:16px 18px;margin-bottom:16px">'
+    +'<div style="font-size:13px;font-weight:800;letter-spacing:1.5px;color:#F59E0B;text-transform:uppercase;margin-bottom:12px">🔥 SEQUÊNCIA QUENTE</div>'
+    +seqRows+'</div>';
 
   var html='<div style="background:#0B1929;border:2px solid rgba(245,158,11,0.55);border-radius:18px;padding:30px 26px;width:520px;font-family:Inter,sans-serif">'
     +'<div style="text-align:center;margin-bottom:20px">'
@@ -3027,7 +3051,6 @@ function gerarImagemFechamento(){
   var cap=document.getElementById('fechCapture');
   cap.innerHTML=html;
   cap.style.position='fixed';cap.style.left='-9999px';cap.style.top='0';cap.style.zIndex='-1';cap.style.display='block';
-  toast('Gerando imagem...');
   setTimeout(function(){
     html2canvas(cap,{backgroundColor:'#060E1E',scale:2,useCORS:true,logging:false}).then(function(canvas){
       var url=canvas.toDataURL('image/png');
@@ -3048,6 +3071,30 @@ function salvarImagemFechamento(){
   link.href=window._fechImageDataURL;
   link.click();
   toast('Imagem salva! Abra o WhatsApp do grupo da equipe e anexe a foto.');
+}
+
+function fechAjustarDia(){
+  var data=((document.getElementById('fechAjusteData')||{}).value||'').trim();
+  var txt=(document.getElementById('fechAjusteCods')||{}).value||'';
+  var res=document.getElementById('fechAjusteRes');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(data)){if(res)res.innerHTML='<span style="color:var(--rd)">Escolha a data do dia a corrigir.</span>';return;}
+  var cods=txt.split('\n').map(function(l){return (l.match(/\d+/)||[''])[0].replace(/^0+/,'')||((l.match(/\d+/)||[''])[0]);}).filter(Boolean);
+  // normaliza pra bater com os códigos salvos (tira zeros à esquerda igual ao resto)
+  cods=txt.split('\n').map(function(l){var m=l.match(/\d+/);return m?m[0]:'';}).filter(Boolean);
+  if(!cods.length){if(res)res.innerHTML='<span style="color:var(--rd)">Informe ao menos um código.</span>';return;}
+  if(res)res.innerHTML='<span style="color:var(--t2)">Salvando...</span>';
+  // recarrega do banco, integra o dia e salva (nunca perde os outros dias)
+  supaFetch('qg_config?chave=eq.qg_fechamento').then(function(r){return r.json();}).then(function(d){
+    if(d&&d[0]&&d[0].valor){FECH_HIST=(d[0].valor.hist||[]);FECH_LAST=(d[0].valor.last||FECH_LAST);}
+  }).catch(function(){}).then(function(){
+    FECH_HIST=FECH_HIST.filter(function(x){return x.d!==data;});
+    FECH_HIST.push({d:data,b:cods});
+    FECH_HIST.sort(function(a,b){return a.d<b.d?-1:(a.d>b.d?1:0);});
+    fechSalvarSupa().then(function(){
+      if(res)res.innerHTML='<span style="color:var(--gn)">✅ Dia '+data+' salvo com '+cods.length+' vendedor(es). A sequência já conta esse dia.</span>';
+      toast('Sequência ajustada! ✅');
+    });
+  });
 }
 
 function puxarQuemBateuOntem(){

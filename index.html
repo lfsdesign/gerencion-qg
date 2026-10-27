@@ -767,6 +767,13 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
         </div>
         <div style="background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(30,58,138,0.08));border:1px solid rgba(59,130,246,0.3);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--t2);line-height:1.6"><strong style="color:#3B82F6">&#128161; Cole do BI, o Radar organiza.</strong> Veja o ranking da equipe e monte o pacote pronto de cada vendedor pra disparar no WhatsApp.</div>
       </div>
+      <div class="admin-box" style="border-color:rgba(16,185,129,0.3)">
+        <div class="admin-title" style="color:var(--gn)">&#128241; Contatos da equipe (WhatsApp)</div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">Preencha o WhatsApp de cada vendedor (com DDD). Isso vai liberar o bot&#227;o de <b>enviar direto</b> pra cada um. Ex: <b>22 99999-8888</b>.</div>
+        <div id="equipeContatosBox"></div>
+        <button class="btn bp" onclick="salvarEquipeContatos()" style="width:100%;margin-top:8px">&#128190; Salvar contatos da equipe</button>
+        <div id="equipeContatosRes" style="font-size:12px;margin-top:8px"></div>
+      </div>
       <div class="admin-box">
         <div class="admin-title" style="color:#3B82F6">&#128202; Panorama do Churn (os 9)</div>
         <div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">Cole a vis&#227;o do churn com todos os vendedores. O Radar monta o ranking &mdash; quem sangra mais e onde vaza mais dinheiro.</div>
@@ -1181,7 +1188,46 @@ function radarInit(){
     });
     sel.innerHTML=opts;sel.dataset.pronto='1';
   }
+  renderEquipeContatos();
   radarCarregarUltimoSnap();
+}
+
+/* ===== CONTATOS DA EQUIPE (WhatsApp) ===== */
+var EQUIPE_CONTATOS={};
+function telDigitos(s){return String(s||'').replace(/\D/g,'');}
+function telWhatsApp(s){
+  var d=telDigitos(s); if(!d)return '';
+  if(d.length<=11 && d.indexOf('55')!==0)d='55'+d; // acrescenta DDI Brasil se faltar
+  return d;
+}
+function carregarEquipeContatos(){
+  return supaFetch('qg_config?chave=eq.equipe_contatos').then(function(r){return r.json();}).then(function(d){
+    if(d&&d[0]&&d[0].valor&&typeof d[0].valor==='object')EQUIPE_CONTATOS=d[0].valor;
+    renderEquipeContatos();
+  }).catch(function(){});
+}
+function renderEquipeContatos(){
+  var box=document.getElementById('equipeContatosBox'); if(!box)return;
+  box.innerHTML=USERS.filter(function(u){return u.t==='vend';}).map(function(u){
+    var val=(EQUIPE_CONTATOS[u.c]&&EQUIPE_CONTATOS[u.c].tel)?EQUIPE_CONTATOS[u.c].tel:'';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid rgba(255,255,255,0.07);margin-bottom:5px">'
+      +'<span style="flex:1;font-size:13px;font-weight:600;color:var(--t)">'+mxE(u.cd)+' &middot; '+mxE(u.n)+'</span>'
+      +'<input id="econt_'+u.c+'" class="inp" inputmode="tel" value="'+mxE(val)+'" placeholder="22 99999-8888" style="width:150px;padding:7px 10px;font-size:13px">'
+      +'</div>';
+  }).join('');
+}
+function salvarEquipeContatos(){
+  USERS.filter(function(u){return u.t==='vend';}).forEach(function(u){
+    var el=document.getElementById('econt_'+u.c);
+    var v=el?el.value.trim():'';
+    if(v)EQUIPE_CONTATOS[u.c]={tel:v}; else delete EQUIPE_CONTATOS[u.c];
+  });
+  var res=document.getElementById('equipeContatosRes');
+  if(res)res.innerHTML='<span style="color:var(--t2)">Salvando...</span>';
+  supaFetch('qg_config',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},
+    body:JSON.stringify({chave:'equipe_contatos',valor:EQUIPE_CONTATOS})})
+   .then(function(r){if(!r.ok)throw new Error();var n=Object.keys(EQUIPE_CONTATOS).length;if(res)res.innerHTML='<span style="color:var(--gn)">✅ '+n+' contato(s) salvo(s).</span>';toast('Contatos salvos! ✅');})
+   .catch(function(){if(res)res.innerHTML='<span style="color:var(--rd)">Erro ao salvar. Tente de novo.</span>';toast('Erro ao salvar.');});
 }
 function radarNum(x){var s=String(x||'').replace(/[R$\s%.]/g,'').replace(',','.');var n=parseFloat(s);return isNaN(n)?0:n;}
 function radarCod(x){return String(x||'').replace(/[^\d]/g,'');}
@@ -2142,6 +2188,7 @@ if(u.t==='coord'){
     var menuR=document.getElementById('menuRadar');
     if(menuR)menuR.style.display='inline-block';
     carregarFechamento();
+    carregarEquipeContatos();
     var pa=document.getElementById('prospAdmin');if(pa)pa.style.display='block';
     carregarCatalogosAdmin();
     iniciarMetasGrid();

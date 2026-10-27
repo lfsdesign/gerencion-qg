@@ -410,6 +410,7 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
     <button class="mb" onclick="ir('mixestrategico',this);carregarMix()">Mix Estrat&#233;gico</button>
     <button class="mb" onclick="ir('premiacao',this);carregarPremiacao()">&#128176; Premia&#231;&#227;o</button>
    <button class="mb" id="menuQGDia" onclick="ir('qgdia',this);setTimeout(preencherDicaAutomatica,100)" style="display:none">&#128227; QG do Dia</button>
+   <button class="mb" id="menuFechamento" onclick="ir('fechamento',this);carregarFechamento()" style="display:none">&#127769; Fechamento</button>
    <button class="mb" id="menuRadar" onclick="ir('radar',this);radarInit()" style="display:none">&#128225; Radar</button>
    <button class="mb" onclick="ir('prospeccao',this);carregarProspeccao()">&#127919; Prospec&#231;&#227;o</button>
    <button class="mb" onclick="ir('brasileirao',this);carregarBrasileirao()">&#9917; Brasileir&#227;o</button>
@@ -508,7 +509,8 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
 
       <div class="card" style="border-color:rgba(245,158,11,0.3)">
         <div class="ct">Ranking de ontem (opcional)</div>
-        <div style="font-size:11px;color:var(--t2);margin-bottom:10px">S&#243; aparece de segunda a sexta. Digite os nomes de quem bateu a meta de ontem, um por linha.</div>
+        <div style="font-size:11px;color:var(--t2);margin-bottom:10px">S&#243; aparece de segunda a sexta. Digite os nomes de quem bateu a meta de ontem, um por linha &mdash; ou puxe automaticamente do &#250;ltimo Fechamento.</div>
+        <button class="btn bs" onclick="puxarQuemBateuOntem()" style="width:100%;margin-bottom:8px;font-size:12px">&#8595; Puxar quem bateu no &#250;ltimo Fechamento</button>
         <textarea id="qgdiaRanking" class="inp" rows="3" placeholder="Ex: Edimar Barbosa&#10;Adson Bruno"></textarea>
       </div>
 
@@ -528,6 +530,48 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
       </div>
 
       <div id="qgdiaCapture"></div>
+    </div>
+
+    <div id="fechamento" class="pg">
+      <div class="ph">
+        <div class="pt">&#127769; Fechamento do Dia</div>
+        <div class="ps">Resultado do dia para o grupo da equipe &middot; quem bateu, % da regional e sequ&#234;ncia</div>
+      </div>
+
+      <div class="card">
+        <div class="ct">Etapa 1 &mdash; Colar c&#243;digo + nome</div>
+        <textarea id="fechCodNome" class="inp" rows="5" placeholder="Um por linha&#10;Ex: 017 EDIMAR BARBOSA"></textarea>
+      </div>
+
+      <div class="card">
+        <div class="ct">Etapa 2 &mdash; Colar METAS (mesma ordem)</div>
+        <textarea id="fechMetas" class="inp" rows="5" placeholder="Um valor por linha, na mesma ordem&#10;Ex: 32.913,00"></textarea>
+      </div>
+
+      <div class="card">
+        <div class="ct">Etapa 3 &mdash; Colar REALIZADO (mesma ordem)</div>
+        <textarea id="fechReais" class="inp" rows="5" placeholder="O que cada um vendeu, na mesma ordem&#10;Ex: 35.200,00"></textarea>
+        <button class="btn bp" onclick="montarFechamento()" style="width:100%;margin-top:10px">&#128279; Montar Fechamento</button>
+      </div>
+
+      <div id="fechListaBox" style="display:none">
+        <div class="card">
+          <div class="ct">Confer&#234;ncia</div>
+          <div id="fechListaPreview"></div>
+        </div>
+      </div>
+
+      <button class="btn bp" onclick="gerarImagemFechamento()" style="width:100%;margin-bottom:10px">&#128247; Gerar Imagem</button>
+
+      <div id="fechImgBox" style="display:none">
+        <div style="font-size:11px;color:var(--t2);margin-bottom:8px;text-align:center">Salve a imagem e anexe no WhatsApp do grupo da equipe</div>
+        <img id="fechImgEl" src="" alt="Fechamento do Dia" style="width:100%;border-radius:10px;border:1px solid var(--b)">
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn bp" onclick="salvarImagemFechamento()" style="flex:1">&#128247; Salvar Imagem</button>
+        </div>
+      </div>
+
+      <div id="fechCapture"></div>
     </div>
 
 
@@ -2082,8 +2126,11 @@ if(u.t==='coord'){
     var ad=document.getElementById('adminDocs');if(ad)ad.style.display='block';
     var menuQG=document.getElementById('menuQGDia');
     if(menuQG)menuQG.style.display='inline-block';
+    var menuF=document.getElementById('menuFechamento');
+    if(menuF)menuF.style.display='inline-block';
     var menuR=document.getElementById('menuRadar');
     if(menuR)menuR.style.display='inline-block';
+    carregarFechamento();
     var pa=document.getElementById('prospAdmin');if(pa)pa.style.display='block';
     carregarCatalogosAdmin();
     iniciarMetasGrid();
@@ -2836,6 +2883,179 @@ function salvarImagemQGDia(){
   link.href=window._qgdiaImageDataURL;
   link.click();
   toast('Imagem salva! Agora abra o WhatsApp do grupo e anexe a foto.');
+}
+
+/* ===== FECHAMENTO DO DIA ===== */
+var fechLista=[];
+var FECH_HIST=[];   // [{d:'2026-10-26', b:['017','118']}]
+var FECH_LAST=null; // {d, dataTxt, bateramNomes:[...]}
+
+function fechHojeStr(){var h=new Date();return h.getFullYear()+'-'+('0'+(h.getMonth()+1)).slice(-2)+'-'+('0'+h.getDate()).slice(-2);}
+
+function carregarFechamento(){
+  supaFetch('qg_config?chave=eq.qg_fechamento').then(function(r){return r.json();}).then(function(d){
+    if(d&&d[0]&&d[0].valor){FECH_HIST=d[0].valor.hist||[];FECH_LAST=d[0].valor.last||null;}
+  }).catch(function(){});
+}
+
+function fechSalvarSupa(){
+  var payload={hist:FECH_HIST,last:FECH_LAST};
+  return supaFetch('qg_config',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},
+    body:JSON.stringify({chave:'qg_fechamento',valor:payload})}).catch(function(){});
+}
+
+function fechIntegrarHoje(bateramCods){
+  var d=fechHojeStr();
+  FECH_HIST=FECH_HIST.filter(function(x){return x.d!==d;});
+  FECH_HIST.push({d:d,b:bateramCods});
+  FECH_HIST.sort(function(a,b){return a.d<b.d?-1:(a.d>b.d?1:0);});
+  if(FECH_HIST.length>120)FECH_HIST=FECH_HIST.slice(-120);
+}
+
+function fechStreak(cod){
+  var n=0;
+  for(var i=FECH_HIST.length-1;i>=0;i--){
+    if((FECH_HIST[i].b||[]).indexOf(cod)>=0)n++; else break;
+  }
+  return n;
+}
+
+function montarFechamento(){
+  var codNome=document.getElementById('fechCodNome').value;
+  var metasTxt=document.getElementById('fechMetas').value;
+  var realTxt=document.getElementById('fechReais').value;
+  if(!codNome.trim()){toast('Cole código e nome primeiro (Etapa 1).');return;}
+  var lista=parseLinhasCodNome(codNome);
+  var metas=parseLinhasMetas(metasTxt);
+  var reais=parseLinhasMetas(realTxt);
+  fechLista=lista.map(function(v,i){return{cod:v.cod,nome:v.nome,meta:metas[i]||0,real:reais[i]||0};})
+    .filter(function(v){return v.cod&&!/NORTE FLUMINENSE|REGIONAL/i.test(v.nome||'');});
+  if(!fechLista.length){toast('Não identifiquei vendedores.');return;}
+  fechLista.forEach(function(v){
+    v.pct=v.meta>0?Math.round(v.real/v.meta*100):0;
+    v.bateu=(v.meta>0&&v.real>=v.meta);
+    v.falta=Math.max(0,v.meta-v.real);
+  });
+  fechLista.sort(function(a,b){return b.pct-a.pct;});
+  renderFechPreview();
+  toast(fechLista.length+' vendedor(es) carregado(s)!');
+}
+
+function renderFechPreview(){
+  var box=document.getElementById('fechListaBox');
+  var prev=document.getElementById('fechListaPreview');
+  if(!fechLista.length){box.style.display='none';return;}
+  box.style.display='block';
+  prev.innerHTML=fechLista.map(function(v){
+    var cor=v.bateu?'#10B981':(v.pct>=90?'#F59E0B':'var(--t2)');
+    var tag=v.bateu?' &#127942;':(v.pct>=90?' <span style="font-size:11px;color:#FBBF24">faltou '+qgFmt(v.falta)+'</span>':'');
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--s2);border-radius:8px;margin-bottom:6px">'
+      +'<span style="font-size:11px;color:var(--t3);width:34px">'+(v.cod||'-')+'</span>'
+      +'<span style="flex:1;font-size:13px;color:var(--t)">'+v.nome+tag+'</span>'
+      +'<span style="font-size:14px;font-weight:800;color:'+cor+'">'+v.pct+'%</span>'
+      +'</div>';
+  }).join('');
+}
+
+function gerarImagemFechamento(){
+  if(!fechLista.length){toast('Monte o fechamento primeiro (Etapas 1, 2 e 3).');return;}
+  var hoje=new Date();
+  var dataTxt=hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  dataTxt=dataTxt.charAt(0).toUpperCase()+dataTxt.slice(1);
+
+  var rMeta=fechLista.reduce(function(s,v){return s+v.meta;},0);
+  var rReal=fechLista.reduce(function(s,v){return s+v.real;},0);
+  var rPct=rMeta>0?Math.round(rReal/rMeta*100):0;
+  var bateramArr=fechLista.filter(function(v){return v.bateu;});
+  var nbat=bateramArr.length, ntot=fechLista.length;
+
+  // sequencia: integra hoje e calcula streaks
+  fechIntegrarHoje(bateramArr.map(function(v){return v.cod;}));
+  var seq=fechLista.map(function(v){return{nome:v.nome,s:fechStreak(v.cod)};})
+    .filter(function(x){return x.s>=2;}).sort(function(a,b){return b.s-a.s;}).slice(0,6);
+
+  // linhas dos vendedores
+  var rows=fechLista.map(function(v){
+    var cor=v.bateu?'#10B981':(v.pct>=90?'#F59E0B':'#E6EEFA');
+    var bg=v.bateu?'rgba(16,185,129,0.1)':(v.pct>=90?'rgba(245,158,11,0.1)':'rgba(255,255,255,0.04)');
+    var bd=v.bateu?'border:1px solid rgba(16,185,129,0.28);':(v.pct>=90?'border:1px solid rgba(245,158,11,0.3);':'');
+    var tro=v.bateu?' 🏆':'';
+    var falta=(!v.bateu&&v.pct>=90)?'&nbsp;<span style="font-size:13px;color:#FBBF24;font-weight:700">faltou '+qgFmt(v.falta)+'</span>':'';
+    return '<div style="display:flex;align-items:center;padding:14px 16px;background:'+bg+';'+bd+'border-radius:11px;margin-bottom:7px">'
+      +'<span style="font-size:13px;color:#9FB0CC;width:38px;font-weight:700">'+(v.cod||'-')+'</span>'
+      +'<span style="flex:1;font-size:17px;font-weight:700;color:#FFFFFF">'+v.nome.toUpperCase()+tro+falta+'</span>'
+      +'<span style="font-size:20px;font-weight:900;color:'+cor+'">'+v.pct+'%</span>'
+      +'</div>';
+  }).join('');
+
+  var seqBlock='';
+  if(seq.length){
+    var seqRows=seq.map(function(x){
+      return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+        +'<span style="font-size:19px">🔥</span>'
+        +'<span style="flex:1;font-size:16px;color:#FFFFFF"><b>'+x.nome.toUpperCase()+'</b> bateu <b style="color:#FBBF24">'+x.s+' dias consecutivos</b></span>'
+        +'</div>';
+    }).join('');
+    seqBlock='<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:13px;padding:16px 18px;margin-bottom:16px">'
+      +'<div style="font-size:13px;font-weight:800;letter-spacing:1.5px;color:#F59E0B;text-transform:uppercase;margin-bottom:12px">🔥 SEQUÊNCIA QUENTE</div>'
+      +seqRows+'</div>';
+  }
+
+  var html='<div style="background:#0B1929;border:2px solid rgba(245,158,11,0.55);border-radius:18px;padding:30px 26px;width:520px;font-family:Inter,sans-serif">'
+    +'<div style="text-align:center;margin-bottom:20px">'
+    +'<div style="font-size:12px;font-weight:800;letter-spacing:2.5px;color:#F59E0B;text-transform:uppercase;margin-bottom:16px;padding-top:4px">GERENCION QG &middot; ARCOFOODS &middot; NORTE FLUMINENSE</div>'
+    +'<div style="font-size:15px;color:#E6EEFA;margin-bottom:10px;font-weight:600">Coordenador 40 &mdash; Leandro Felipe</div>'
+    +'<div style="font-size:28px;font-weight:900;color:#F59E0B;letter-spacing:1px">🌙 FECHAMENTO DO DIA</div>'
+    +'<div style="font-size:15px;color:#E6EEFA;margin-top:14px;font-weight:600">'+dataTxt+'</div>'
+    +'</div>'
+    +'<div style="padding:16px 18px;background:linear-gradient(90deg,rgba(16,185,129,0.26),rgba(16,185,129,0.05));border:1px solid rgba(16,185,129,0.5);border-left:4px solid #10B981;border-radius:12px;margin-bottom:14px">'
+    +'<div style="display:flex;align-items:center"><span style="flex:1;font-size:18px;font-weight:800;color:#34D399;letter-spacing:0.5px">NORTE FLUMINENSE</span><span style="font-size:28px;font-weight:900;color:#34D399">'+rPct+'%</span></div>'
+    +'<div style="font-size:14px;color:#E6EEFA;margin-top:4px">Realizado <b style="color:#FFFFFF">'+qgFmt(rReal)+'</b> &middot; meta '+qgFmt(rMeta)+'</div>'
+    +'</div>'
+    +rows
+    +'<div style="text-align:center;font-size:15px;color:#FFFFFF;font-weight:700;padding:6px 0 18px">✅ '+nbat+' de '+ntot+' bateram a meta hoje</div>'
+    +seqBlock
+    +'<div style="text-align:center;padding-top:14px;border-top:1px solid rgba(255,255,255,0.12)">'
+    +'<div style="font-size:16px;color:#FFFFFF;margin-bottom:6px;font-weight:600">Amanhã tem mais. Bora pra cima! 🚀</div>'
+    +'<div style="font-size:11px;font-weight:800;letter-spacing:2px;color:#AFC0DC">GERENCION QG &mdash; TODOS OS DIREITOS RESERVADOS</div>'
+    +'</div></div>';
+
+  // guarda quem bateu (pro Metas do Dia puxar) e persiste
+  FECH_LAST={d:fechHojeStr(),dataTxt:dataTxt,bateramNomes:bateramArr.map(function(v){return v.nome;})};
+  fechSalvarSupa();
+
+  var cap=document.getElementById('fechCapture');
+  cap.innerHTML=html;
+  cap.style.position='fixed';cap.style.left='-9999px';cap.style.top='0';cap.style.zIndex='-1';cap.style.display='block';
+  toast('Gerando imagem...');
+  setTimeout(function(){
+    html2canvas(cap,{backgroundColor:'#060E1E',scale:2,useCORS:true,logging:false}).then(function(canvas){
+      var url=canvas.toDataURL('image/png');
+      document.getElementById('fechImgEl').src=url;
+      document.getElementById('fechImgBox').style.display='block';
+      window._fechImageDataURL=url;
+      cap.style.display='none';
+      toast('Imagem gerada! Toque para salvar.');
+    }).catch(function(){toast('Erro ao gerar imagem.');cap.style.display='none';});
+  },300);
+}
+
+function salvarImagemFechamento(){
+  if(!window._fechImageDataURL){toast('Gere a imagem primeiro.');return;}
+  var hoje=new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+  var link=document.createElement('a');
+  link.download='Fechamento-do-Dia-'+hoje+'.png';
+  link.href=window._fechImageDataURL;
+  link.click();
+  toast('Imagem salva! Abra o WhatsApp do grupo da equipe e anexe a foto.');
+}
+
+function puxarQuemBateuOntem(){
+  if(!FECH_LAST||!FECH_LAST.bateramNomes||!FECH_LAST.bateramNomes.length){
+    toast('Nenhum fechamento salvo ainda. Gere um Fechamento primeiro.');return;
+  }
+  var el=document.getElementById('qgdiaRanking');
+  if(el){el.value=FECH_LAST.bateramNomes.join('\n');toast('Preenchido com quem bateu no último Fechamento!');}
 }
 
 

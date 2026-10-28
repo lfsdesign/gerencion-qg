@@ -1376,10 +1376,9 @@ function radarProcessarChurnAll(){
   CHURN_ALL={};
   vend.forEach(function(v){CHURN_ALL[radarCod(v.cod)]={pairs:v.pairs.slice(),pct:v.pct,falta:v.falta};});
   var box=document.getElementById('radarChurnAllBox');
-  if(box)box.innerHTML='<div style="font-size:12px;color:var(--gn);margin-bottom:8px">✅ Reconheci <b>'+vend.length+' vendedor(es)</b>. Clique em cada um pra montar o pacote e enviar:</div>'
+  if(box)box.innerHTML='<div style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.35);border-radius:10px;padding:11px 13px;margin-bottom:10px;font-size:13px;color:var(--t);font-weight:600">✅ Reconheci <b style="color:var(--gn)">'+vend.length+' vendedor(es)</b>. &#128073; <b>Clique no vendedor abaixo pra montar o pacote e gerar os cards:</b></div>'
     +vend.map(function(v){
-      var nm=(v.nome||'').replace(/'/g,'');
-      return '<button class="btn bs" style="width:100%;margin-bottom:5px;justify-content:space-between" onclick="radarAbrirPacoteDe(\''+radarCod(v.cod)+'\')"><span>'+mxE(v.cod+' - '+v.nome)+'</span><span style="color:var(--am);font-weight:800;flex-shrink:0">'+v.pairs.length+' churn</span></button>';
+      return '<button class="btn bp" style="width:100%;margin-bottom:6px;justify-content:space-between" onclick="radarAbrirPacoteDe(\''+radarCod(v.cod)+'\')"><span>&#128230; Montar pacote &mdash; '+mxE(v.cod+' '+v.nome)+'</span><span style="font-weight:800;flex-shrink:0;opacity:.85">'+v.pairs.length+' churn &#8250;</span></button>';
     }).join('');
   toast(vend.length+' vendedor(es) processado(s)! ✅');
 }
@@ -1552,7 +1551,26 @@ function radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend,acomp,churnPc
   // envio direto pelo WhatsApp do vendedor
   var telV=equipeTelPorCod(cod);
   var primeiro=(nome||'').split(' ')[0]||nome;
-  var saud='Bom dia, '+primeiro+'! Segue seu Radar da semana.';
+  var _L=[];
+  _L.push('🏆 Bom dia, '+primeiro+'! 👊🏻');
+  _L.push('📡 SEU RADAR DA SEMANA: um raio-x estratégico para fechar o mês forte!');
+  if(acomp){
+    var _fmt=function(n){return (''+n).replace('.',',');};
+    var _fmt2=function(n){return (Number(n).toFixed(2)).replace('.',',');};
+    var _proj=(acomp.pctProj>=100)?('Projeção: '+_fmt(acomp.pctProj)+'% — acima da meta! 🔥'):('Projeção: '+_fmt(acomp.pctProj)+'%. Ainda dá para recuperar!');
+    _L.push('💰 Faturamento: '+_fmt(acomp.pctFat)+'% da meta | '+_proj);
+    _L.push('📈 Margem: '+_fmt2(acomp.margem)+'% | Meta: '+_fmt2(acomp.metaMarg)+'%.');
+    var _fp=acomp.metaPos-acomp.pos;
+    if(_fp>0)_L.push('🎯 Positivação: '+acomp.pos+'/'+acomp.metaPos+' — faltam '+_fp+' clientes para conquistar seu prêmio!');
+    else _L.push('🎯 Positivação: '+acomp.pos+'/'+acomp.metaPos+' — meta batida! 🎯');
+    _L.push('🛒 Venda média: '+radarRS(acomp.compraMedia)+'.');
+  }
+  if(churnFalta!=null&&churnFalta<=0){ _L.push('🚨 Churn: '+(churnPct?churnPct+'%':'')+' — meta batida! Continue recuperando clientes para ajudar a equipe. 🔥'); }
+  else if(churnFalta!=null){ _L.push('🚨 Churn: '+(churnPct?churnPct+'%':'')+' — recupere apenas '+(churnFalta+1)+' clientes para atingir a meta e garantir seu prêmio!'); }
+  if(naopos&&naopos.length){ _L.push('🚚 Preparei sua rota com '+naopos.length+' clientes não positivados, organizados por cidade para otimizar seus deslocamentos e transformar visitas em pedidos.'); }
+  _L.push('💪 O caminho está traçado. Agora é atitude, foco e execução! Vamos buscar esse resultado!');
+  _L.push('🤝 Tamo junto! — GERENCION QG');
+  var saud=_L.join('\n');
   var btnEnviar=telV
     ?'<a href="https://wa.me/'+telV+'?text='+encodeURIComponent(saud)+'" target="_blank" rel="noopener" class="btn bg" style="width:100%;text-decoration:none;justify-content:center;margin:4px 0 10px">💬 Abrir WhatsApp do '+mxE(primeiro)+'</a>'
     :'<div style="font-size:12px;color:var(--am);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:9px 12px;margin:4px 0 10px">📱 Cadastre o WhatsApp do '+mxE(primeiro)+' em "Contatos da equipe" (topo do Radar) pra liberar o envio direto.</div>';

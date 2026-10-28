@@ -781,9 +781,16 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
         <button class="btn bp" onclick="radarAnalisarPanorama()" style="width:100%;margin-top:8px">&#128202; Analisar panorama</button>
         <div id="radarPanoBox" style="display:none;margin-top:14px"></div>
       </div>
+      <div class="admin-box" style="border-color:rgba(16,185,129,0.4)">
+        <div class="admin-title" style="color:var(--gn)">&#9889; Churn de TODOS de uma vez (inteligente)</div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">Cole o churn copiado do BI <b>do jeito que vier</b> (a p&#225;gina toda). Pode ir <b>acumulando vendedor por vendedor</b> nesta mesma caixa, um embaixo do outro. O app reconhece sozinho o <b>vendedor</b>, os <b>clientes</b> e as <b>datas</b> &mdash; e a&#237; voc&#234; s&#243; clica em cada um pra montar e enviar.</div>
+        <textarea id="radarChurnAllTxt" class="inp" rows="5" placeholder="Cole aqui o churn (p&#225;gina toda) de cada vendedor, indo acumulando..."></textarea>
+        <button class="btn bp" onclick="radarProcessarChurnAll()" style="width:100%;margin-top:8px">&#9889; Processar churn de todos</button>
+        <div id="radarChurnAllBox" style="margin-top:12px"></div>
+      </div>
       <div class="admin-box">
         <div class="admin-title" style="color:#3B82F6">&#128228; Montar pacote do vendedor</div>
-        <div style="background:rgba(16,185,129,0.10);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:11px 13px;margin-bottom:12px;font-size:12px;color:var(--t);line-height:1.6">&#9989; <b style="color:var(--gn)">Pode colar tudo de uma vez.</b> Em <b>N&#227;o positivados</b> e <b>Acompanhamento</b>, cole a lista com <b>todos os vendedores</b> &mdash; o Radar filtra sozinho o vendedor selecionado acima (desde que cada linha tenha o c&#243;digo/nome do vendedor). S&#243; o <b>Churn</b> &#233; individual, colado por vendedor.</div>
+        <div style="background:rgba(16,185,129,0.10);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:11px 13px;margin-bottom:12px;font-size:12px;color:var(--t);line-height:1.6">&#9989; <b style="color:var(--gn)">Dica:</b> se voc&#234; j&#225; processou o <b>Churn inteligente</b> acima, o churn de cada vendedor j&#225; vem sozinho &mdash; aqui voc&#234; s&#243; confere e envia. O <b>N&#227;o positivados</b> cole uma vez (de todos).</div>
         <div class="fg"><label class="fl">Vendedor</label><select id="radarVend" class="inp" onchange="radarVendMudou()"><option value="">Selecione o vendedor...</option></select></div>
         <div class="fg"><label class="fl">Churn detalhado <span style="color:var(--am);font-weight:700">&#183; individual deste vendedor</span></label><textarea id="radarChurnTxt" class="inp" rows="3" placeholder="Cole o churn detalhado SOMENTE deste vendedor (CodCli + data)"></textarea>
         <button class="btn bs" onclick="radarAddChurn()" style="width:100%;margin-top:6px">&#10133; Adicionar ao churn deste vendedor</button>
@@ -1339,6 +1346,47 @@ function radarAddChurn(){
   radarAtualizarChurnInfo();
   toast(add?add+' adicionado(s) \u00b7 total '+radarChurnAcc.length:'Nenhum novo (ja estavam na lista).');
 }
+/* ===== CHURN INTELIGENTE (colar tudo, reconhece o vendedor) ===== */
+var CHURN_ALL={}; // {codVend: [{cod,dt}]}
+function radarParseChurnBlob(txt){
+  var lines=String(txt||'').split(/\r?\n/).map(function(s){return s.trim();}).filter(Boolean);
+  var vend=[],cur=null;
+  var reVend=/^(\d{2,4})\s*-\s*(.+)$/;
+  var reCode=/^\d{1,3}(?:\.\d{3})+$/;   // código de cliente (tem ponto de milhar)
+  var reDate=/^\d{2}\/\d{2}\/\d{4}$/;   // data
+  lines.forEach(function(l){
+    var mv=l.match(reVend);
+    if(mv&&/[A-Za-z]/.test(mv[2])){cur={cod:mv[1],nome:mv[2].trim(),codes:[],dates:[]};vend.push(cur);return;}
+    if(!cur)return;
+    if(reCode.test(l)){cur.codes.push(l.replace(/\./g,''));return;}
+    if(reDate.test(l)){cur.dates.push(l);return;}
+  });
+  vend.forEach(function(v){var n=Math.min(v.codes.length,v.dates.length);v.pairs=[];for(var i=0;i<n;i++)v.pairs.push({cod:v.codes[i],dt:v.dates[i]});});
+  return vend.filter(function(v){return v.pairs.length;});
+}
+function radarProcessarChurnAll(){
+  var txt=(document.getElementById('radarChurnAllTxt')||{value:''}).value;
+  if(!txt.trim()){toast('Cole o churn primeiro.');return;}
+  var vend=radarParseChurnBlob(txt);
+  if(!vend.length){toast('Não reconheci nenhum vendedor. Cole a página do churn do BI.');return;}
+  CHURN_ALL={};
+  vend.forEach(function(v){CHURN_ALL[radarCod(v.cod)]=v.pairs.slice();});
+  var box=document.getElementById('radarChurnAllBox');
+  if(box)box.innerHTML='<div style="font-size:12px;color:var(--gn);margin-bottom:8px">✅ Reconheci <b>'+vend.length+' vendedor(es)</b>. Clique em cada um pra montar o pacote e enviar:</div>'
+    +vend.map(function(v){
+      var nm=(v.nome||'').replace(/'/g,'');
+      return '<button class="btn bs" style="width:100%;margin-bottom:5px;justify-content:space-between" onclick="radarAbrirPacoteDe(\''+radarCod(v.cod)+'\')"><span>'+mxE(v.cod+' - '+v.nome)+'</span><span style="color:var(--am);font-weight:800;flex-shrink:0">'+v.pairs.length+' churn</span></button>';
+    }).join('');
+  toast(vend.length+' vendedor(es) processado(s)! ✅');
+}
+function radarAbrirPacoteDe(cod){
+  var sel=document.getElementById('radarVend');
+  var dig=String(cod).replace(/\D/g,'');
+  var u=USERS.filter(function(x){return x.t==='vend';}).find(function(x){return (x.cd||'').replace(/\D/g,'')===dig;});
+  if(sel&&u){ sel.value=(u.cd||'').replace(/\D/g,'')+'|'+u.n; radarVendAtual=dig; }
+  else if(sel){ toast('Esse código ('+cod+') não está nos seus vendedores cadastrados.'); }
+  radarMontarPacote();
+}
 function radarMontarPacote(){
   var selV=document.getElementById('radarVend');
   if(!selV||!selV.value){toast('Escolha o vendedor primeiro.');return;}
@@ -1346,6 +1394,7 @@ function radarMontarPacote(){
   var pend=(document.getElementById('radarChurnTxt')||{value:''}).value;
   if(pend.trim())radarAddChurn();
   var churnRaw=radarChurnAcc.slice();
+  if(!churnRaw.length&&CHURN_ALL[radarCod(cod)])churnRaw=CHURN_ALL[radarCod(cod)].slice(); // usa o churn inteligente
   var naoposTxt=(document.getElementById('radarNaoposTxt')||{value:''}).value;
   if(!churnRaw.length&&!naoposTxt.trim()){toast('Adicione o churn e/ou cole os nao-positivados.');return;}
   var naopos=[];var npTotal=0;var npTemVend=false;var npMap={};

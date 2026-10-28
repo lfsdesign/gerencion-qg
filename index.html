@@ -1551,40 +1551,50 @@ function radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend,acomp,churnPc
   // envio direto pelo WhatsApp do vendedor
   var telV=equipeTelPorCod(cod);
   var primeiro=(nome||'').split(' ')[0]||nome;
+  // Emojis montados por codepoint (texto puro no fonte = nao corrompe no deploy/WhatsApp)
+  var _ej=function(){var a=Array.prototype.slice.call(arguments);return String.fromCodePoint.apply(String,a);};
+  var EJ={
+    trofeu:_ej(0x1F3C6), soco:_ej(0x1F44A,0x1F3FB), antena:_ej(0x1F4E1),
+    fogo:_ej(0x1F525), dinheiro:_ej(0x1F4B0), grafico:_ej(0x1F4C8),
+    alvo:_ej(0x1F3AF), carrinho:_ej(0x1F6D2), alerta:_ej(0x1F6A8),
+    caminhao:_ej(0x1F69A), musculo:_ej(0x1F4AA), aperto:_ej(0x1F91D),
+    balao:_ej(0x1F4AC), celular:_ej(0x1F4F1),
+    bussola:_ej(0x1F9ED), pin:_ej(0x1F4CD), quadro:_ej(0x1F5BC,0xFE0F), foguete:_ej(0x1F680)
+  };
   var _L=[];
-  _L.push('🏆 Bom dia, '+primeiro+'! 👊🏻');
-  _L.push('📡 SEU RADAR DA SEMANA: um raio-x estratégico para fechar o mês forte!');
+  _L.push(EJ.trofeu+' Bom dia, '+primeiro+'! '+EJ.soco);
+  _L.push(EJ.antena+' SEU RADAR DA SEMANA: um raio-x estratégico para fechar o mês forte!');
   if(acomp){
     var _fmt=function(n){return (''+n).replace('.',',');};
     var _fmt2=function(n){return (Number(n).toFixed(2)).replace('.',',');};
-    var _proj=(acomp.pctProj>=100)?('Projeção: '+_fmt(acomp.pctProj)+'% — acima da meta! 🔥'):('Projeção: '+_fmt(acomp.pctProj)+'%. Ainda dá para recuperar!');
-    _L.push('💰 Faturamento: '+_fmt(acomp.pctFat)+'% da meta | '+_proj);
-    _L.push('📈 Margem: '+_fmt2(acomp.margem)+'% | Meta: '+_fmt2(acomp.metaMarg)+'%.');
+    var _proj=(acomp.pctProj>=100)?('Projeção: '+_fmt(acomp.pctProj)+'% — acima da meta! '+EJ.fogo):('Projeção: '+_fmt(acomp.pctProj)+'%. Ainda dá para recuperar!');
+    _L.push(EJ.dinheiro+' Faturamento: '+_fmt(acomp.pctFat)+'% da meta | '+_proj);
+    _L.push(EJ.grafico+' Margem: '+_fmt2(acomp.margem)+'% | Meta: '+_fmt2(acomp.metaMarg)+'%.');
     var _fp=acomp.metaPos-acomp.pos;
-    if(_fp>0)_L.push('🎯 Positivação: '+acomp.pos+'/'+acomp.metaPos+' — faltam '+_fp+' clientes para conquistar seu prêmio!');
-    else _L.push('🎯 Positivação: '+acomp.pos+'/'+acomp.metaPos+' — meta batida! 🎯');
-    _L.push('🛒 Venda média: '+radarRS(acomp.compraMedia)+'.');
+    if(_fp>0)_L.push(EJ.alvo+' Positivação: '+acomp.pos+'/'+acomp.metaPos+' — faltam '+_fp+' clientes para conquistar seu prêmio!');
+    else _L.push(EJ.alvo+' Positivação: '+acomp.pos+'/'+acomp.metaPos+' — meta batida! '+EJ.alvo);
+    _L.push(EJ.carrinho+' Venda média: '+radarRS(acomp.compraMedia)+'.');
   }
-  if(churnFalta!=null&&churnFalta<=0){ _L.push('🚨 Churn: '+(churnPct?churnPct+'%':'')+' — meta batida! Continue recuperando clientes para ajudar a equipe. 🔥'); }
-  else if(churnFalta!=null){ _L.push('🚨 Churn: '+(churnPct?churnPct+'%':'')+' — recupere apenas '+(churnFalta+1)+' clientes para atingir a meta e garantir seu prêmio!'); }
-  if(naopos&&naopos.length){ _L.push('🚚 Preparei sua rota com '+naopos.length+' clientes não positivados, organizados por cidade para otimizar seus deslocamentos e transformar visitas em pedidos.'); }
-  _L.push('💪 O caminho está traçado. Agora é atitude, foco e execução! Vamos buscar esse resultado!');
-  _L.push('🤝 Tamo junto! — GERENCION QG');
+  if(churnFalta!=null&&churnFalta<=0){ _L.push(EJ.alerta+' Churn: '+(churnPct?churnPct+'%':'')+' — meta batida! Continue recuperando clientes para ajudar a equipe. '+EJ.fogo); }
+  else if(churnFalta!=null){ _L.push(EJ.alerta+' Churn: '+(churnPct?churnPct+'%':'')+' — recupere apenas '+(churnFalta+1)+' clientes para atingir a meta e garantir seu prêmio!'); }
+  if(naopos&&naopos.length){ _L.push(EJ.caminhao+' Preparei sua rota com '+naopos.length+' clientes não positivados, organizados por cidade para otimizar seus deslocamentos e transformar visitas em pedidos.'); }
+  _L.push(EJ.musculo+' O caminho está traçado. Agora é atitude, foco e execução! Vamos buscar esse resultado!');
+  _L.push(EJ.aperto+' Tamo junto! — GERENCION QG');
   var saud=_L.join('\n');
   var btnEnviar=telV
-    ?'<a href="https://wa.me/'+telV+'?text='+encodeURIComponent(saud)+'" target="_blank" rel="noopener" class="btn bg" style="width:100%;text-decoration:none;justify-content:center;margin:4px 0 10px">💬 Abrir WhatsApp do '+mxE(primeiro)+'</a>'
-    :'<div style="font-size:12px;color:var(--am);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:9px 12px;margin:4px 0 10px">📱 Cadastre o WhatsApp do '+mxE(primeiro)+' em "Contatos da equipe" (topo do Radar) pra liberar o envio direto.</div>';
+    ?'<a href="https://wa.me/'+telV+'?text='+encodeURIComponent(saud)+'" target="_blank" rel="noopener" class="btn bg" style="width:100%;text-decoration:none;justify-content:center;margin:4px 0 10px">'+EJ.balao+' Abrir WhatsApp do '+mxE(primeiro)+'</a>'
+    :'<div style="font-size:12px;color:var(--am);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:9px 12px;margin:4px 0 10px">'+EJ.celular+' Cadastre o WhatsApp do '+mxE(primeiro)+' em "Contatos da equipe" (topo do Radar) pra liberar o envio direto.</div>';
   // rota por cidade
   var grupos=radarGrupoCidades(naopos);
-  var Tr=['🧭 *ROTA POR CIDADE — '+cod+' '+nome.toUpperCase()+'*','',dataHoje,'Seus não-positivados por região:',''];
-  grupos.forEach(function(g){Tr.push('📍 *'+g.cidade+'* ('+g.clientes.length+')');g.clientes.forEach(function(x){Tr.push('   • '+(x.cod?x.cod+' - ':'')+(x.cliente||''));});Tr.push('');});
-  Tr.push('Planeje a semana por região e não rode à toa! 🚀','_GERENCION QG_');
+  var Tr=[EJ.bussola+' *ROTA POR CIDADE — '+cod+' '+nome.toUpperCase()+'*','',dataHoje,'Seus não-positivados por região:',''];
+  grupos.forEach(function(g){Tr.push(EJ.pin+' *'+g.cidade+'* ('+g.clientes.length+')');g.clientes.forEach(function(x){Tr.push('   • '+(x.cod?x.cod+' - ':'')+(x.cliente||''));});Tr.push('');});
+  Tr.push('Planeje a semana por região e não rode à toa! '+EJ.foguete,'_GERENCION QG_');
   window._radarTxtRota=Tr.join('\n');
   var secRota=naopos.length?('<div style="border-top:1px solid var(--b);margin-top:18px;padding-top:14px">'
-    +'<div style="font-size:13px;font-weight:800;color:#10B981;margin-bottom:8px">🧭 Rota por cidade do '+cod+'</div>'
-    +grupos.map(function(g){return '<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 2px;border-bottom:1px solid var(--b)"><span style="color:var(--t);font-weight:600">📍 '+mxE(g.cidade)+'</span><span style="color:var(--t2)">'+g.clientes.length+'</span></div>';}).join('')
+    +'<div style="font-size:13px;font-weight:800;color:#10B981;margin-bottom:8px">'+EJ.bussola+' Rota por cidade do '+cod+'</div>'
+    +grupos.map(function(g){return '<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 2px;border-bottom:1px solid var(--b)"><span style="color:var(--t);font-weight:600">'+EJ.pin+' '+mxE(g.cidade)+'</span><span style="color:var(--t2)">'+g.clientes.length+'</span></div>';}).join('')
     +'<div id="radarWrapRota" style="margin-top:12px"></div>'
-    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn bp" style="flex:1;min-width:140px" onclick="radarGerarCard(\'rota\')">🖼️ Gerar card da rota</button><a href="https://wa.me/?text='+encodeURIComponent(window._radarTxtRota)+'" target="_blank" rel="noopener" class="btn bg" style="flex:1;min-width:130px;text-decoration:none;justify-content:center">💬 Texto da rota</a></div></div>'):'';
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn bp" style="flex:1;min-width:140px" onclick="radarGerarCard(\'rota\')">'+EJ.quadro+' Gerar card da rota</button><a href="https://wa.me/?text='+encodeURIComponent(window._radarTxtRota)+'" target="_blank" rel="noopener" class="btn bg" style="flex:1;min-width:130px;text-decoration:none;justify-content:center">'+EJ.balao+' Texto da rota</a></div></div>'):'';
   box.style.display='block';
   box.innerHTML='<div class="card"><div class="ct">Pacote de '+cod+' - '+nome+'</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px">'

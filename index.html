@@ -788,6 +788,13 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
         <button class="btn bp" onclick="radarProcessarChurnAll()" style="width:100%;margin-top:8px">&#9889; Processar churn de todos</button>
         <div id="radarChurnAllBox" style="margin-top:12px"></div>
       </div>
+      <div class="admin-box" style="border-color:rgba(59,130,246,0.4)">
+        <div class="admin-title" style="color:#3B82F6">&#128202; Acompanhamento de TODOS (inteligente)</div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">Cole o acompanhamento (KPIs) do BI &mdash; pode ir <b>acumulando vendedor por vendedor</b> nesta caixa (o cabe&#231;alho repetido n&#227;o atrapalha). O app l&#234; sozinho e junta no pacote de cada um.</div>
+        <textarea id="radarAcompAllTxt" class="inp" rows="5" placeholder="Cole o acompanhamento de cada vendedor, indo acumulando..."></textarea>
+        <button class="btn bp" onclick="radarProcessarAcompAll()" style="width:100%;margin-top:8px">&#128202; Processar acompanhamento de todos</button>
+        <div id="radarAcompAllBox" style="margin-top:12px"></div>
+      </div>
       <div class="admin-box">
         <div class="admin-title" style="color:#3B82F6">&#128228; Montar pacote do vendedor</div>
         <div style="background:rgba(16,185,129,0.10);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:11px 13px;margin-bottom:12px;font-size:12px;color:var(--t);line-height:1.6">&#9989; <b style="color:var(--gn)">Dica:</b> se voc&#234; j&#225; processou o <b>Churn inteligente</b> acima, o churn de cada vendedor j&#225; vem sozinho &mdash; aqui voc&#234; s&#243; confere e envia. O <b>N&#227;o positivados</b> cole uma vez (de todos).</div>
@@ -1379,6 +1386,36 @@ function radarProcessarChurnAll(){
     }).join('');
   toast(vend.length+' vendedor(es) processado(s)! ✅');
 }
+/* ===== ACOMPANHAMENTO INTELIGENTE (colar tudo, acumula todos) ===== */
+var ACOMP_ALL={}; // {codVend: acompObj}
+function radarParseAcompAll(txt){
+  var all={};
+  String(txt||'').split(/\r?\n/).forEach(function(l){
+    if(!l.trim())return;
+    var c=l.split('\t');
+    var c0=(c[0]||'').trim();
+    if(!/^\d/.test(c0))return;   // pula cabeçalho (começa com "VENDEDOR") e qualquer lixo
+    if(c.length<9)return;
+    var vc=radarCod(c0.split('-')[0]); if(!vc)return;
+    all[vc]={vend:c0,cod:vc,
+      fat:radarNum(c[1]),metaFat:radarNum(c[3]),pctFat:radarNum(c[4]),
+      metaMes:radarNum(c[6]),proj:radarNum(c[7]),pctProj:radarNum(c[8]),
+      metaMarg:radarNum(c[9]),margem:radarNum(c[10]),
+      base:radarNum(c[11]),metaPos:radarNum(c[12]),pos:radarNum(c[13]),saldoPos:radarNum(c[14]),compraMedia:radarNum(c[15])};
+  });
+  return all;
+}
+function radarProcessarAcompAll(){
+  var txt=(document.getElementById('radarAcompAllTxt')||{value:''}).value;
+  if(!txt.trim()){toast('Cole o acompanhamento primeiro.');return;}
+  var all=radarParseAcompAll(txt);
+  var n=Object.keys(all).length;
+  if(!n){toast('Não reconheci nenhum vendedor no acompanhamento.');return;}
+  ACOMP_ALL=all;
+  var box=document.getElementById('radarAcompAllBox');
+  if(box)box.innerHTML='<div style="font-size:12px;color:var(--gn)">✅ Acompanhamento de <b>'+n+' vendedor(es)</b> carregado. Ao clicar no vendedor na lista do churn (ou montar o pacote), os KPIs já vêm juntos.</div>';
+  toast(n+' acompanhamento(s) carregado(s)! ✅');
+}
 function radarAbrirPacoteDe(cod){
   var sel=document.getElementById('radarVend');
   var dig=String(cod).replace(/\D/g,'');
@@ -1415,7 +1452,7 @@ function radarMontarPacote(){
   });
   var churn=churnRaw.map(function(x){return {cod:x.cod,dt:x.dt,cliente:(npMap[x.cod]||'')};});
   var acompTxt=(document.getElementById('radarAcompTxt')||{value:''}).value;
-  var acomp=acompTxt.trim()?radarParseAcomp(acompTxt,cod):null;
+  var acomp=acompTxt.trim()?radarParseAcomp(acompTxt,cod):(ACOMP_ALL[radarCod(cod)]||null);
   if(acompTxt.trim()&&!acomp)toast('Nao achei o acompanhamento do '+cod+' no que voce colou. Confira se e o deste vendedor.');
   radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend,acomp);
 }
@@ -1512,7 +1549,7 @@ function radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend,acomp){
   // envio direto pelo WhatsApp do vendedor
   var telV=equipeTelPorCod(cod);
   var primeiro=(nome||'').split(' ')[0]||nome;
-  var saud='Bom dia, '+primeiro+'! Segue seu Radar da semana. 👇';
+  var saud='Bom dia, '+primeiro+'! Segue seu Radar da semana.';
   var btnEnviar=telV
     ?'<a href="https://wa.me/'+telV+'?text='+encodeURIComponent(saud)+'" target="_blank" rel="noopener" class="btn bg" style="width:100%;text-decoration:none;justify-content:center;margin:4px 0 10px">💬 Abrir WhatsApp do '+mxE(primeiro)+'</a>'
     :'<div style="font-size:12px;color:var(--am);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:9px 12px;margin:4px 0 10px">📱 Cadastre o WhatsApp do '+mxE(primeiro)+' em "Contatos da equipe" (topo do Radar) pra liberar o envio direto.</div>';
@@ -1533,7 +1570,7 @@ function radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend,acomp){
     +'<div style="flex:1;min-width:110px;background:var(--rd2);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--rd)">'+churn.length+'</div><div style="font-size:11px;color:var(--t2)">em churn</div></div>'
     +'<div style="flex:1;min-width:110px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--am)">'+naopos.length+'</div><div style="font-size:11px;color:var(--t2)">nao positivados'+((npTotal&&npTotal>naopos.length)?'<br><span style="color:var(--t3)">de '+npTotal+' colados</span>':'')+'</div></div></div>'
     +btnEnviar
-    +secAcomp+secChurn+secNp+secRota+'</div>';
+    +secAcomp+secChurn+secRota+'</div>';
   box.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function radarGerarCard(tipo){
@@ -1585,10 +1622,10 @@ function radarBuildCardEl(tipo,p){
   }else if(tipo==='rota'){
     var grupos=radarGrupoCidades(p.naopos);
     var blocos=grupos.map(function(g){
-      var cls=g.clientes.map(function(x){return '<div style="font-size:12px;color:#E2E8F0;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)">'+(x.cod?x.cod+' \u2014 ':'')+(x.cliente||'')+'</div>';}).join('');
+      var cls=g.clientes.map(function(x){return '<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="font-size:12px;color:#E2E8F0">'+(x.cod?x.cod+' \u2014 ':'')+(x.cliente||'')+'</span>'+(x.ult?'<span style="font-size:11px;color:#D6E0F0;font-weight:600;flex-shrink:0">'+x.ult+'</span>':'')+'</div>';}).join('');
       return '<div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);border-radius:10px;padding:9px 14px;margin-bottom:6px"><span style="font-size:14px;font-weight:800;color:#6EE7B7">\ud83d\udccd '+g.cidade+'</span><span style="font-size:13px;font-weight:800;color:#6EE7B7">'+g.clientes.length+' cliente(s)</span></div>'+cls+'</div>';
     }).join('');
-    card.innerHTML='<div style="background:linear-gradient(135deg,#065F46,#10B981);padding:22px 28px"><div style="font-size:14px;font-weight:800;letter-spacing:2px;color:#fff">\ud83e\udded ROTA POR CIDADE</div><div style="font-size:21px;font-weight:900;color:#fff;margin-top:3px">'+p.cod+' \u2014 '+p.nome+'</div><div style="font-size:13px;color:rgba(255,255,255,0.9);margin-top:4px;font-weight:600">Seus n\u00e3o-positivados por regi\u00e3o \u00b7 '+dataHoje+'</div></div>'
+    card.innerHTML='<div style="background:linear-gradient(135deg,#065F46,#10B981);padding:22px 28px"><div style="font-size:14px;font-weight:800;letter-spacing:2px;color:#fff">\ud83e\udded ROTA POR CIDADE</div><div style="font-size:21px;font-weight:900;color:#fff;margin-top:3px">'+p.cod+' \u2014 '+p.nome+'</div><div style="font-size:13px;color:rgba(255,255,255,0.9);margin-top:4px;font-weight:600">Seus clientes n\u00e3o positivados por regi\u00e3o \u00b7 '+dataHoje+' \u00b7 '+p.naopos.length+' clientes</div></div>'
       +'<div style="padding:18px 28px 8px">'+blocos+'</div>'
       +'<div style="padding:4px 28px 24px"><div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:14px 16px;font-size:12px;color:#D8E4F2;line-height:1.6;font-weight:600">Planeje a semana por regi\u00e3o e n\u00e3o rode \u00e0 toa. Cada cidade, um dia! \ud83d\ude80</div><div style="display:flex;align-items:center;gap:8px;margin-top:14px"><div style="font-size:22px;font-weight:900;color:#3B82F6">QG</div><div style="font-size:13px;color:#8098B8">Gerencion \u00b7 Radar de Clientes</div></div></div>';
   }else{

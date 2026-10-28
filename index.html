@@ -795,16 +795,11 @@ textarea.mx-inp{resize:vertical;min-height:110px;line-height:1.6}
         <button class="btn bp" onclick="radarProcessarAcompAll()" style="width:100%;margin-top:8px">&#128202; Processar acompanhamento de todos</button>
         <div id="radarAcompAllBox" style="margin-top:12px"></div>
       </div>
-      <div class="admin-box">
-        <div class="admin-title" style="color:#3B82F6">&#128228; Montar pacote do vendedor</div>
-        <div style="background:rgba(16,185,129,0.10);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:11px 13px;margin-bottom:12px;font-size:12px;color:var(--t);line-height:1.6">&#9989; <b style="color:var(--gn)">Dica:</b> se voc&#234; j&#225; processou o <b>Churn inteligente</b> acima, o churn de cada vendedor j&#225; vem sozinho &mdash; aqui voc&#234; s&#243; confere e envia. O <b>N&#227;o positivados</b> cole uma vez (de todos).</div>
-        <div class="fg"><label class="fl">Vendedor</label><select id="radarVend" class="inp" onchange="radarVendMudou()"><option value="">Selecione o vendedor...</option></select></div>
-        <div class="fg"><label class="fl">Churn detalhado <span style="color:var(--am);font-weight:700">&#183; individual deste vendedor</span></label><textarea id="radarChurnTxt" class="inp" rows="3" placeholder="Cole o churn detalhado SOMENTE deste vendedor (CodCli + data)"></textarea>
-        <button class="btn bs" onclick="radarAddChurn()" style="width:100%;margin-top:6px">&#10133; Adicionar ao churn deste vendedor</button>
-        <div id="radarChurnInfo" style="font-size:12px;color:var(--t2);margin-top:8px;display:none"></div></div>
-        <div class="fg"><label class="fl">N&#227;o positivados <span style="color:var(--gn);font-weight:700">&#183; pode colar de todos</span></label><textarea id="radarNaoposTxt" class="inp" rows="3" placeholder="Cole os n&#227;o-positivados de TODOS os vendedores &mdash; o Radar filtra este vendedor"></textarea></div>
-        <div class="fg"><label class="fl">Acompanhamento (KPIs) <span style="color:var(--gn);font-weight:700">&#183; pode colar de todos</span></label><textarea id="radarAcompTxt" class="inp" rows="3" placeholder="Cole o acompanhamento de TODOS os vendedores &mdash; o Radar filtra este vendedor"></textarea></div>
-        <button class="btn bp" onclick="radarMontarPacote()" style="width:100%;margin-top:4px">&#128228; Montar pacote pronto</button>
+      <div class="admin-box" style="border-color:rgba(245,158,11,0.4)">
+        <div class="admin-title" style="color:var(--am)">&#128993; N&#227;o positivados de TODOS (cole uma vez)</div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">Cole os n&#227;o-positivados de <b>todos os vendedores</b> (com a coluna do vendedor). O Radar separa cada um sozinho, monta a <b>Rota por cidade</b> e usa os nomes aqui pra preencher os clientes do <b>churn</b>.</div>
+        <select id="radarVend" style="display:none"></select>
+        <textarea id="radarNaoposTxt" class="inp" rows="4" placeholder="Cole os n&#227;o-positivados de TODOS os vendedores (com a coluna VENDEDOR)..."></textarea>
         <div id="radarPacoteBox" style="display:none;margin-top:14px"></div>
       </div>
     </div>
@@ -1361,12 +1356,14 @@ function radarParseChurnBlob(txt){
   var reVend=/^(\d{2,4})\s*-\s*(.+)$/;
   var reCode=/^\d{1,3}(?:\.\d{3})+$/;   // código de cliente (tem ponto de milhar)
   var reDate=/^\d{2}\/\d{2}\/\d{4}$/;   // data
-  lines.forEach(function(l){
+  lines.forEach(function(l,i){
     var mv=l.match(reVend);
-    if(mv&&/[A-Za-z]/.test(mv[2])){cur={cod:mv[1],nome:mv[2].trim(),codes:[],dates:[]};vend.push(cur);return;}
+    if(mv&&/[A-Za-z]/.test(mv[2])){cur={cod:mv[1],nome:mv[2].trim(),codes:[],dates:[],pct:null,falta:null};vend.push(cur);return;}
     if(!cur)return;
     if(reCode.test(l)){cur.codes.push(l.replace(/\./g,''));return;}
     if(reDate.test(l)){cur.dates.push(l);return;}
+    if(/churn\s*rate/i.test(l)){var pm=(lines[i-1]||'').match(/(\d+,\d+)\s*%/);if(pm&&cur.pct==null)cur.pct=pm[1];return;}
+    if(/falta\s*para\s*bater\s*meta/i.test(l)){var fm=(lines[i-1]||'').match(/^-?\d+$/);if(fm&&cur.falta==null)cur.falta=parseInt(lines[i-1],10);return;}
   });
   vend.forEach(function(v){var n=Math.min(v.codes.length,v.dates.length);v.pairs=[];for(var i=0;i<n;i++)v.pairs.push({cod:v.codes[i],dt:v.dates[i]});});
   return vend.filter(function(v){return v.pairs.length;});
@@ -1377,7 +1374,7 @@ function radarProcessarChurnAll(){
   var vend=radarParseChurnBlob(txt);
   if(!vend.length){toast('Não reconheci nenhum vendedor. Cole a página do churn do BI.');return;}
   CHURN_ALL={};
-  vend.forEach(function(v){CHURN_ALL[radarCod(v.cod)]=v.pairs.slice();});
+  vend.forEach(function(v){CHURN_ALL[radarCod(v.cod)]={pairs:v.pairs.slice(),pct:v.pct,falta:v.falta};});
   var box=document.getElementById('radarChurnAllBox');
   if(box)box.innerHTML='<div style="font-size:12px;color:var(--gn);margin-bottom:8px">✅ Reconheci <b>'+vend.length+' vendedor(es)</b>. Clique em cada um pra montar o pacote e enviar:</div>'
     +vend.map(function(v){
@@ -1431,7 +1428,8 @@ function radarMontarPacote(){
   var pend=(document.getElementById('radarChurnTxt')||{value:''}).value;
   if(pend.trim())radarAddChurn();
   var churnRaw=radarChurnAcc.slice();
-  if(!churnRaw.length&&CHURN_ALL[radarCod(cod)])churnRaw=CHURN_ALL[radarCod(cod)].slice(); // usa o churn inteligente
+  var _ci=CHURN_ALL[radarCod(cod)];
+  if(!churnRaw.length&&_ci&&_ci.pairs)churnRaw=_ci.pairs.slice(); // usa o churn inteligente
   var naoposTxt=(document.getElementById('radarNaoposTxt')||{value:''}).value;
   if(!churnRaw.length&&!naoposTxt.trim()){toast('Adicione o churn e/ou cole os nao-positivados.');return;}
   var naopos=[];var npTotal=0;var npTemVend=false;var npMap={};
@@ -1454,7 +1452,7 @@ function radarMontarPacote(){
   var acompTxt=(document.getElementById('radarAcompTxt')||{value:''}).value;
   var acomp=acompTxt.trim()?radarParseAcomp(acompTxt,cod):(ACOMP_ALL[radarCod(cod)]||null);
   if(acompTxt.trim()&&!acomp)toast('Nao achei o acompanhamento do '+cod+' no que voce colou. Confira se e o deste vendedor.');
-  radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend,acomp);
+  radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend,acomp,(_ci?_ci.pct:null),(_ci?_ci.falta:null));
 }
 function radarParseAcomp(txt,cod){
   var res=null;
@@ -1478,13 +1476,18 @@ function radarParseAcomp(txt,cod){
   return res;
 }
 function radarRS(n){return 'R$ '+radarBR(n);}
-function radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend,acomp){
+function radarRenderPacote(cod,nome,churn,naopos,npTotal,npTemVend,acomp,churnPct,churnFalta){
   var box=document.getElementById('radarPacoteBox');if(!box)return;
   var dataHoje=new Date().toLocaleDateString('pt-BR');
-  window._radarPkg={cod:cod,nome:nome,churn:churn,naopos:naopos,npTotal:npTotal||0,acomp:acomp||null};
-  var Tc=['\uD83D\uDD34 *SEU CHURN \u2014 '+cod+' '+nome.toUpperCase()+'*','',dataHoje,'Meta: churn \u2264 9%. Acompanhe e foque!',''];
+  window._radarPkg={cod:cod,nome:nome,churn:churn,naopos:naopos,npTotal:npTotal||0,acomp:acomp||null,churnPct:(churnPct!=null?churnPct:null),churnFalta:(churnFalta!=null?churnFalta:null)};
+  var faltaSeg=(churnFalta!=null?(churnFalta+1):null); // +1 de seguran\u00e7a
+  var churnMsg;
+  if(churnFalta!=null&&churnFalta<=0)churnMsg='Voc\u00EA J\u00C1 bateu a meta do churn'+(churnPct?' ('+churnPct+'%)':'')+'! Mas n\u00e3o pare: continue positivando os clientes da lista pra ajudar a equipe a bater tamb\u00E9m.';
+  else if(faltaSeg!=null)churnMsg='Seu churn est\u00e1 em '+(churnPct||'?')+'%. Falta positivar '+faltaSeg+' cliente(s) da lista pra bater a meta do churn e garantir o pr\u00EAmio. Cada cliente recuperado conta!';
+  else churnMsg='Cliente que some volta com uma visita, n\u00e3o com desconto. Corra atr\u00e1s de cada um esta semana!';
+  var Tc=['\uD83D\uDD34 *SEU CHURN \u2014 '+cod+' '+nome.toUpperCase()+'*','',dataHoje,(churnPct?'Churn atual: '+churnPct+'%':'Acompanhe e foque!'),''];
   churn.forEach(function(x){Tc.push('\u2022 '+x.cod+(x.cliente?' - '+x.cliente:'')+(x.dt?' \u2014 ult. compra '+x.dt:''));});
-  Tc.push('','S\u00e3o '+churn.length+' clientes. Cliente que some volta com uma liga\u00e7\u00e3o, n\u00e3o com desconto. Corra atr\u00e1s esta semana! \uD83D\uDE80','_GERENCION QG_');
+  Tc.push('','S\u00e3o '+churn.length+' clientes. '+churnMsg,'_GERENCION QG_');
   window._radarTxtChurn=Tc.join('\n');
   var Tn=['\uD83D\uDFE1 *N\u00c3O POSITIVADOS \u2014 '+cod+' '+nome.toUpperCase()+'*','',dataHoje,''];
   naopos.forEach(function(x){Tn.push('\u2022 '+(x.cod?x.cod+' - ':'')+(x.cliente||'')+(x.municipio?' ('+x.municipio+')':'')+(x.ult?' \u2014 ult. '+x.ult:''));});
@@ -1598,9 +1601,21 @@ function radarBuildCardEl(tipo,p){
     var linhas=p.churn.map(function(x){
       return '<div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.07)"><span style="color:#E2E8F0;font-weight:600;flex:1">'+x.cod+(x.cliente?' \u2014 '+x.cliente:'')+'</span><span style="color:#94A3B8;flex-shrink:0">'+(x.dt||'-')+'</span></div>';
     }).join('');
-    card.innerHTML='<div style="background:linear-gradient(135deg,#7F1D1D,#EF4444);padding:22px 28px"><div style="font-size:14px;font-weight:800;letter-spacing:2px;color:#fff">\uD83D\uDD34 SEU CHURN</div><div style="font-size:21px;font-weight:900;color:#fff;margin-top:3px">'+p.cod+' \u2014 '+p.nome+'</div><div style="font-size:13px;color:rgba(255,255,255,0.85);margin-top:4px;font-weight:600">'+p.churn.length+' clientes \u00b7 meta \u2264 9% \u00b7 '+dataHoje+'</div></div>'
+    var cPct=p.churnPct, cFalta=p.churnFalta;
+    var cSeg=(cFalta!=null?(cFalta+1):null);
+    var bateu=(cFalta!=null&&cFalta<=0);
+    var subTop=(cPct?('Churn atual '+cPct+'%'):(p.churn.length+' clientes'))+' \u00b7 '+dataHoje;
+    var bloco;
+    if(bateu){
+      bloco='<div style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.4);border-radius:12px;padding:14px 16px;font-size:13px;color:#D8F3E6;line-height:1.6;font-weight:600">\u2705 <b style="color:#6EE7B7">Voc\u00ea j\u00e1 bateu a meta do churn!</b> Mas n\u00e3o pare: continue positivando os clientes da lista &mdash; cada um ajuda a <b>equipe toda</b> a bater a meta. \uD83D\udcaa</div>';
+    }else if(cSeg!=null){
+      bloco='<div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:14px 16px;font-size:13px;color:#D8E4F2;line-height:1.6;font-weight:600">Seu churn est\u00e1 em <b style="color:#FCA5A5">'+(cPct||'?')+'%</b>. Falta positivar <b style="color:#86EFAC">'+cSeg+' cliente(s)</b> da lista pra <b>bater a meta do churn e garantir o pr\u00eamio</b>. Cada cliente recuperado conta! \uD83D\uDE80</div>';
+    }else{
+      bloco='<div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:14px 16px;font-size:12px;color:#D8E4F2;line-height:1.6;font-weight:600">Cliente que some volta com uma <b style="color:#FCA5A5">visita</b>, n\u00e3o com desconto. Corra atr\u00e1s de cada um esta semana! \uD83D\uDE80</div>';
+    }
+    card.innerHTML='<div style="background:linear-gradient(135deg,#7F1D1D,#EF4444);padding:22px 28px"><div style="font-size:14px;font-weight:800;letter-spacing:2px;color:#fff">\uD83D\uDD34 SEU CHURN</div><div style="font-size:21px;font-weight:900;color:#fff;margin-top:3px">'+p.cod+' \u2014 '+p.nome+'</div><div style="font-size:13px;color:rgba(255,255,255,0.9);margin-top:4px;font-weight:600">'+subTop+'</div></div>'
       +'<div style="padding:16px 28px 8px"><div style="display:flex;justify-content:space-between;font-size:11px;font-weight:800;letter-spacing:.5px;color:#FCA5A5;text-transform:uppercase;padding-bottom:8px;border-bottom:2px solid rgba(252,165,165,0.3)"><span>C\u00f3digo / Cliente</span><span>\u00daltima compra</span></div>'+linhas+'</div>'
-      +'<div style="padding:12px 28px 24px"><div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:14px 16px;font-size:12px;color:#D8E4F2;line-height:1.6;font-weight:600">Cliente que some volta com uma <b style="color:#FCA5A5">liga\u00e7\u00e3o</b>, n\u00e3o com desconto. Corra atr\u00e1s de cada um esta semana! \uD83D\uDE80</div><div style="display:flex;align-items:center;gap:8px;margin-top:14px"><div style="font-size:22px;font-weight:900;color:#3B82F6">QG</div><div style="font-size:13px;color:#8098B8">Gerencion \u00b7 Radar de Clientes</div></div></div>';
+      +'<div style="padding:12px 28px 24px">'+bloco+'<div style="display:flex;align-items:center;gap:8px;margin-top:14px"><div style="font-size:22px;font-weight:900;color:#3B82F6">QG</div><div style="font-size:13px;color:#8098B8">Gerencion \u00b7 Radar de Clientes</div></div></div>';
   }else if(tipo==='acomp'){
     var a=p.acomp;
     if(a){
@@ -1622,7 +1637,7 @@ function radarBuildCardEl(tipo,p){
   }else if(tipo==='rota'){
     var grupos=radarGrupoCidades(p.naopos);
     var blocos=grupos.map(function(g){
-      var cls=g.clientes.map(function(x){return '<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="font-size:12px;color:#E2E8F0">'+(x.cod?x.cod+' \u2014 ':'')+(x.cliente||'')+'</span>'+(x.ult?'<span style="font-size:11px;color:#D6E0F0;font-weight:600;flex-shrink:0">'+x.ult+'</span>':'')+'</div>';}).join('');
+      var cls=g.clientes.map(function(x){return '<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="font-size:12px;color:#E2E8F0">'+(x.cod?x.cod+' \u2014 ':'')+(x.cliente||'')+'</span>'+(x.ult?'<span style="font-size:10px;color:#C8D4E8;font-weight:500;flex-shrink:0">Ult.Comp '+x.ult+'</span>':'')+'</div>';}).join('');
       return '<div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);border-radius:10px;padding:9px 14px;margin-bottom:6px"><span style="font-size:14px;font-weight:800;color:#6EE7B7">\ud83d\udccd '+g.cidade+'</span><span style="font-size:13px;font-weight:800;color:#6EE7B7">'+g.clientes.length+' cliente(s)</span></div>'+cls+'</div>';
     }).join('');
     card.innerHTML='<div style="background:linear-gradient(135deg,#065F46,#10B981);padding:22px 28px"><div style="font-size:14px;font-weight:800;letter-spacing:2px;color:#fff">\ud83e\udded ROTA POR CIDADE</div><div style="font-size:21px;font-weight:900;color:#fff;margin-top:3px">'+p.cod+' \u2014 '+p.nome+'</div><div style="font-size:13px;color:rgba(255,255,255,0.9);margin-top:4px;font-weight:600">Seus clientes n\u00e3o positivados por regi\u00e3o \u00b7 '+dataHoje+' \u00b7 '+p.naopos.length+' clientes</div></div>'
